@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Zap, Trophy, Flame, BarChart3, BookOpen,
-  TrendingUp, TrendingDown, ArrowRight, Star, Loader2, RefreshCw
+  TrendingUp, TrendingDown, ArrowRight, Loader2, FileText
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
@@ -16,12 +16,9 @@ interface Attempt {
 interface Stats {
   quizTotal: number; avgScore: number; streak: number;
   certs: number; recentAttempts: Attempt[];
-  topicWins: { name: string; pct: number; color: string }[];
+  topicWins: { name: string; pct: number }[];
   userName: string;
 }
-
-const TOPIC_COLORS = ["#6366F1","#8B5CF6","#10B981","#F59E0B","#EF4444","#06B6D4","#F97316"];
-const DIFF_EMOJI: Record<string,string> = { easy:"🟢", medium:"🟡", hard:"🔴" };
 
 function calcStreak(attempts: Attempt[]): number {
   if (!attempts.length) return 0;
@@ -64,7 +61,6 @@ export default function DashboardPage() {
       const certs  = all.filter(a => a.certificate_earned).length;
       const streak = calcStreak(all);
 
-      // Top topics by highest avg score (min 1 attempt)
       const topicMap: Record<string, number[]> = {};
       all.forEach(a => {
         if (!topicMap[a.topic]) topicMap[a.topic] = [];
@@ -73,7 +69,6 @@ export default function DashboardPage() {
       const topicWins = Object.entries(topicMap)
         .map(([name, scores]) => ({
           name, pct: Math.round(scores.reduce((a,b)=>a+b,0)/scores.length),
-          color: TOPIC_COLORS[Object.keys(topicMap).indexOf(name) % TOPIC_COLORS.length],
         }))
         .sort((a,b) => b.pct - a.pct)
         .slice(0, 4);
@@ -91,7 +86,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24 text-[#9CA3AF]">
+      <div className="flex items-center justify-center py-24 text-[#8C8B82]">
         <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading your dashboard…
       </div>
     );
@@ -101,10 +96,10 @@ export default function DashboardPage() {
   const { quizTotal, avgScore, streak, certs, recentAttempts, topicWins, userName } = stats;
 
   const STATS_CARDS = [
-    { icon: BookOpen, color: "#6366F1", value: String(quizTotal), label: "Quizzes Taken",   change: quizTotal > 0 ? "+all time"  : "Take your first!",  up: quizTotal > 0 },
-    { icon: BarChart3, color: "#10B981", value: `${avgScore}%`,   label: "Avg Score",        change: avgScore >= 70 ? "Above pass!" : "Keep going!",         up: avgScore >= 70 },
-    { icon: Flame,     color: "#F59E0B", value: String(streak),   label: "Day Streak",       change: streak > 0 ? `${streak} day${streak!==1?"s":""} 🔥` : "Start today!", up: streak > 0 },
-    { icon: Trophy,    color: "#8B5CF6", value: String(certs),    label: "Certificates",     change: certs > 0 ? `${certs} earned 🎓` : "Score ≥ 70%",       up: certs > 0 },
+    { icon: BookOpen, value: String(quizTotal), label: "Quizzes taken",   change: quizTotal > 0 ? "All time"  : "Take your first",  up: quizTotal > 0 },
+    { icon: BarChart3, value: `${avgScore}%`,   label: "Avg score",        change: avgScore >= 70 ? "Above pass" : "Keep going",         up: avgScore >= 70 },
+    { icon: Flame,     value: String(streak),   label: "Day streak",       change: streak > 0 ? `${streak} day${streak!==1?"s":""}` : "Start today", up: streak > 0 },
+    { icon: Trophy,    value: String(certs),    label: "Certificates",     change: certs > 0 ? `${certs} earned` : "Score 70%+",       up: certs > 0 },
   ];
 
   const firstName = userName.split(" ")[0];
@@ -112,56 +107,46 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="space-y-7 animate-fade-in-up">
+    <div className="space-y-6">
 
       {/* ── Welcome Banner ─────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-2xl p-7 text-white relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-64 h-full opacity-10">
-          <svg viewBox="0 0 200 200" className="w-full h-full">
-            <circle cx="160" cy="60" r="80" fill="white"/>
-            <circle cx="40" cy="150" r="50" fill="white"/>
-          </svg>
-        </div>
-        <div className="relative">
-          <p className="text-indigo-200 text-sm font-medium mb-1">{greeting}, {firstName} 👋</p>
-          <h2 className="text-2xl font-black mb-3">
-            {quizTotal === 0
-              ? "Start your AI quiz journey!"
-              : quizTotal < 5
-              ? "You're just getting started — keep going!"
-              : "Ready to level up your knowledge?"}
-          </h2>
-          <p className="text-indigo-200 text-sm mb-5">
-            {quizTotal === 0
-              ? "Generate your first quiz and start learning."
-              : `You've completed ${quizTotal} quiz${quizTotal!==1?"es":""} with a ${avgScore}% average. ${streak > 0 ? `${streak}-day streak! 🔥` : "Take a quiz to start a streak!"}`}
-          </p>
-          <Link
-            href="/dashboard/generate"
-            className="inline-flex items-center gap-2 bg-white text-[#6366F1] font-bold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all hover:-translate-y-0.5"
-          >
-            <Zap className="w-4 h-4" />
-            {quizTotal === 0 ? "Generate First Quiz" : "Generate Quiz"}
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+      <div className="bg-[#1B1B18] dark:bg-[#0E0E0B] p-7 text-white border border-[#1B1B18] dark:border-[#35352C]">
+        <p className="text-[#ABA99C] text-sm font-medium mb-1">{greeting}, {firstName}</p>
+        <h2 className="font-heading text-2xl font-medium mb-3">
+          {quizTotal === 0
+            ? "Start your quiz journey"
+            : quizTotal < 5
+            ? "You're just getting started — keep going"
+            : "Ready to level up your knowledge?"}
+        </h2>
+        <p className="text-[#ABA99C] text-sm mb-5">
+          {quizTotal === 0
+            ? "Generate your first quiz and start learning."
+            : `You've completed ${quizTotal} quiz${quizTotal!==1?"es":""} with a ${avgScore}% average. ${streak > 0 ? `${streak}-day streak.` : "Take a quiz to start a streak."}`}
+        </p>
+        <Link
+          href="/dashboard/generate"
+          className="inline-flex items-center gap-2 bg-white text-[#1B1B18] font-medium text-sm px-5 py-2.5 hover:bg-[#EDECE6] transition-colors"
+        >
+          <Zap className="w-4 h-4" />
+          {quizTotal === 0 ? "Generate first quiz" : "Generate quiz"}
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
 
       {/* ── Stats Row ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 border-t border-l border-[#DEDCD3] dark:border-[#35352C]">
         {STATS_CARDS.map((s, i) => (
-          <div key={i} className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-5 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
+          <div key={i} className="bg-white dark:bg-[#1C1C16] border-r border-b border-[#DEDCD3] dark:border-[#35352C] p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.color + "15" }}>
-                <s.icon className="w-5 h-5" style={{ color: s.color }} />
-              </div>
-              <span className={`text-xs font-bold flex items-center gap-0.5 ${s.up ? "text-[#10B981]" : "text-[#6B7280]"}`}>
+              <s.icon className="w-5 h-5 text-[#6B2737] dark:text-[#B5677A]" />
+              <span className={`text-xs font-medium flex items-center gap-0.5 ${s.up ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#8C8B82]"}`}>
                 {s.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 {s.change}
               </span>
             </div>
-            <div className="text-3xl font-black text-[#111827] dark:text-[#f8fafc] mb-1">{s.value}</div>
-            <div className="text-xs font-medium text-[#6B7280] dark:text-[#94a3b8]">{s.label}</div>
+            <div className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">{s.value}</div>
+            <div className="text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C]">{s.label}</div>
           </div>
         ))}
       </div>
@@ -170,19 +155,19 @@ export default function DashboardPage() {
       <div className="grid lg:grid-cols-3 gap-6">
 
         {/* Recent quizzes — REAL DATA */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#F3F4F6] dark:border-[#334155]">
-            <h3 className="font-bold text-[#111827] dark:text-[#f8fafc]">Recent Quizzes</h3>
-            <Link href="/dashboard/quizzes" className="text-xs text-[#6366F1] font-semibold hover:text-[#4F46E5] flex items-center gap-0.5">
+        <div className="lg:col-span-2 bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#DEDCD3] dark:border-[#35352C]">
+            <h3 className="font-heading font-medium text-[#1B1B18] dark:text-[#F2F1EA]">Recent quizzes</h3>
+            <Link href="/dashboard/quizzes" className="text-xs text-[#6B2737] dark:text-[#B5677A] font-medium hover:text-[#551F2C] dark:hover:text-[#C77E8F] flex items-center gap-0.5">
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {recentAttempts.length === 0 ? (
-            <div className="px-6 py-12 text-center text-[#9CA3AF] text-sm">
-              No quizzes yet — <Link href="/dashboard/generate" className="text-[#6366F1] font-semibold">take your first quiz!</Link>
+            <div className="px-6 py-12 text-center text-[#8C8B82] text-sm">
+              No quizzes yet — <Link href="/dashboard/generate" className="text-[#6B2737] dark:text-[#B5677A] font-medium">take your first quiz</Link>
             </div>
           ) : (
-            <div className="divide-y divide-[#F9FAFB] dark:divide-[#334155]">
+            <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
               {recentAttempts.map((q) => {
                 const relTime = (() => {
                   const d = Math.floor((Date.now() - new Date(q.created_at).getTime()) / 1000);
@@ -191,20 +176,20 @@ export default function DashboardPage() {
                   return `${Math.floor(d/86400)}d ago`;
                 })();
                 return (
-                  <div key={q.id} className="px-6 py-4 flex items-center gap-4 hover:bg-[#FAFAFA] dark:hover:bg-[#334155]/50 transition-colors">
-                    <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] dark:bg-[#1e1b4b] flex items-center justify-center text-lg flex-shrink-0">
-                      {DIFF_EMOJI[q.difficulty?.toLowerCase()] ?? "📝"}
+                  <div key={q.id} className="px-6 py-4 flex items-center gap-4 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+                    <div className="w-10 h-10 bg-[#F3E7E9] dark:bg-[#2E1A20] flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-4 h-4 text-[#6B2737] dark:text-[#B5677A]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc] truncate">{q.topic}</div>
-                      <div className="text-xs text-[#9CA3AF] capitalize">{q.difficulty} · {relTime}</div>
+                      <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{q.topic}</div>
+                      <div className="text-xs text-[#8C8B82] capitalize">{q.difficulty} · {relTime}</div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-sm font-black ${q.score_pct >= 70 ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                      <div className={`text-sm font-semibold ${q.score_pct >= 70 ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                         {q.score_pct}%
                       </div>
-                      <div className="text-xs text-[#9CA3AF]">
-                        {q.certificate_earned ? "🏆 Cert" : q.passed ? "✓ Passed" : "Retry →"}
+                      <div className="text-xs text-[#8C8B82]">
+                        {q.certificate_earned ? "Certified" : q.passed ? "Passed" : "Retry"}
                       </div>
                     </div>
                   </div>
@@ -215,40 +200,40 @@ export default function DashboardPage() {
         </div>
 
         {/* Right column */}
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Streak card */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] shadow-sm p-5">
+          <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Flame className="w-4 h-4 text-[#F59E0B]" />
-              <span className="text-sm font-bold text-[#111827] dark:text-[#f8fafc]">Current Streak</span>
+              <Flame className="w-4 h-4 text-[#93670F] dark:text-[#D4A94A]" />
+              <span className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">Current streak</span>
             </div>
             <div className="flex items-end gap-2 mb-3">
-              <span className="text-5xl font-black text-[#F59E0B]">{streak}</span>
-              <span className="text-[#6B7280] dark:text-[#94a3b8] text-sm mb-2">days 🔥</span>
+              <span className="font-heading text-5xl font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{streak}</span>
+              <span className="text-[#5B5A52] dark:text-[#ABA99C] text-sm mb-2">days</span>
             </div>
             <div className="flex gap-1 mb-3">
               {[...Array(7)].map((_, i) => (
-                <div key={i} className={`flex-1 h-6 rounded-md ${i < Math.min(streak, 7) ? "bg-[#F59E0B]" : "bg-[#F3F4F6] dark:bg-[#334155]"}`} />
+                <div key={i} className={`flex-1 h-6 ${i < Math.min(streak, 7) ? "bg-[#93670F] dark:bg-[#D4A94A]" : "bg-[#EDECE6] dark:bg-[#262620]"}`} />
               ))}
             </div>
-            <p className="text-xs text-[#9CA3AF]">
-              {streak > 0 ? `${streak} consecutive day${streak!==1?"s":""} of learning` : "Take a quiz today to start your streak!"}
+            <p className="text-xs text-[#8C8B82]">
+              {streak > 0 ? `${streak} consecutive day${streak!==1?"s":""} of learning` : "Take a quiz today to start your streak"}
             </p>
           </div>
 
           {/* Top topics — REAL DATA */}
           {topicWins.length > 0 && (
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] shadow-sm p-5">
-              <h4 className="text-sm font-bold text-[#111827] dark:text-[#f8fafc] mb-3">Your Top Topics</h4>
+            <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5">
+              <h4 className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-3">Your top topics</h4>
               <div className="space-y-2.5">
                 {topicWins.map((t) => (
                   <div key={t.name}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium text-[#374151] dark:text-[#94a3b8] truncate mr-2">{t.name}</span>
-                      <span className="text-[#6B7280] dark:text-[#94a3b8] font-semibold shrink-0">{t.pct}%</span>
+                      <span className="font-medium text-[#3F3E38] dark:text-[#D6D4C9] truncate mr-2">{t.name}</span>
+                      <span className="text-[#5B5A52] dark:text-[#ABA99C] font-medium shrink-0">{t.pct}%</span>
                     </div>
-                    <div className="h-1.5 bg-[#F3F4F6] dark:bg-[#334155] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${t.pct}%`, backgroundColor: t.color }} />
+                    <div className="h-1.5 bg-[#EDECE6] dark:bg-[#262620] overflow-hidden">
+                      <div className="h-full bg-[#6B2737] dark:bg-[#B5677A]" style={{ width: `${t.pct}%` }} />
                     </div>
                   </div>
                 ))}
@@ -257,15 +242,15 @@ export default function DashboardPage() {
           )}
 
           {/* Quick generate */}
-          <div className="bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF] dark:from-[#1e1b4b] dark:to-[#0f0f23] rounded-2xl border border-[#E0E7FF] dark:border-[#3730a3] p-5">
+          <div className="bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-[#6366F1]" />
-              <span className="text-sm font-bold text-[#4338CA] dark:text-[#818cf8]">Quick Generate</span>
+              <Zap className="w-4 h-4 text-[#6B2737] dark:text-[#B5677A]" />
+              <span className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">Quick generate</span>
             </div>
-            <p className="text-xs text-[#6B7280] dark:text-[#94a3b8] mb-4">Start a new quiz on any topic instantly.</p>
+            <p className="text-xs text-[#5B5A52] dark:text-[#ABA99C] mb-4">Start a new quiz on any topic instantly.</p>
             <Link href="/dashboard/generate"
-              className="flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:shadow-md">
-              <Zap className="w-3.5 h-3.5"/> New Quiz
+              className="flex items-center justify-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white text-sm font-medium px-4 py-2.5 transition-colors">
+              <Zap className="w-3.5 h-3.5"/> New quiz
             </Link>
           </div>
         </div>
@@ -273,15 +258,17 @@ export default function DashboardPage() {
 
       {/* Certs prompt if none yet */}
       {certs === 0 && quizTotal > 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-6 flex items-center gap-5">
-          <div className="w-12 h-12 rounded-2xl bg-[#FEF3C7] flex items-center justify-center text-2xl flex-shrink-0">🏆</div>
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-6 flex items-center gap-5">
+          <div className="w-11 h-11 bg-[#F5EEDD] dark:bg-[#2B2110] flex items-center justify-center flex-shrink-0">
+            <Trophy className="w-5 h-5 text-[#93670F] dark:text-[#D4A94A]" />
+          </div>
           <div className="flex-1">
-            <h3 className="text-sm font-bold text-[#111827] dark:text-[#f8fafc] mb-0.5">Earn your first certificate!</h3>
-            <p className="text-xs text-[#9CA3AF]">Score 70% or above on any quiz to earn a certificate of achievement.</p>
+            <h3 className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-0.5">Earn your first certificate</h3>
+            <p className="text-xs text-[#8C8B82]">Score 70% or above on any quiz to earn a certificate of achievement.</p>
           </div>
           <Link href="/dashboard/generate"
-            className="text-sm font-semibold text-[#6366F1] bg-[#EEF2FF] dark:bg-[#1e1b4b] px-4 py-2 rounded-xl hover:bg-[#E0E7FF] dark:hover:bg-[#312e81] transition-colors whitespace-nowrap">
-            Take Quiz →
+            className="text-sm font-medium text-[#6B2737] dark:text-[#B5677A] border border-[#DEDCD3] dark:border-[#35352C] px-4 py-2 hover:border-[#ABA99C] transition-colors whitespace-nowrap flex items-center gap-1.5">
+            Take quiz <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       )}

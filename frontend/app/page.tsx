@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  Zap, BookOpen, Trophy, BarChart3, Brain, ArrowRight,
-  CheckCircle, Star, Users, Sparkles, ChevronRight, LayoutDashboard
+  BookOpen, Trophy, BarChart3, Brain, ArrowRight,
+  Check, Users, ChevronRight, LayoutDashboard
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase";
@@ -32,48 +32,45 @@ export default function LandingPage() {
       setAuthChecked(true);
     });
   }, []);
+
   return (
-    <div className="min-h-screen bg-[#F7F8FC]">
+    <div className="min-h-screen bg-[#F5F4F0] dark:bg-[#14140F]">
       {/* ── Navbar ─────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB]">
+      <nav className="sticky top-0 z-50 bg-[#F5F4F0]/95 dark:bg-[#14140F]/95 backdrop-blur-sm border-b border-[#DEDCD3] dark:border-[#35352C]">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2.5 font-bold text-lg text-[#111827] hover:no-underline">
-            <div className="w-8 h-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white text-sm font-bold">
+          <Link href="/" className="flex items-center gap-2.5 font-heading font-semibold text-lg text-[#1B1B18] dark:text-[#F2F1EA] hover:no-underline">
+            <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white text-sm font-semibold">
               Q
             </div>
             Questly
           </Link>
 
-          <div className="hidden md:flex items-center gap-6 text-sm text-[#6B7280] font-medium">
-            <Link href="#features" className="hover:text-[#111827] transition-colors">Features</Link>
-            <Link href="#how-it-works" className="hover:text-[#111827] transition-colors">How it works</Link>
-            <Link href="#pricing" className="hover:text-[#111827] transition-colors">Pricing</Link>
+          <div className="hidden md:flex items-center gap-8 text-sm text-[#5B5A52] dark:text-[#ABA99C] font-medium">
+            <Link href="#features" className="hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] transition-colors">Features</Link>
+            <Link href="#how-it-works" className="hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] transition-colors">How it works</Link>
+            <Link href="#pricing" className="hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] transition-colors">Pricing</Link>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <ThemeToggle variant="pill" />
 
-            {/* Show skeleton while auth check is in flight */}
             {!authChecked && (
-              <div className="w-24 h-8 bg-[#F3F4F6] rounded-lg animate-pulse" />
+              <div className="w-24 h-8 bg-[#EDECE6] dark:bg-[#262620] animate-pulse" />
             )}
 
-            {/* ── Signed IN — show avatar + name + dashboard link ── */}
             {authChecked && authUser && (
-              <div className="flex items-center gap-2.5">
-                {/* Avatar */}
-                <div className="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-[#F3F4F6] dark:hover:bg-[#1e293b] transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-2 py-1">
+                  <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                     {authUser.initials}
                   </div>
-                  <span className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc] hidden sm:block">
+                  <span className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] hidden sm:block">
                     {authUser.name}
                   </span>
                 </div>
-                {/* Dashboard CTA */}
                 <Link
                   href="/dashboard"
-                  className="text-sm font-semibold bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg inline-flex items-center gap-1.5"
+                  className="text-sm font-medium bg-[#6B2737] hover:bg-[#551F2C] text-white px-4 py-2 inline-flex items-center gap-1.5 transition-colors"
                 >
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   Dashboard
@@ -81,20 +78,19 @@ export default function LandingPage() {
               </div>
             )}
 
-            {/* ── Signed OUT — show Sign in + Get started ── */}
             {authChecked && !authUser && (
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-medium text-[#6B7280] hover:text-[#111827] dark:text-[#94a3b8] dark:hover:text-[#f8fafc] transition-colors px-3 py-2"
+                  className="text-sm font-medium text-[#5B5A52] hover:text-[#1B1B18] dark:text-[#ABA99C] dark:hover:text-[#F2F1EA] transition-colors px-3 py-2"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/signup"
-                  className="text-sm font-semibold bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg inline-flex items-center gap-1.5"
+                  className="text-sm font-medium bg-[#6B2737] hover:bg-[#551F2C] text-white px-4 py-2 inline-flex items-center gap-1.5 transition-colors"
                 >
-                  Get started free
+                  Get started
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </>
@@ -104,116 +100,90 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ───────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-20 pb-24 px-6">
-        {/* Background decoration */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-br from-[#6366F1]/8 via-[#8B5CF6]/5 to-transparent rounded-full blur-3xl -z-0" />
-
-        <div className="relative max-w-6xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-1.5 bg-[#EEF2FF] border border-[#C7D2FE] text-[#6366F1] text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-              <Sparkles className="w-3 h-3" />
-              Powered by Advanced AI
-            </div>
-
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-[#111827] leading-[1.1] mb-6">
-              Learn Faster With{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]">
-                AI-Generated Quizzes
-              </span>
+      <section className="border-b border-[#DEDCD3] dark:border-[#35352C]">
+        <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#6B2737] dark:text-[#B5677A] mb-5">
+              AI-generated learning
+            </p>
+            <h1 className="font-heading text-4xl md:text-5xl font-medium tracking-tight text-[#1B1B18] dark:text-[#F2F1EA] leading-[1.15] mb-6">
+              Learn faster with quizzes built for exactly what you're studying
             </h1>
-
-            <p className="text-xl text-[#6B7280] max-w-xl mx-auto mb-10 leading-relaxed">
-              Generate quizzes on any topic in seconds. Track your progress,
-              get AI explanations, and earn verified certificates.
+            <p className="text-lg text-[#5B5A52] dark:text-[#ABA99C] mb-9 leading-relaxed max-w-lg">
+              Generate a quiz on any topic in seconds. Track your progress,
+              read AI explanations for what you missed, and earn a certificate
+              once you know the material.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold px-7 py-3.5 rounded-xl transition-all hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(99,102,241,0.35)] text-base"
+                className="inline-flex items-center justify-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white font-medium px-6 py-3 transition-colors text-sm"
               >
-                <Zap className="w-4 h-4" />
-                Start Learning Free
+                Start learning free
               </Link>
               <Link
                 href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] text-[#374151] font-semibold px-7 py-3.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md text-base"
+                className="inline-flex items-center justify-center gap-2 border border-[#DEDCD3] dark:border-[#35352C] hover:border-[#ABA99C] text-[#1B1B18] dark:text-[#F2F1EA] font-medium px-6 py-3 transition-colors text-sm"
               >
                 See how it works
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
-            {/* Social proof */}
-            <div className="flex items-center justify-center gap-6 mt-10 text-sm text-[#6B7280]">
-              <div className="flex items-center gap-1.5">
-                <div className="flex -space-x-2">
-                  {["#6366F1", "#8B5CF6", "#10B981", "#F59E0B"].map((c, i) => (
-                    <div key={i} className="w-7 h-7 rounded-full border-2 border-white" style={{ backgroundColor: c }} />
-                  ))}
-                </div>
-                <span>10,000+ learners</span>
+            <div className="flex items-center gap-6 text-sm text-[#5B5A52] dark:text-[#ABA99C] border-t border-[#DEDCD3] dark:border-[#35352C] pt-6">
+              <div>
+                <span className="font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">10,000+</span> learners
               </div>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-[#F59E0B] text-[#F59E0B]" />
-                ))}
-                <span className="ml-1">4.9 / 5.0</span>
+              <div className="w-px h-4 bg-[#DEDCD3] dark:bg-[#35352C]" />
+              <div>
+                <span className="font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">500,000+</span> quizzes generated
               </div>
             </div>
           </div>
 
           {/* Demo card */}
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 relative">
-              <div className="absolute -top-3 left-6 bg-[#6366F1] text-white text-xs font-bold px-3 py-1 rounded-full">
-                Live Preview
+          <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C]">
+            <div className="border-b border-[#DEDCD3] dark:border-[#35352C] px-5 py-3 flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#5B5A52] dark:text-[#ABA99C]">Quiz preview</span>
+              <span className="text-xs text-[#8C8B82]">Question 1 of 10</span>
+            </div>
+            <div className="p-5">
+              <label className="text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C] block mb-2">
+                Topic
+              </label>
+              <div className="flex gap-2 mb-5">
+                <div className="flex-1 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2 text-sm text-[#1B1B18] dark:text-[#F2F1EA]">
+                  Python programming for beginners
+                </div>
+                <button className="bg-[#6B2737] text-white text-sm font-medium px-4 py-2 hover:bg-[#551F2C] transition-colors">
+                  Generate
+                </button>
               </div>
 
-              {/* Mini quiz generator */}
-              <div className="mb-5">
-                <label className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide block mb-1.5">
-                  Quiz Topic
-                </label>
-                <div className="flex gap-2">
-                  <div className="flex-1 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-4 py-2.5 text-sm text-[#111827]">
-                    Python Programming for Beginners
-                  </div>
-                  <button className="bg-[#6366F1] text-white text-sm font-semibold px-4 py-2.5 rounded-lg inline-flex items-center gap-1.5 hover:bg-[#4F46E5] transition-colors">
-                    <Zap className="w-3.5 h-3.5" />
-                    Generate
-                  </button>
-                </div>
-              </div>
-
-              {/* Sample question */}
-              <div className="bg-[#F9FAFB] rounded-xl p-4 border border-[#F3F4F6]">
-                <div className="text-xs font-bold text-[#6366F1] uppercase tracking-wider mb-2">
-                  Question 1 of 10
-                </div>
-                <p className="text-sm font-medium text-[#111827] mb-3">
+              <div className="border border-[#DEDCD3] dark:border-[#35352C] p-4">
+                <p className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-3">
                   Which keyword is used to define a function in Python?
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {["function", "def", "fn", "define"].map((opt, i) => (
                     <div
                       key={i}
-                      className={`text-xs px-3 py-2 rounded-lg border font-medium cursor-pointer transition-all ${
+                      className={`text-xs px-3 py-2 border font-medium ${
                         i === 1
-                          ? "bg-[#EEF2FF] border-[#6366F1] text-[#6366F1]"
-                          : "bg-white border-[#E5E7EB] text-[#6B7280] hover:border-[#D1D5DB]"
+                          ? "bg-[#F3E7E9] dark:bg-[#2E1A20] border-[#6B2737] text-[#6B2737] dark:text-[#B5677A]"
+                          : "bg-white dark:bg-[#1C1C16] border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C]"
                       }`}
                     >
-                      <span className="font-bold mr-1.5">{["A", "B", "C", "D"][i]}.</span> {opt}
+                      <span className="font-semibold mr-1.5">{["A", "B", "C", "D"][i]}.</span> {opt}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between text-xs text-[#9CA3AF]">
-                <span className="flex items-center gap-1"><Brain className="w-3 h-3" /> AI Explanation available</span>
-                <span className="flex items-center gap-1"><Trophy className="w-3 h-3" /> Certificate on completion</span>
+              <div className="mt-4 flex items-center justify-between text-xs text-[#8C8B82]">
+                <span className="flex items-center gap-1.5"><Brain className="w-3.5 h-3.5" /> AI explanation included</span>
+                <span className="flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5" /> Certificate on completion</span>
               </div>
             </div>
           </div>
@@ -221,34 +191,29 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features ───────────────────────────────────────────── */}
-      <section id="features" className="py-24 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-1.5 bg-[#EEF2FF] border border-[#C7D2FE] text-[#6366F1] text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+      <section id="features" className="border-b border-[#DEDCD3] dark:border-[#35352C]">
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <div className="max-w-xl mb-14">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#6B2737] dark:text-[#B5677A] mb-3">
               Features
-            </div>
-            <h2 className="text-4xl font-black text-[#111827] tracking-tight mb-4">
+            </p>
+            <h2 className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] tracking-tight mb-4">
               Everything you need to learn faster
             </h2>
-            <p className="text-[#6B7280] text-lg max-w-xl mx-auto">
-              A complete AI learning ecosystem, not just a quiz generator.
+            <p className="text-[#5B5A52] dark:text-[#ABA99C]">
+              A complete learning workflow, not just a quiz generator.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 border-t border-l border-[#DEDCD3] dark:border-[#35352C]">
             {FEATURES.map((f, i) => (
               <div
                 key={i}
-                className="bg-[#F9FAFB] border border-[#F3F4F6] rounded-2xl p-6 hover:border-[#E5E7EB] hover:shadow-md transition-all hover:-translate-y-1 group"
+                className="border-r border-b border-[#DEDCD3] dark:border-[#35352C] p-6"
               >
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
-                  style={{ backgroundColor: f.color + "15" }}
-                >
-                  <f.icon className="w-5 h-5" style={{ color: f.color }} />
-                </div>
-                <h3 className="font-bold text-[#111827] mb-2">{f.title}</h3>
-                <p className="text-sm text-[#6B7280] leading-relaxed">{f.desc}</p>
+                <f.icon className="w-5 h-5 text-[#6B2737] dark:text-[#B5677A] mb-4" />
+                <h3 className="font-heading font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-2 text-[15px]">{f.title}</h3>
+                <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C] leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -256,31 +221,23 @@ export default function LandingPage() {
       </section>
 
       {/* ── How It Works ───────────────────────────────────────── */}
-      <section id="how-it-works" className="py-24 px-6 bg-[#F7F8FC]">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-1.5 bg-[#EEF2FF] border border-[#C7D2FE] text-[#6366F1] text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+      <section id="how-it-works" className="border-b border-[#DEDCD3] dark:border-[#35352C]">
+        <div className="max-w-5xl mx-auto px-6 py-20">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#6B2737] dark:text-[#B5677A] mb-3">
             How it works
-          </div>
-          <h2 className="text-4xl font-black text-[#111827] tracking-tight mb-16">
-            Start learning in 3 simple steps
+          </p>
+          <h2 className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] tracking-tight mb-14">
+            Start learning in three steps
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-x-8 gap-y-10">
             {STEPS.map((s, i) => (
-              <div key={i} className="relative text-center">
-                {i < STEPS.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-1/2 w-full border-t-2 border-dashed border-[#E5E7EB]" />
-                )}
-                <div className="relative">
-                  <div className="w-16 h-16 bg-white border-2 border-[#E5E7EB] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm text-2xl">
-                    {s.emoji}
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#6366F1] text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {i + 1}
-                  </div>
+              <div key={i}>
+                <div className="text-sm font-semibold text-[#6B2737] dark:text-[#B5677A] mb-3 pb-3 border-b-2 border-[#6B2737] dark:border-[#B5677A] inline-block">
+                  0{i + 1}
                 </div>
-                <h3 className="font-bold text-[#111827] mb-2 text-lg">{s.title}</h3>
-                <p className="text-sm text-[#6B7280] leading-relaxed">{s.desc}</p>
+                <h3 className="font-heading font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-2 text-base">{s.title}</h3>
+                <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C] leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -288,44 +245,34 @@ export default function LandingPage() {
       </section>
 
       {/* ── Stats ──────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-[#6366F1]">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+      <section className="border-b border-[#DEDCD3] dark:border-[#35352C] bg-[#1B1B18] dark:bg-[#0E0E0B]">
+        <div className="max-w-5xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 divide-x divide-[#35352C]">
           {STATS.map((s, i) => (
-            <div key={i}>
-              <div className="text-4xl font-black mb-1">{s.num}</div>
-              <div className="text-indigo-200 text-sm font-medium">{s.label}</div>
+            <div key={i} className="px-4 first:pl-0 text-center">
+              <div className="font-heading text-3xl font-medium text-white mb-1">{s.num}</div>
+              <div className="text-[#ABA99C] text-sm">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── Testimonials ───────────────────────────────────────── */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-[#111827] tracking-tight mb-4">
-              Loved by learners worldwide
-            </h2>
-          </div>
+      <section className="border-b border-[#DEDCD3] dark:border-[#35352C]">
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <h2 className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] tracking-tight mb-14">
+            What learners are saying
+          </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="bg-[#F9FAFB] rounded-2xl p-6 border border-[#F3F4F6]">
-                <div className="flex mb-3">
-                  {[...Array(5)].map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-[#F59E0B] text-[#F59E0B]" />
-                  ))}
-                </div>
-                <p className="text-sm text-[#374151] leading-relaxed mb-4">{`"${t.text}"`}</p>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                    style={{ backgroundColor: t.color }}
-                  >
+              <div key={i} className="border border-[#DEDCD3] dark:border-[#35352C] p-6">
+                <p className="text-sm text-[#3F3E38] dark:text-[#D6D4C9] leading-relaxed mb-5">{`"${t.text}"`}</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-[#DEDCD3] dark:border-[#35352C]">
+                  <div className="w-8 h-8 bg-[#EDECE6] dark:bg-[#262620] flex items-center justify-center text-[#1B1B18] dark:text-[#F2F1EA] text-sm font-semibold">
                     {t.name[0]}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-[#111827]">{t.name}</div>
-                    <div className="text-xs text-[#6B7280]">{t.role}</div>
+                    <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{t.name}</div>
+                    <div className="text-xs text-[#8C8B82]">{t.role}</div>
                   </div>
                 </div>
               </div>
@@ -335,52 +282,49 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ────────────────────────────────────────────── */}
-      <section id="pricing" className="py-24 px-6 bg-[#F7F8FC]">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-1.5 bg-[#EEF2FF] border border-[#C7D2FE] text-[#6366F1] text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+      <section id="pricing" className="border-b border-[#DEDCD3] dark:border-[#35352C]">
+        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#6B2737] dark:text-[#B5677A] mb-3">
             Pricing
-          </div>
-          <h2 className="text-4xl font-black text-[#111827] tracking-tight mb-4">
+          </p>
+          <h2 className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] tracking-tight mb-4">
             Simple, transparent pricing
           </h2>
-          <p className="text-[#6B7280] mb-12">Start free. Upgrade whenever you need more.</p>
+          <p className="text-[#5B5A52] dark:text-[#ABA99C] mb-12">Start free. Upgrade whenever you need more.</p>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          <div className="grid md:grid-cols-2 max-w-2xl mx-auto border border-[#DEDCD3] dark:border-[#35352C]">
             {/* Free Plan */}
-            <div className="bg-white rounded-2xl p-7 border border-[#E5E7EB] shadow-sm text-left">
-              <div className="text-sm font-semibold text-[#6B7280] mb-1">Free Plan</div>
-              <div className="text-4xl font-black text-[#111827] mb-1">$0</div>
-              <div className="text-sm text-[#9CA3AF] mb-6">Forever free</div>
+            <div className="p-8 text-left border-b md:border-b-0 md:border-r border-[#DEDCD3] dark:border-[#35352C]">
+              <div className="text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] mb-1">Free</div>
+              <div className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">$0</div>
+              <div className="text-sm text-[#8C8B82] mb-6">Forever free</div>
               <ul className="space-y-3 mb-7">
                 {FREE_FEATURES.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-[#374151]">
-                    <CheckCircle className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                  <li key={i} className="flex items-center gap-2 text-sm text-[#3F3E38] dark:text-[#D6D4C9]">
+                    <Check className="w-4 h-4 text-[#6B2737] dark:text-[#B5677A] flex-shrink-0" />
                     {f}
                   </li>
                 ))}
               </ul>
-              <Link href="/signup" className="block text-center border border-[#E5E7EB] text-[#374151] hover:border-[#D1D5DB] font-semibold py-2.5 rounded-xl text-sm transition-all hover:shadow-sm">
+              <Link href="/signup" className="block text-center border border-[#DEDCD3] dark:border-[#35352C] text-[#1B1B18] dark:text-[#F2F1EA] hover:border-[#ABA99C] font-medium py-2.5 text-sm transition-colors">
                 Get started free
               </Link>
             </div>
 
             {/* Pro Plan */}
-            <div className="bg-[#6366F1] rounded-2xl p-7 border border-[#4F46E5] shadow-lg shadow-indigo-100 text-left relative overflow-hidden">
-              <div className="absolute top-4 right-4 bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                Popular
-              </div>
-              <div className="text-sm font-semibold text-indigo-200 mb-1">Pro Plan</div>
-              <div className="text-4xl font-black text-white mb-1">$9</div>
-              <div className="text-sm text-indigo-300 mb-6">per month</div>
+            <div className="p-8 text-left bg-[#1B1B18] dark:bg-[#0E0E0B]">
+              <div className="text-sm font-medium text-[#ABA99C] mb-1">Pro</div>
+              <div className="font-heading text-3xl font-medium text-white mb-1">$9</div>
+              <div className="text-sm text-[#8C8B82] mb-6">per month</div>
               <ul className="space-y-3 mb-7">
                 {PRO_FEATURES.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-white">
-                    <CheckCircle className="w-4 h-4 text-indigo-200 flex-shrink-0" />
+                  <li key={i} className="flex items-center gap-2 text-sm text-[#D6D4C9]">
+                    <Check className="w-4 h-4 text-[#B5677A] flex-shrink-0" />
                     {f}
                   </li>
                 ))}
               </ul>
-              <Link href="/signup" className="block text-center bg-white text-[#6366F1] font-semibold py-2.5 rounded-xl text-sm transition-all hover:shadow-lg hover:-translate-y-0.5">
+              <Link href="/signup" className="block text-center bg-white text-[#1B1B18] font-medium py-2.5 text-sm hover:bg-[#EDECE6] transition-colors">
                 Start Pro trial
               </Link>
             </div>
@@ -389,25 +333,24 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ────────────────────────────────────────────────── */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-5xl font-black text-[#111827] tracking-tight mb-4">
+      <section className="border-b border-[#DEDCD3] dark:border-[#35352C]">
+        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
+          <h2 className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] tracking-tight mb-4">
             Ready to learn smarter?
           </h2>
-          <p className="text-[#6B7280] text-lg mb-10">
+          <p className="text-[#5B5A52] dark:text-[#ABA99C] text-lg mb-9">
             Join 10,000+ learners already using Questly to master new skills faster.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold px-8 py-4 rounded-xl transition-all hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(99,102,241,0.35)] text-base"
+              className="inline-flex items-center justify-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white font-medium px-7 py-3 transition-colors text-sm"
             >
-              <Zap className="w-4 h-4" />
-              Create Free Account
+              Create free account
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] text-[#374151] font-semibold px-8 py-4 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md text-base"
+              className="inline-flex items-center justify-center gap-2 border border-[#DEDCD3] dark:border-[#35352C] hover:border-[#ABA99C] text-[#1B1B18] dark:text-[#F2F1EA] font-medium px-7 py-3 transition-colors text-sm"
             >
               Sign in
               <ArrowRight className="w-4 h-4" />
@@ -417,20 +360,20 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ─────────────────────────────────────────────── */}
-      <footer className="border-t border-[#E5E7EB] bg-[#F9FAFB] py-12 px-6">
+      <footer className="bg-[#F5F4F0] dark:bg-[#14140F] py-10 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-[#111827]">
-            <div className="w-7 h-7 bg-[#6366F1] rounded-lg flex items-center justify-center text-white text-xs font-bold">
+          <Link href="/" className="flex items-center gap-2 font-heading font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">
+            <div className="w-6 h-6 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold">
               Q
             </div>
             Questly
           </Link>
-          <div className="flex gap-6 text-sm text-[#6B7280]">
-            <Link href="#" className="hover:text-[#374151]">Privacy</Link>
-            <Link href="#" className="hover:text-[#374151]">Terms</Link>
-            <Link href="#" className="hover:text-[#374151]">Contact</Link>
+          <div className="flex gap-6 text-sm text-[#5B5A52] dark:text-[#ABA99C]">
+            <Link href="#" className="hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]">Privacy</Link>
+            <Link href="#" className="hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]">Terms</Link>
+            <Link href="#" className="hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]">Contact</Link>
           </div>
-          <p className="text-sm text-[#9CA3AF]">© 2026 Questly. All rights reserved.</p>
+          <p className="text-sm text-[#8C8B82]">© 2026 Questly. All rights reserved.</p>
         </div>
       </footer>
     </div>
@@ -439,18 +382,18 @@ export default function LandingPage() {
 
 // ── Data ────────────────────────────────────────────────────────
 const FEATURES = [
-  { icon: Zap, color: "#6366F1", title: "Instant AI Quiz Generation", desc: "Generate quizzes on any topic in seconds using advanced AI. MCQ, True/False, or mixed formats." },
-  { icon: Brain, color: "#8B5CF6", title: "AI Learning Assistant", desc: "Get instant explanations for wrong answers. Your personal AI tutor explains concepts clearly." },
-  { icon: BarChart3, color: "#10B981", title: "Learning Analytics", desc: "Track your progress over time. See your strong and weak topics with visual charts." },
-  { icon: BookOpen, color: "#F59E0B", title: "Study Roadmap", desc: "AI generates personalized week-by-week study plans tailored to your learning goal." },
-  { icon: Trophy, color: "#EF4444", title: "Certificates", desc: "Earn verified certificates after scoring 70%+. Download PDF and share on LinkedIn." },
-  { icon: Users, color: "#6366F1", title: "Leaderboard", desc: "Compete with other learners. Climb the global rankings based on scores and streaks." },
+  { icon: BarChart3, title: "Instant quiz generation", desc: "Generate quizzes on any topic in seconds. MCQ, true/false, or mixed formats." },
+  { icon: Brain, title: "AI learning assistant", desc: "Get instant explanations for wrong answers, explained clearly, not just marked wrong." },
+  { icon: BarChart3, title: "Learning analytics", desc: "Track your progress over time and see your strong and weak topics." },
+  { icon: BookOpen, title: "Study roadmap", desc: "A personalized week-by-week study plan tailored to your learning goal." },
+  { icon: Trophy, title: "Certificates", desc: "Earn a verified certificate after scoring 70% or higher. Download as PDF." },
+  { icon: Users, title: "Leaderboard", desc: "Compete with other learners and climb the rankings based on scores and streaks." },
 ];
 
 const STEPS = [
-  { emoji: "🎯", title: "Enter your topic", desc: "Type any topic — Python, History, Math, Machine Learning. AI handles the rest." },
-  { emoji: "⚡", title: "AI generates your quiz", desc: "Our AI creates personalized questions in seconds based on your chosen difficulty." },
-  { emoji: "🏆", title: "Take quiz & improve", desc: "Answer questions, get AI explanations, earn certificates, and track your progress." },
+  { title: "Enter your topic", desc: "Type any topic — Python, history, math, machine learning. The rest is handled for you." },
+  { title: "Get your quiz", desc: "A personalized set of questions is generated in seconds based on your chosen difficulty." },
+  { title: "Take it and improve", desc: "Answer questions, read explanations, earn certificates, and track your progress." },
 ];
 
 const STATS = [
@@ -461,9 +404,9 @@ const STATS = [
 ];
 
 const TESTIMONIALS = [
-  { text: "Questly completely changed how I study. I went from struggling to passing my Python certification in just 3 weeks.", name: "Ananya R.", role: "Software Developer", color: "#6366F1" },
-  { text: "The AI explanations are incredible. It doesn't just tell you the answer — it teaches you WHY. Game changer.", name: "Marcus T.", role: "Data Analyst", color: "#8B5CF6" },
-  { text: "I use Questly every day during my commute. The streak system keeps me motivated. Already earned 5 certificates!", name: "Priya M.", role: "Student", color: "#10B981" },
+  { text: "Questly completely changed how I study. I went from struggling to passing my Python certification in just 3 weeks.", name: "Ananya R.", role: "Software developer" },
+  { text: "The explanations are excellent. It doesn't just tell you the answer, it teaches you why. That's the difference.", name: "Marcus T.", role: "Data analyst" },
+  { text: "I use Questly every day during my commute. The streak system keeps me motivated, and I've already earned 5 certificates.", name: "Priya M.", role: "Student" },
 ];
 
 const FREE_FEATURES = [
@@ -480,6 +423,6 @@ const PRO_FEATURES = [
   "Full analytics dashboard",
   "Unlimited certificates",
   "Study roadmaps",
-  "Priority AI Access",
+  "Priority AI access",
   "Export results",
 ];

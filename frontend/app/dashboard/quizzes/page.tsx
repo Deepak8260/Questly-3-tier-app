@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Clock, Zap, Trophy, XCircle, Award, Loader2,
-  AlertTriangle, RefreshCw, Filter, ChevronDown, Search
+  AlertTriangle, RefreshCw, Filter, ChevronDown, Search, FileQuestion
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
@@ -53,9 +53,9 @@ function fullDate(iso: string) {
 }
 
 const LEVEL_STYLE = {
-  easy:   { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" },
-  medium: { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D" },
-  hard:   { bg: "#FEE2E2", text: "#991B1B", border: "#FECACA" },
+  easy:   { bg: "#E9F1E9", text: "#2F6B3A", border: "#B8D8B8" },
+  medium: { bg: "#F5EEDD", text: "#93670F", border: "#E3CE9C" },
+  hard:   { bg: "#F5E7E4", text: "#8C2E24", border: "#E0B8AF" },
 } as const;
 
 type Difficulty = "all" | "easy" | "medium" | "hard";
@@ -127,56 +127,56 @@ export default function QuizzesPage() {
   const certs = quizzes.filter(q => q.certificate_earned).length;
 
   return (
-    <div className="animate-fade-in-up">
+    <div>
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-[#111827] dark:text-[#f8fafc] mb-1">My Quizzes</h1>
-          <p className="text-sm text-[#6B7280] dark:text-[#94a3b8]">
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">My quizzes</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
             {quizzes.length} quizzes taken · {passed} passed · {avgScore}% avg
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={load} title="Refresh"
-            className="p-2 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1e293b] text-[#6B7280] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] transition-all">
+            className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
           <Link href="/dashboard/generate"
-            className="flex items-center gap-1.5 text-sm font-semibold text-white bg-[#6366F1] hover:bg-[#4F46E5] px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md">
-            <Zap className="w-3.5 h-3.5" /> New Quiz
+            className="flex items-center gap-1.5 text-sm font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] px-4 py-2.5 transition-colors">
+            <Zap className="w-3.5 h-3.5" /> New quiz
           </Link>
         </div>
       </div>
 
       {/* ── Stats cards ────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-4 border-t border-l border-[#DEDCD3] dark:border-[#35352C] mb-6">
         {[
-          { label: "Total Quizzes", value: quizzes.length,  color: "text-[#6366F1]" },
-          { label: "Passed (≥70%)", value: passed,           color: "text-[#10B981]" },
-          { label: "Average Score", value: `${avgScore}%`,  color: "text-[#F59E0B]" },
-          { label: "Certificates",  value: certs,            color: "text-[#8B5CF6]" },
+          { label: "Total quizzes", value: quizzes.length },
+          { label: "Passed (≥70%)", value: passed },
+          { label: "Average score", value: `${avgScore}%` },
+          { label: "Certificates",  value: certs },
         ].map(s => (
           <div key={s.label}
-            className="bg-white dark:bg-[#1e293b] rounded-xl border border-[#E5E7EB] dark:border-[#334155] p-4 text-center">
-            <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
-            <div className="text-xs text-[#6B7280] dark:text-[#94a3b8] font-medium mt-0.5">{s.label}</div>
+            className="bg-white dark:bg-[#1C1C16] border-r border-b border-[#DEDCD3] dark:border-[#35352C] p-4 text-center">
+            <div className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{s.value}</div>
+            <div className="text-xs text-[#5B5A52] dark:text-[#ABA99C] font-medium mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* ── Filter bar ─────────────────────────────────────────── */}
       {quizzes.length > 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
 
           {/* Search */}
-          <div className="flex items-center gap-2 flex-1 min-w-[160px] bg-[#F9FAFB] dark:bg-[#0f172a] rounded-xl border border-[#E5E7EB] dark:border-[#334155] px-3 py-2">
-            <Search className="w-3.5 h-3.5 text-[#9CA3AF]" />
+          <div className="flex items-center gap-2 flex-1 min-w-[160px] bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2">
+            <Search className="w-3.5 h-3.5 text-[#8C8B82]" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search topic…"
-              className="bg-transparent text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none w-full"
+              className="bg-transparent text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none w-full"
             />
           </div>
 
@@ -186,7 +186,7 @@ export default function QuizzesPage() {
             label="Level"
             value={difficulty}
             options={[
-              { label: "All Levels", value: "all" },
+              { label: "All levels", value: "all" },
               { label: "Easy",       value: "easy" },
               { label: "Medium",     value: "medium" },
               { label: "Hard",       value: "hard" },
@@ -199,7 +199,7 @@ export default function QuizzesPage() {
             label="Status"
             value={status}
             options={[
-              { label: "All Status", value: "all" },
+              { label: "All status", value: "all" },
               { label: "Passed",     value: "passed" },
               { label: "Failed",     value: "failed" },
             ]}
@@ -222,10 +222,10 @@ export default function QuizzesPage() {
           {/* Cert toggle */}
           <button
             onClick={() => setCertOnly(c => !c)}
-            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border transition-all ${
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-2 border transition-colors ${
               certOnly
-                ? "bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]"
-                : "bg-[#F9FAFB] dark:bg-[#0f172a] text-[#6B7280] dark:text-[#94a3b8] border-[#E5E7EB] dark:border-[#334155]"
+                ? "bg-[#F5EEDD] dark:bg-[#2B2110] text-[#93670F] dark:text-[#D4A94A] border-[#93670F] dark:border-[#4A3A10]"
+                : "bg-[#FAFAF8] dark:bg-[#14140F] text-[#5B5A52] dark:text-[#ABA99C] border-[#DEDCD3] dark:border-[#35352C]"
             }`}
           >
             <Trophy className="w-3 h-3" />
@@ -236,7 +236,7 @@ export default function QuizzesPage() {
           {(search || difficulty !== "all" || status !== "all" || certOnly || sort !== "newest") && (
             <button
               onClick={() => { setSearch(""); setDifficulty("all"); setStatus("all"); setCertOnly(false); setSort("newest"); }}
-              className="text-xs text-[#6366F1] hover:text-[#4F46E5] font-semibold ml-auto"
+              className="text-xs text-[#6B2737] dark:text-[#B5677A] hover:text-[#551F2C] dark:hover:text-[#C77E8F] font-medium ml-auto"
             >
               Clear filters
             </button>
@@ -246,22 +246,22 @@ export default function QuizzesPage() {
 
       {/* ── Loading ─────────────────────────────────────────────── */}
       {loading && (
-        <div className="flex items-center justify-center py-20 text-[#9CA3AF]">
+        <div className="flex items-center justify-center py-20 text-[#8C8B82]">
           <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading…
         </div>
       )}
 
       {/* ── Error ───────────────────────────────────────────────── */}
       {!loading && error && (
-        <div className="bg-white dark:bg-[#1e293b] border border-[#FECACA] dark:border-[#7f1d1d] rounded-2xl overflow-hidden">
-          <div className="flex items-start gap-3 px-5 py-4 bg-[#FEF2F2] dark:bg-[#1c0809]">
-            <AlertTriangle className="w-5 h-5 text-[#DC2626] flex-shrink-0 mt-0.5" />
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#E0B8AF] dark:border-[#4A2A24] overflow-hidden">
+          <div className="flex items-start gap-3 px-5 py-4 bg-[#F5E7E4] dark:bg-[#2B1512]">
+            <AlertTriangle className="w-5 h-5 text-[#8C2E24] dark:text-[#D08A7E] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-bold text-[#DC2626]">Table not found — run setup SQL</p>
-              <p className="text-xs text-[#EF4444] font-mono mt-1">{error}</p>
+              <p className="text-sm font-semibold text-[#8C2E24] dark:text-[#D08A7E]">Table not found — run setup SQL</p>
+              <p className="text-xs text-[#8C2E24] dark:text-[#D08A7E] font-mono mt-1">{error}</p>
               <details className="mt-3">
-                <summary className="text-xs font-semibold text-[#DC2626] cursor-pointer">Show setup SQL ▶</summary>
-                <pre className="mt-2 bg-[#0F172A] text-[#94A3B8] p-4 rounded-xl text-xs overflow-x-auto leading-relaxed">{`CREATE TABLE IF NOT EXISTS questly_quiz_attempts (
+                <summary className="text-xs font-semibold text-[#8C2E24] dark:text-[#D08A7E] cursor-pointer">Show setup SQL ▶</summary>
+                <pre className="mt-2 bg-[#1B1B18] text-[#ABA99C] p-4 text-xs overflow-x-auto leading-relaxed border border-[#35352C]">{`CREATE TABLE IF NOT EXISTS questly_quiz_attempts (
   id                 uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id            uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   topic              text NOT NULL,
@@ -288,34 +288,34 @@ CREATE POLICY "Own attempts" ON questly_quiz_attempts
 
       {/* ── Empty (no data at all) ───────────────────────────────── */}
       {!loading && !error && quizzes.length === 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-16 text-center">
-          <div className="text-5xl mb-4">📝</div>
-          <h3 className="text-lg font-bold text-[#111827] dark:text-[#f8fafc] mb-2">No quizzes yet</h3>
-          <p className="text-sm text-[#6B7280] dark:text-[#94a3b8] mb-6">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-16 text-center">
+          <FileQuestion className="w-10 h-10 text-[#8C8B82] mx-auto mb-4" />
+          <h3 className="font-heading text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-2">No quizzes yet</h3>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C] mb-6">
             Generate a quiz and it will appear here automatically.
           </p>
           <Link href="/dashboard/generate"
-            className="inline-flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold px-6 py-3 rounded-xl transition-all hover:shadow-lg text-sm">
-            <Zap className="w-4 h-4" /> Generate First Quiz
+            className="inline-flex items-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white font-medium px-6 py-3 transition-colors text-sm">
+            <Zap className="w-4 h-4" /> Generate first quiz
           </Link>
         </div>
       )}
 
       {/* ── No filter results ───────────────────────────────────── */}
       {!loading && !error && quizzes.length > 0 && filtered.length === 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-12 text-center">
-          <div className="text-4xl mb-3">🔍</div>
-          <p className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc]">No quizzes match your filters</p>
-          <p className="text-xs text-[#6B7280] dark:text-[#94a3b8] mt-1">Try adjusting the search or filters above.</p>
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-12 text-center">
+          <Search className="w-8 h-8 text-[#8C8B82] mx-auto mb-3" />
+          <p className="text-sm font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">No quizzes match your filters</p>
+          <p className="text-xs text-[#5B5A52] dark:text-[#ABA99C] mt-1">Try adjusting the search or filters above.</p>
         </div>
       )}
 
       {/* ── Quiz table ──────────────────────────────────────────── */}
       {!loading && !error && filtered.length > 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
 
           {/* Header */}
-          <div className="flex items-center px-6 py-3 border-b border-[#F3F4F6] dark:border-[#334155] text-xs font-black text-[#9CA3AF] uppercase tracking-widest gap-4">
+          <div className="flex items-center px-6 py-3 border-b border-[#DEDCD3] dark:border-[#35352C] text-xs font-semibold text-[#8C8B82] uppercase tracking-widest gap-4">
             <div className="flex-1">Quiz</div>
             <div className="w-24 text-center">Level</div>
             <div className="w-16 text-center">Score</div>
@@ -330,42 +330,42 @@ CREATE POLICY "Own attempts" ON questly_quiz_attempts
             const lc = LEVEL_STYLE[(q.difficulty?.toLowerCase() ?? "medium") as keyof typeof LEVEL_STYLE] ?? LEVEL_STYLE.medium;
             return (
               <div key={q.id}
-                className="flex items-center px-6 py-4 gap-4 border-b border-[#F9FAFB] dark:border-[#334155] last:border-b-0 hover:bg-[#FAFAFA] dark:hover:bg-[#263348] transition-colors">
+                className="flex items-center px-6 py-4 gap-4 border-b border-[#EAE8E1] dark:border-[#262620] last:border-b-0 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
 
                 {/* Quiz name */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc] truncate">{q.topic}</div>
-                  <div className="text-xs text-[#9CA3AF] mt-0.5 flex items-center gap-1.5">
+                  <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{q.topic}</div>
+                  <div className="text-xs text-[#8C8B82] mt-0.5 flex items-center gap-1.5">
                     <span className="capitalize">{q.question_type ?? "MCQ"}</span>
-                    <span className="text-[#E5E7EB] dark:text-[#334155]">·</span>
+                    <span className="text-[#DEDCD3] dark:text-[#35352C]">·</span>
                     <span>{q.correct_answers}/{q.total_questions} correct</span>
                   </div>
                 </div>
 
                 {/* Level */}
                 <div className="w-24 flex justify-center">
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full border capitalize whitespace-nowrap"
+                  <span className="text-xs font-semibold px-2.5 py-1 border capitalize whitespace-nowrap"
                     style={{ backgroundColor: lc.bg, color: lc.text, borderColor: lc.border }}>
                     {q.difficulty}
                   </span>
                 </div>
 
                 {/* Score */}
-                <div className={`w-16 text-center text-sm font-black ${q.passed ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                <div className={`w-16 text-center text-sm font-semibold ${q.passed ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                   {q.score_pct}%
                 </div>
 
                 {/* Quiz duration */}
-                <div className="w-20 text-center text-xs text-[#9CA3AF] hidden md:block">
+                <div className="w-20 text-center text-xs text-[#8C8B82] hidden md:block">
                   {fmtTime(q.time_taken_secs)}
                 </div>
 
                 {/* Last attempted — relative time with full timestamp on hover */}
                 <div className="w-32 text-center hidden lg:block" title={fullDate(q.created_at)}>
-                  <div className="text-xs font-medium text-[#6B7280] dark:text-[#94a3b8]">
+                  <div className="text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C]">
                     {relativeDate(q.created_at)}
                   </div>
-                  <div className="text-[10px] text-[#9CA3AF] mt-0.5">
+                  <div className="text-[10px] text-[#8C8B82] mt-0.5">
                     {new Date(q.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                   </div>
                 </div>
@@ -373,8 +373,8 @@ CREATE POLICY "Own attempts" ON questly_quiz_attempts
                 {/* Cert icon */}
                 <div className="w-10 flex justify-center" title={q.certificate_earned ? "Certificate earned" : "Score < 70%"}>
                   {q.certificate_earned
-                    ? <Trophy className="w-4 h-4 text-[#F59E0B]" />
-                    : <XCircle className="w-4 h-4 text-[#D1D5DB] dark:text-[#334155]" />}
+                    ? <Trophy className="w-4 h-4 text-[#93670F] dark:text-[#D4A94A]" />
+                    : <XCircle className="w-4 h-4 text-[#DEDCD3] dark:text-[#35352C]" />}
                 </div>
 
                 {/* Action */}
@@ -382,12 +382,12 @@ CREATE POLICY "Own attempts" ON questly_quiz_attempts
                   {q.certificate_earned
                     ? (
                       <Link href="/dashboard/generate"
-                        className="text-xs text-[#10B981] hover:text-[#059669] font-semibold flex items-center gap-0.5">
+                        className="text-xs text-[#2F6B3A] dark:text-[#7EBA88] hover:text-[#255A2E] font-medium flex items-center gap-0.5">
                         <Award className="w-3.5 h-3.5" /> Cert
                       </Link>
                     ) : (
                       <Link href="/dashboard/generate"
-                        className="text-xs text-[#6366F1] hover:text-[#4F46E5] font-semibold">
+                        className="text-xs text-[#6B2737] dark:text-[#B5677A] hover:text-[#551F2C] font-medium">
                         Retry
                       </Link>
                     )}
@@ -398,7 +398,7 @@ CREATE POLICY "Own attempts" ON questly_quiz_attempts
 
           {/* Footer count */}
           {filtered.length < quizzes.length && (
-            <div className="px-6 py-2.5 text-xs text-[#9CA3AF] border-t border-[#F9FAFB] dark:border-[#334155]">
+            <div className="px-6 py-2.5 text-xs text-[#8C8B82] border-t border-[#EAE8E1] dark:border-[#262620]">
               Showing {filtered.length} of {quizzes.length} quizzes
             </div>
           )}
@@ -417,17 +417,17 @@ function FilterSelect({ label, value, options, onChange, icon }: {
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="relative flex items-center gap-1.5 bg-[#F9FAFB] dark:bg-[#0f172a] rounded-xl border border-[#E5E7EB] dark:border-[#334155] px-3 py-2 text-xs text-[#374151] dark:text-[#94a3b8] cursor-pointer">
-      {icon && <span className="text-[#9CA3AF]">{icon}</span>}
-      <span className="font-semibold text-[#9CA3AF] mr-0.5">{label}:</span>
+    <div className="relative flex items-center gap-1.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2 text-xs text-[#5B5A52] dark:text-[#ABA99C] cursor-pointer">
+      {icon && <span className="text-[#8C8B82]">{icon}</span>}
+      <span className="font-semibold text-[#8C8B82] mr-0.5">{label}:</span>
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="bg-transparent outline-none cursor-pointer font-semibold text-[#111827] dark:text-[#f8fafc] pr-4 appearance-none"
+        className="bg-transparent outline-none cursor-pointer font-semibold text-[#1B1B18] dark:text-[#F2F1EA] pr-4 appearance-none"
       >
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
-      <ChevronDown className="w-3 h-3 text-[#9CA3AF] absolute right-2 pointer-events-none" />
+      <ChevronDown className="w-3 h-3 text-[#8C8B82] absolute right-2 pointer-events-none" />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
     Swords, Loader2, Zap, Users, Clock, Trophy,
     Search, RefreshCw, CheckCircle, XCircle,
-    Radio, BookOpen, AlertCircle, X, Shield
+    Radio, BookOpen, AlertCircle, X, Shield, Info
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import type { QuizBattle, BattleDifficulty } from "./types";
@@ -27,18 +27,18 @@ function timeAgo(iso: string) {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-    pending: "bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]",
-    accepted: "bg-[#EEF2FF] text-[#4338CA] border-[#C7D2FE]",
-    live: "bg-[#D1FAE5] text-[#065F46] border-[#6EE7B7]",
-    ended: "bg-[#F9FAFB] text-[#6B7280] border-[#E5E7EB]",
-    declined: "bg-[#FEE2E2] text-[#991B1B] border-[#FECACA]",
-    cancelled: "bg-[#F9FAFB] text-[#9CA3AF] border-[#E5E7EB]",
+    pending: "bg-[#F5EEDD] text-[#93670F] border-[#E3CE9C]",
+    accepted: "bg-[#F3E7E9] text-[#6B2737] border-[#DCC0C6]",
+    live: "bg-[#E9F1E9] text-[#2F6B3A] border-[#B8D8B8]",
+    ended: "bg-[#EDECE6] text-[#5B5A52] border-[#DEDCD3]",
+    declined: "bg-[#F5E7E4] text-[#8C2E24] border-[#E0B8AF]",
+    cancelled: "bg-[#EDECE6] text-[#8C8B82] border-[#DEDCD3]",
 };
 
 const DIFF_STYLE: Record<BattleDifficulty, string> = {
-    easy: "text-[#065F46] bg-[#D1FAE5]",
-    medium: "text-[#92400E] bg-[#FEF3C7]",
-    hard: "text-[#991B1B] bg-[#FEE2E2]",
+    easy: "text-[#2F6B3A]",
+    medium: "text-[#93670F]",
+    hard: "text-[#8C2E24]",
 };
 
 // ── Challenge Modal ────────────────────────────────────────────
@@ -106,63 +106,63 @@ function ChallengeModal({ userId, onClose, onCreated }: {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-[#E5E7EB] overflow-hidden animate-fade-in-up">
-                <div className="bg-gradient-to-r from-[#EEF2FF] to-[#F5F3FF] px-6 py-5 border-b border-[#E5E7EB]">
-                    <div className="text-2xl mb-1">⚔️</div>
-                    <h2 className="text-lg font-black text-[#111827]">Challenge a Friend</h2>
-                    <p className="text-sm text-[#6B7280]">Enter their email to send a battle invite</p>
+            <div className="bg-white max-w-md w-full border border-[#DEDCD3] overflow-hidden">
+                <div className="bg-[#1B1B18] px-6 py-5 border-b border-[#35352C]">
+                    <Swords className="w-6 h-6 text-white mb-2" />
+                    <h2 className="font-heading text-lg font-medium text-white">Challenge a friend</h2>
+                    <p className="text-sm text-[#ABA99C]">Enter their email to send a battle invite</p>
                 </div>
                 <div className="px-6 py-5 space-y-4">
                     {error && (
-                        <div className="flex items-center gap-2 text-sm text-[#991B1B] bg-[#FEE2E2] border border-[#FECACA] rounded-xl px-4 py-2.5">
+                        <div className="flex items-center gap-2 text-sm text-[#8C2E24] bg-[#F5E7E4] border border-[#E0B8AF] px-4 py-2.5">
                             <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
                         </div>
                     )}
                     <div>
-                        <label className="block text-xs font-black text-[#6B7280] uppercase tracking-widest mb-1.5">Opponent Email</label>
+                        <label className="block text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-1.5">Opponent email</label>
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C8B82]" />
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                                 placeholder="friend@example.com"
-                                className="w-full pl-9 pr-4 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all" />
+                                className="w-full pl-9 pr-4 py-2.5 border border-[#DEDCD3] text-sm focus:outline-none focus:border-[#6B2737] focus:ring-2 focus:ring-[#6B2737]/15 transition-all" />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-black text-[#6B7280] uppercase tracking-widest mb-1.5">Topic</label>
+                        <label className="block text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-1.5">Topic</label>
                         <input type="text" value={topic} onChange={e => setTopic(e.target.value)}
                             placeholder="e.g. Python Basics" list="challenge-topics"
-                            className="w-full px-4 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all" />
+                            className="w-full px-4 py-2.5 border border-[#DEDCD3] text-sm focus:outline-none focus:border-[#6B2737] focus:ring-2 focus:ring-[#6B2737]/15 transition-all" />
                         <datalist id="challenge-topics">{TOPICS.map(t => <option key={t} value={t} />)}</datalist>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-black text-[#6B7280] uppercase tracking-widest mb-1.5">Difficulty</label>
+                            <label className="block text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-1.5">Difficulty</label>
                             <div className="flex gap-1.5">
                                 {(["easy", "medium", "hard"] as BattleDifficulty[]).map(d => (
                                     <button key={d} onClick={() => setDifficulty(d)}
-                                        className={`flex-1 py-2 rounded-lg text-xs font-bold border capitalize transition-all ${difficulty === d ? "border-[#6366F1] bg-[#EEF2FF] text-[#4338CA]" : "border-[#E5E7EB] text-[#6B7280] hover:border-[#6366F1]"}`}>
+                                        className={`flex-1 py-2 text-xs font-semibold border capitalize transition-colors ${difficulty === d ? "border-[#6B2737] bg-[#F3E7E9] text-[#6B2737]" : "border-[#DEDCD3] text-[#5B5A52] hover:border-[#ABA99C]"}`}>
                                         {d[0].toUpperCase()}
                                     </button>
                                 ))}
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-black text-[#6B7280] uppercase tracking-widest mb-1.5">Questions: {count}</label>
+                            <label className="block text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-1.5">Questions: {count}</label>
                             <input type="range" min={5} max={20} step={5} value={count} onChange={e => setCount(+e.target.value)}
-                                className="w-full accent-[#6366F1] mt-2" />
+                                className="w-full accent-[#6B2737] mt-2" />
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-3 px-6 pb-5">
                     <button onClick={onClose} disabled={loading}
-                        className="flex-1 py-3 text-sm font-semibold text-[#6B7280] border border-[#E5E7EB] rounded-xl hover:bg-[#F9FAFB] transition-all">
+                        className="flex-1 py-3 text-sm font-medium text-[#5B5A52] border border-[#DEDCD3] hover:bg-[#FAFAF8] transition-colors">
                         Cancel
                     </button>
                     <button onClick={handleChallenge} disabled={loading}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold text-white bg-[#6366F1] hover:bg-[#4F46E5] rounded-xl transition-all disabled:opacity-60">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Swords className="w-4 h-4" /> Challenge!</>}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] transition-colors disabled:opacity-60">
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Swords className="w-4 h-4" /> Send challenge</>}
                     </button>
                 </div>
             </div>
@@ -239,47 +239,48 @@ function QuickMatchModal({ userId, onClose, onJoined }: {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full border border-[#E5E7EB] overflow-hidden animate-fade-in-up">
-                <div className="bg-gradient-to-r from-[#ECFDF5] to-[#D1FAE5] px-6 py-5 border-b border-[#E5E7EB]">
-                    <div className="text-2xl mb-1">⚡</div>
-                    <h2 className="text-lg font-black text-[#111827]">Quick Match</h2>
-                    <p className="text-sm text-[#6B7280]">Get matched with a random opponent</p>
+            <div className="bg-white max-w-sm w-full border border-[#DEDCD3] overflow-hidden">
+                <div className="bg-[#1B1B18] px-6 py-5 border-b border-[#35352C]">
+                    <Zap className="w-6 h-6 text-white mb-2" />
+                    <h2 className="font-heading text-lg font-medium text-white">Quick match</h2>
+                    <p className="text-sm text-[#ABA99C]">Get matched with a random opponent</p>
                 </div>
                 <div className="px-6 py-5 space-y-4">
                     {error && (
-                        <div className="flex items-center gap-2 text-sm text-[#991B1B] bg-[#FEE2E2] border border-[#FECACA] rounded-xl px-4 py-2.5">
+                        <div className="flex items-center gap-2 text-sm text-[#8C2E24] bg-[#F5E7E4] border border-[#E0B8AF] px-4 py-2.5">
                             <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
                         </div>
                     )}
                     <div>
-                        <label className="block text-xs font-black text-[#6B7280] uppercase tracking-widest mb-1.5">Topic</label>
+                        <label className="block text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-1.5">Topic</label>
                         <select value={topic} onChange={e => setTopic(e.target.value)}
-                            className="w-full px-4 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:border-[#10B981] bg-white">
+                            className="w-full px-4 py-2.5 border border-[#DEDCD3] text-sm focus:outline-none focus:border-[#6B2737] bg-white">
                             {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-black text-[#6B7280] uppercase tracking-widest mb-1.5">Difficulty</label>
+                        <label className="block text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-1.5">Difficulty</label>
                         <div className="flex gap-2">
                             {(["easy", "medium", "hard"] as BattleDifficulty[]).map(d => (
                                 <button key={d} onClick={() => setDifficulty(d)}
-                                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold capitalize transition-all ${difficulty === d ? "bg-[#10B981] text-white" : "border border-[#E5E7EB] text-[#6B7280] hover:border-[#10B981]"}`}>
+                                    className={`flex-1 py-2.5 text-xs font-semibold capitalize transition-colors ${difficulty === d ? "bg-[#6B2737] text-white" : "border border-[#DEDCD3] text-[#5B5A52] hover:border-[#ABA99C]"}`}>
                                     {d}
                                 </button>
                             ))}
                         </div>
                     </div>
-                    <div className="bg-[#F0FDF4] border border-[#6EE7B7] rounded-xl p-3 text-xs text-[#065F46]">
-                        💡 10 questions · We'll find you an opponent instantly or create a room for others to join!
+                    <div className="bg-[#FAFAF8] border border-[#DEDCD3] p-3 text-xs text-[#5B5A52] flex gap-2">
+                        <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-[#6B2737]" />
+                        <span>10 questions. We&apos;ll find you an opponent instantly or create a room for others to join.</span>
                     </div>
                 </div>
                 <div className="flex gap-3 px-6 pb-5">
-                    <button onClick={onClose} className="flex-1 py-3 text-sm font-semibold text-[#6B7280] border border-[#E5E7EB] rounded-xl hover:bg-[#F9FAFB] transition-all">Cancel</button>
+                    <button onClick={onClose} className="flex-1 py-3 text-sm font-medium text-[#5B5A52] border border-[#DEDCD3] hover:bg-[#FAFAF8] transition-colors">Cancel</button>
                     <button onClick={handleMatch} disabled={searching}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold text-white bg-[#10B981] hover:bg-[#059669] rounded-xl transition-all disabled:opacity-60">
-                        {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4" /> Find Match</>}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] transition-colors disabled:opacity-60">
+                        {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4" /> Find match</>}
                     </button>
                 </div>
             </div>
@@ -308,23 +309,23 @@ function BattleRow({ battle, userId, onAccept, onDecline }: {
     if (battle.status === "ended") href = `/dashboard/battles/${battle.id}/results`;
 
     return (
-        <div className={`bg-white border rounded-xl px-5 py-4 flex items-center gap-4 transition-all hover:shadow-sm
-      ${isLive ? "border-[#10B981] bg-[#F0FDF4]" : isPending && !isChallenger ? "border-[#6366F1]" : "border-[#E5E7EB]"}`}>
+        <div className={`bg-white border px-5 py-4 flex items-center gap-4 transition-colors
+      ${isLive ? "border-[#2F6B3A]" : isPending && !isChallenger ? "border-[#6B2737]" : "border-[#DEDCD3]"}`}>
             {/* Opponent avatar */}
-            <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-base font-bold"
-                style={{ backgroundColor: isLive ? "#10B981" : "#6366F1" }}>
+            <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-white text-base font-semibold"
+                style={{ backgroundColor: isLive ? "#2F6B3A" : "#6B2737" }}>
                 {opponentName[0]?.toUpperCase() ?? "?"}
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-bold text-[#111827] truncate">vs {opponentName}</span>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border capitalize ${STATUS_COLOR[battle.status] ?? ""}`}>
-                        {isLive ? "🔴 LIVE" : battle.status}
+                    <span className="text-sm font-semibold text-[#1B1B18] truncate">vs {opponentName}</span>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 border capitalize ${STATUS_COLOR[battle.status] ?? ""}`}>
+                        {isLive ? "Live now" : battle.status}
                     </span>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-[#9CA3AF] mt-0.5">
+                <div className="flex items-center gap-3 text-xs text-[#8C8B82] mt-0.5">
                     <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" /> {battle.topic}</span>
-                    <span className={`font-medium capitalize ${DIFF_STYLE[battle.difficulty]?.split(" ")[0] ?? ""}`}>{battle.difficulty}</span>
+                    <span className={`font-medium capitalize ${DIFF_STYLE[battle.difficulty] ?? ""}`}>{battle.difficulty}</span>
                     <span>{timeAgo(battle.created_at)}</span>
                 </div>
             </div>
@@ -335,34 +336,34 @@ function BattleRow({ battle, userId, onAccept, onDecline }: {
                 {isPending && !isChallenger && (
                     <>
                         <button onClick={() => onDecline(battle.id)}
-                            className="p-2 text-[#EF4444] hover:bg-[#FEE2E2] rounded-lg transition-all" title="Decline">
+                            className="p-2 text-[#8C2E24] hover:bg-[#F5E7E4] transition-colors" title="Decline">
                             <XCircle className="w-5 h-5" />
                         </button>
                         <button onClick={() => onAccept(battle.id)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold rounded-lg transition-all">
+                            className="flex items-center gap-1.5 px-3 py-2 bg-[#2F6B3A] hover:bg-[#255A2E] text-white text-xs font-medium transition-colors">
                             <CheckCircle className="w-3.5 h-3.5" /> Accept
                         </button>
                     </>
                 )}
                 {/* Pending and I'm challenger — waiting */}
                 {isPending && isChallenger && (
-                    <span className="text-xs text-[#9CA3AF] italic flex items-center gap-1">
+                    <span className="text-xs text-[#8C8B82] italic flex items-center gap-1">
                         <Clock className="w-3 h-3" /> Waiting…
                     </span>
                 )}
                 {/* Accepted or live — enter */}
                 {(isAccepted || isLive) && (
                     <Link href={href}
-                        className={`flex items-center gap-1.5 px-3 py-2 text-white text-xs font-bold rounded-lg transition-all
-              ${isLive ? "bg-[#10B981] hover:bg-[#059669]" : "bg-[#6366F1] hover:bg-[#4F46E5]"}`}>
+                        className={`flex items-center gap-1.5 px-3 py-2 text-white text-xs font-medium transition-colors
+              ${isLive ? "bg-[#2F6B3A] hover:bg-[#255A2E]" : "bg-[#6B2737] hover:bg-[#551F2C]"}`}>
                         <Swords className="w-3.5 h-3.5" />
-                        {isLive ? "Enter Battle" : "View Lobby"}
+                        {isLive ? "Enter battle" : "View lobby"}
                     </Link>
                 )}
                 {/* Ended */}
                 {battle.status === "ended" && (
                     <Link href={href}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-[#F9FAFB] border border-[#E5E7EB] text-[#6B7280] text-xs font-semibold rounded-lg hover:bg-white transition-all">
+                        className="flex items-center gap-1.5 px-3 py-2 bg-[#FAFAF8] border border-[#DEDCD3] text-[#5B5A52] text-xs font-medium hover:bg-white transition-colors">
                         <Trophy className="w-3.5 h-3.5" /> Results
                     </Link>
                 )}
@@ -440,7 +441,7 @@ export default function BattlesPage() {
     const pendingIncoming = activeBattles.filter(b => b.status === "pending" && b.player_two === userId);
 
     return (
-        <div className="animate-fade-in-up max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto">
 
             {/* Modals */}
             {showChallenge && userId && (
@@ -454,8 +455,8 @@ export default function BattlesPage() {
 
             {/* Flash */}
             {flash && (
-                <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-semibold max-w-sm animate-fade-in
-          ${flash.type === "success" ? "bg-[#D1FAE5] text-[#065F46] border border-[#6EE7B7]" : "bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]"}`}>
+                <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 text-sm font-medium max-w-sm border
+          ${flash.type === "success" ? "bg-[#E9F1E9] text-[#2F6B3A] border-[#B8D8B8]" : "bg-[#F5E7E4] text-[#8C2E24] border-[#E0B8AF]"}`}>
                     {flash.type === "success" ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
                     <span className="flex-1">{flash.text}</span>
                     <button onClick={() => setFlash(null)}><X className="w-3.5 h-3.5" /></button>
@@ -465,17 +466,17 @@ export default function BattlesPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-7">
                 <div>
-                    <h1 className="text-2xl font-black text-[#111827] mb-1 flex items-center gap-2.5">
-                        <Swords className="w-6 h-6 text-[#6366F1]" /> 1v1 Battle Mode
+                    <h1 className="font-heading text-2xl font-medium text-[#1B1B18] mb-1 flex items-center gap-2.5">
+                        <Swords className="w-5 h-5 text-[#6B2737]" /> 1v1 battle mode
                     </h1>
-                    <p className="text-sm text-[#6B7280]">Challenge friends or get matched for a head-to-head quiz duel.</p>
+                    <p className="text-sm text-[#5B5A52]">Challenge friends or get matched for a head-to-head quiz duel.</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Link href="/dashboard/battles/leaderboard"
-                        className="flex items-center gap-1.5 px-3 py-2.5 border border-[#E5E7EB] bg-white text-[#6B7280] text-sm font-semibold rounded-xl hover:bg-[#F9FAFB] transition-all">
+                        className="flex items-center gap-1.5 px-3 py-2.5 border border-[#DEDCD3] bg-white text-[#5B5A52] text-sm font-medium hover:bg-[#FAFAF8] transition-colors">
                         <Trophy className="w-4 h-4" /> Rankings
                     </Link>
-                    <button onClick={() => load()} className="p-2.5 border border-[#E5E7EB] bg-white text-[#6B7280] rounded-xl hover:bg-[#F9FAFB] transition-all">
+                    <button onClick={() => load()} className="p-2.5 border border-[#DEDCD3] bg-white text-[#5B5A52] hover:bg-[#FAFAF8] transition-colors">
                         <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                     </button>
                 </div>
@@ -484,40 +485,40 @@ export default function BattlesPage() {
             {/* Action Cards */}
             <div className="grid grid-cols-2 gap-4 mb-7">
                 <button onClick={() => setShowChallenge(true)}
-                    className="bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] text-white rounded-2xl p-5 text-left hover:shadow-xl hover:shadow-[#6366F1]/30 hover:-translate-y-1 transition-all">
-                    <Swords className="w-7 h-7 mb-3 opacity-90" />
-                    <div className="text-base font-black">Challenge a Friend</div>
-                    <div className="text-xs text-white/70 mt-0.5">Send a quiz duel invite by email</div>
+                    className="bg-[#1B1B18] text-white p-5 text-left hover:bg-[#0E0E0B] transition-colors border border-[#1B1B18]">
+                    <Swords className="w-6 h-6 mb-3 text-[#B5677A]" />
+                    <div className="font-heading text-base font-medium">Challenge a friend</div>
+                    <div className="text-xs text-[#ABA99C] mt-0.5">Send a quiz duel invite by email</div>
                 </button>
                 <button onClick={() => setShowQuickMatch(true)}
-                    className="bg-gradient-to-br from-[#10B981] to-[#059669] text-white rounded-2xl p-5 text-left hover:shadow-xl hover:shadow-[#10B981]/30 hover:-translate-y-1 transition-all">
-                    <Zap className="w-7 h-7 mb-3 opacity-90" />
-                    <div className="text-base font-black">Quick Match</div>
-                    <div className="text-xs text-white/70 mt-0.5">Get matched with a random opponent</div>
+                    className="bg-white text-[#1B1B18] p-5 text-left border border-[#DEDCD3] hover:border-[#ABA99C] transition-colors">
+                    <Zap className="w-6 h-6 mb-3 text-[#6B2737]" />
+                    <div className="font-heading text-base font-medium">Quick match</div>
+                    <div className="text-xs text-[#8C8B82] mt-0.5">Get matched with a random opponent</div>
                 </button>
             </div>
 
             {/* Pending Challenges Banner */}
             {pendingIncoming.length > 0 && (
-                <div className="mb-5 bg-gradient-to-r from-[#EEF2FF] to-[#F5F3FF] border border-[#C7D2FE] rounded-2xl px-5 py-4 flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-[#6366F1] flex-shrink-0" />
-                    <div className="text-sm font-bold text-[#4338CA]">
-                        You have {pendingIncoming.length} pending challenge{pendingIncoming.length > 1 ? "s" : ""}!
+                <div className="mb-5 bg-[#F3E7E9] border border-[#DCC0C6] px-5 py-4 flex items-center gap-3">
+                    <Shield className="w-5 h-5 text-[#6B2737] flex-shrink-0" />
+                    <div className="text-sm font-medium text-[#6B2737]">
+                        You have {pendingIncoming.length} pending challenge{pendingIncoming.length > 1 ? "s" : ""}
                     </div>
                 </div>
             )}
 
             {/* Active Battles */}
             {loading ? (
-                <div className="flex items-center justify-center py-20 text-[#6B7280]">
+                <div className="flex items-center justify-center py-20 text-[#8C8B82]">
                     <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading your battles…
                 </div>
             ) : (
                 <>
                     {activeBattles.length > 0 && (
                         <div className="mb-7">
-                            <h2 className="text-sm font-black text-[#6B7280] uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Radio className="w-3.5 h-3.5 text-[#10B981]" /> Active Battles ({activeBattles.length})
+                            <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Radio className="w-3.5 h-3.5 text-[#2F6B3A]" /> Active battles ({activeBattles.length})
                             </h2>
                             <div className="space-y-3">
                                 {activeBattles.map(b => (
@@ -531,8 +532,8 @@ export default function BattlesPage() {
                     {/* Past Battles */}
                     {pastBattles.length > 0 && (
                         <div>
-                            <h2 className="text-sm font-black text-[#6B7280] uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Clock className="w-3.5 h-3.5" /> Battle History ({pastBattles.length})
+                            <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Clock className="w-3.5 h-3.5" /> Battle history ({pastBattles.length})
                             </h2>
                             <div className="space-y-2">
                                 {pastBattles.map(b => (
@@ -544,34 +545,34 @@ export default function BattlesPage() {
                     )}
 
                     {battles.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <Swords className="w-16 h-16 text-[#E5E7EB] mb-4" />
-                            <h2 className="text-xl font-black text-[#374151] mb-2">No battles yet!</h2>
-                            <p className="text-[#9CA3AF] text-sm max-w-xs">Challenge a friend or find a random opponent to start your first quiz duel.</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-center border border-[#DEDCD3] bg-white">
+                            <Swords className="w-12 h-12 text-[#DEDCD3] mb-4" />
+                            <h2 className="font-heading text-xl font-medium text-[#3F3E38] mb-2">No battles yet</h2>
+                            <p className="text-[#8C8B82] text-sm max-w-xs">Challenge a friend or find a random opponent to start your first quiz duel.</p>
                             <div className="flex gap-3 mt-5">
                                 <button onClick={() => setShowChallenge(true)}
-                                    className="flex items-center gap-2 bg-[#6366F1] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all hover:bg-[#4F46E5]">
-                                    <Swords className="w-4 h-4" /> Challenge Friend
+                                    className="flex items-center gap-2 bg-[#6B2737] text-white font-medium px-5 py-2.5 text-sm transition-colors hover:bg-[#551F2C]">
+                                    <Swords className="w-4 h-4" /> Challenge friend
                                 </button>
                                 <button onClick={() => setShowQuickMatch(true)}
-                                    className="flex items-center gap-2 bg-[#10B981] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all hover:bg-[#059669]">
-                                    <Zap className="w-4 h-4" /> Quick Match
+                                    className="flex items-center gap-2 border border-[#DEDCD3] text-[#3F3E38] font-medium px-5 py-2.5 text-sm transition-colors hover:bg-[#FAFAF8]">
+                                    <Zap className="w-4 h-4" /> Quick match
                                 </button>
                             </div>
                         </div>
                     )}
                     {/* Stats row */}
                     {battles.length > 0 && (
-                        <div className="mt-6 grid grid-cols-3 gap-4">
+                        <div className="mt-6 grid grid-cols-3 border-t border-l border-[#DEDCD3]">
                             {[
-                                { label: "Total Battles", value: battles.length, icon: <Swords className="w-4 h-4" />, color: "#6366F1" },
-                                { label: "Battles Won", value: battles.filter(b => b.winner === userId).length, icon: <Trophy className="w-4 h-4" />, color: "#F59E0B" },
-                                { label: "Win Rate", value: battles.length > 0 ? `${Math.round(battles.filter(b => b.winner === userId).length / battles.filter(b => b.status === "ended").length * 100) || 0}%` : "—", icon: <Users className="w-4 h-4" />, color: "#10B981" },
+                                { label: "Total battles", value: battles.length, icon: <Swords className="w-4 h-4" /> },
+                                { label: "Battles won", value: battles.filter(b => b.winner === userId).length, icon: <Trophy className="w-4 h-4" /> },
+                                { label: "Win rate", value: battles.length > 0 ? `${Math.round(battles.filter(b => b.winner === userId).length / battles.filter(b => b.status === "ended").length * 100) || 0}%` : "—", icon: <Users className="w-4 h-4" /> },
                             ].map(s => (
-                                <div key={s.label} className="bg-white border border-[#E5E7EB] rounded-xl p-4 text-center">
-                                    <div className="flex justify-center mb-1" style={{ color: s.color }}>{s.icon}</div>
-                                    <div className="text-2xl font-black text-[#111827]">{s.value}</div>
-                                    <div className="text-xs text-[#9CA3AF]">{s.label}</div>
+                                <div key={s.label} className="bg-white border-r border-b border-[#DEDCD3] p-4 text-center">
+                                    <div className="flex justify-center mb-1 text-[#6B2737]">{s.icon}</div>
+                                    <div className="font-heading text-2xl font-medium text-[#1B1B18]">{s.value}</div>
+                                    <div className="text-xs text-[#8C8B82]">{s.label}</div>
                                 </div>
                             ))}
                         </div>

@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
     ArrowLeft, Loader2, Trophy, Clock, Target,
-    CheckCircle, Swords, Crown, Zap
+    CheckCircle, Swords, Crown, Zap, Handshake, PartyPopper
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import type { QuizBattle, BattleResult } from "@/app/dashboard/battles/types";
@@ -25,15 +25,15 @@ function StatBar({ label, myVal, oppVal, higher = "better" }: {
 
     return (
         <div className="mb-4">
-            <div className="flex justify-between text-xs font-bold text-[#6B7280] mb-1.5">
-                <span className={myWins ? "text-[#6366F1]" : "text-[#9CA3AF]"}>{typeof myVal === "number" && !Number.isInteger(myVal) ? myVal.toFixed(1) : myVal}{label.includes("Accuracy") ? "%" : label.includes("Time") ? "s" : ""}</span>
-                <span className="text-[#9CA3AF] font-medium">{label}</span>
-                <span className={!myWins ? "text-[#EF4444]" : "text-[#9CA3AF]"}>{typeof oppVal === "number" && !Number.isInteger(oppVal) ? oppVal.toFixed(1) : oppVal}{label.includes("Accuracy") ? "%" : label.includes("Time") ? "s" : ""}</span>
+            <div className="flex justify-between text-xs font-semibold text-[#5B5A52] mb-1.5">
+                <span className={myWins ? "text-[#6B2737]" : "text-[#8C8B82]"}>{typeof myVal === "number" && !Number.isInteger(myVal) ? myVal.toFixed(1) : myVal}{label.includes("Accuracy") ? "%" : label.includes("Time") ? "s" : ""}</span>
+                <span className="text-[#8C8B82] font-medium">{label}</span>
+                <span className={!myWins ? "text-[#8C2E24]" : "text-[#8C8B82]"}>{typeof oppVal === "number" && !Number.isInteger(oppVal) ? oppVal.toFixed(1) : oppVal}{label.includes("Accuracy") ? "%" : label.includes("Time") ? "s" : ""}</span>
             </div>
-            <div className="flex gap-1 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#6366F1] rounded-full transition-all duration-700" style={{ width: `${myPct}%` }} />
-                <div className="flex-1 bg-[#F3F4F6]" />
-                <div className="bg-[#EF4444] rounded-full transition-all duration-700" style={{ width: `${oppPct}%` }} />
+            <div className="flex gap-1 h-2 overflow-hidden">
+                <div className="bg-[#6B2737] transition-all duration-700" style={{ width: `${myPct}%` }} />
+                <div className="flex-1 bg-[#EDECE6]" />
+                <div className="bg-[#8C2E24] transition-all duration-700" style={{ width: `${oppPct}%` }} />
             </div>
         </div>
     );
@@ -84,7 +84,7 @@ export default function BattleResultsPage() {
     }, [id, load]);
 
     if (loading) return (
-        <div className="flex items-center justify-center py-32 text-[#6B7280]">
+        <div className="flex items-center justify-center py-32 text-[#8C8B82]">
             <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading results…
         </div>
     );
@@ -102,43 +102,43 @@ export default function BattleResultsPage() {
     const isDraw = !battle.winner && battle.status === "ended";
 
     return (
-        <div className="max-w-xl mx-auto animate-fade-in-up">
+        <div className="max-w-xl mx-auto">
             <Link href="/dashboard/battles"
-                className="inline-flex items-center gap-1.5 text-[#6B7280] hover:text-[#111827] text-sm font-medium mb-6 transition-colors">
-                <ArrowLeft className="w-4 h-4" /> All Battles
+                className="inline-flex items-center gap-1.5 text-[#5B5A52] hover:text-[#1B1B18] text-sm font-medium mb-6 transition-colors">
+                <ArrowLeft className="w-4 h-4" /> All battles
             </Link>
 
             {/* Winner banner */}
             {!waiting && (
-                <div className={`rounded-2xl p-6 mb-6 text-center relative overflow-hidden ${iWon
-                    ? "bg-gradient-to-r from-[#FEF3C7] via-[#FDE68A] to-[#FEF3C7] border-2 border-[#FCD34D]"
-                    : isDraw ? "bg-[#EEF2FF] border-2 border-[#C7D2FE]"
-                        : "bg-gradient-to-r from-[#FEE2E2] to-[#FECACA] border-2 border-[#FECACA]"}`}>
-                    <div className="text-5xl mb-3">
-                        {iWon ? "🏆" : isDraw ? "🤝" : "💪"}
-                    </div>
-                    <h2 className={`text-2xl font-black mb-1 ${iWon ? "text-[#92400E]" : isDraw ? "text-[#4338CA]" : "text-[#991B1B]"}`}>
-                        {iWon ? "You Won! 🎉" : isDraw ? "It's a Draw!" : "Better luck next time!"}
+                <div className={`p-6 mb-6 text-center border ${iWon
+                    ? "bg-[#F5EEDD] border-[#93670F]"
+                    : isDraw ? "bg-[#F3E7E9] border-[#6B2737]"
+                        : "bg-[#F5E7E4] border-[#8C2E24]"}`}>
+                    {iWon ? <PartyPopper className="w-10 h-10 text-[#93670F] mx-auto mb-3" />
+                        : isDraw ? <Handshake className="w-10 h-10 text-[#6B2737] mx-auto mb-3" />
+                            : <Swords className="w-10 h-10 text-[#8C2E24] mx-auto mb-3" />}
+                    <h2 className={`font-heading text-2xl font-medium mb-1 ${iWon ? "text-[#5C4508]" : isDraw ? "text-[#6B2737]" : "text-[#8C2E24]"}`}>
+                        {iWon ? "You won!" : isDraw ? "It's a draw" : "Better luck next time"}
                     </h2>
-                    <p className={`text-sm ${iWon ? "text-[#B45309]" : isDraw ? "text-[#6366F1]" : "text-[#EF4444]"}`}>
-                        {iWon ? "Excellent performance — you outscored your opponent!" : isDraw ? "You both performed equally well!" : `${oppName} edged you out this time. Keep practising!`}
+                    <p className={`text-sm ${iWon ? "text-[#93670F]" : isDraw ? "text-[#6B2737]" : "text-[#8C2E24]"}`}>
+                        {iWon ? "Excellent performance — you outscored your opponent." : isDraw ? "You both performed equally well." : `${oppName} edged you out this time. Keep practicing.`}
                     </p>
                 </div>
             )}
 
             {/* Waiting for opponent */}
             {waiting && (
-                <div className="bg-white border border-[#E5E7EB] rounded-2xl p-8 mb-6 text-center">
-                    <Loader2 className="w-8 h-8 text-[#6366F1] animate-spin mx-auto mb-3" />
-                    <h2 className="text-lg font-black text-[#374151] mb-1">Waiting for opponent…</h2>
-                    <p className="text-sm text-[#9CA3AF]">Your results are in! Waiting for {oppName} to finish.</p>
+                <div className="bg-white border border-[#DEDCD3] p-8 mb-6 text-center">
+                    <Loader2 className="w-7 h-7 text-[#6B2737] animate-spin mx-auto mb-3" />
+                    <h2 className="font-heading text-lg font-medium text-[#3F3E38] mb-1">Waiting for opponent…</h2>
+                    <p className="text-sm text-[#8C8B82]">Your results are in. Waiting for {oppName} to finish.</p>
                     {myResult && (
-                        <div className="mt-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-4 text-left">
-                            <div className="text-xs font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">Your Score</div>
+                        <div className="mt-4 bg-[#FAFAF8] border border-[#DEDCD3] p-4 text-left">
+                            <div className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-2">Your score</div>
                             <div className="flex gap-4 text-sm">
-                                <span className="font-black text-[#111827]">{myResult.score}/{myResult.total_questions}</span>
-                                <span className="text-[#10B981] font-bold">{Number(myResult.accuracy).toFixed(1)}%</span>
-                                <span className="text-[#6B7280]">{formatTime(myResult.time_taken_seconds)}</span>
+                                <span className="font-semibold text-[#1B1B18]">{myResult.score}/{myResult.total_questions}</span>
+                                <span className="text-[#2F6B3A] font-semibold">{Number(myResult.accuracy).toFixed(1)}%</span>
+                                <span className="text-[#5B5A52]">{formatTime(myResult.time_taken_seconds)}</span>
                             </div>
                         </div>
                     )}
@@ -147,23 +147,23 @@ export default function BattleResultsPage() {
 
             {/* Side-by-side comparison */}
             {!waiting && myResult && oppResult && (
-                <div className="bg-white border border-[#E5E7EB] rounded-2xl shadow-sm overflow-hidden mb-5">
+                <div className="bg-white border border-[#DEDCD3] overflow-hidden mb-5">
                     {/* Column headers */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] gap-2 px-5 py-4 border-b border-[#F3F4F6]">
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-2 px-5 py-4 border-b border-[#EAE8E1]">
                         <div className="text-center">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-black mx-auto mb-1 ${iWon ? "bg-[#6366F1]" : "bg-[#9CA3AF]"}`}>
+                            <div className={`w-12 h-12 flex items-center justify-center text-white text-lg font-semibold mx-auto mb-1 ${iWon ? "bg-[#6B2737]" : "bg-[#8C8B82]"}`}>
                                 {myName[0]?.toUpperCase()}
                             </div>
-                            <div className="text-sm font-black text-[#111827]">{myName}</div>
-                            {iWon && <Crown className="w-4 h-4 text-[#F59E0B] mx-auto mt-1" />}
+                            <div className="text-sm font-semibold text-[#1B1B18]">{myName}</div>
+                            {iWon && <Crown className="w-4 h-4 text-[#93670F] mx-auto mt-1" />}
                         </div>
-                        <div className="flex items-center text-2xl font-black text-[#E5E7EB]">VS</div>
+                        <div className="flex items-center font-heading text-2xl font-medium text-[#DEDCD3]">VS</div>
                         <div className="text-center">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-black mx-auto mb-1 ${!iWon && !isDraw ? "bg-[#EF4444]" : "bg-[#9CA3AF]"}`}>
+                            <div className={`w-12 h-12 flex items-center justify-center text-white text-lg font-semibold mx-auto mb-1 ${!iWon && !isDraw ? "bg-[#8C2E24]" : "bg-[#8C8B82]"}`}>
                                 {oppName[0]?.toUpperCase()}
                             </div>
-                            <div className="text-sm font-black text-[#111827]">{oppName}</div>
-                            {!iWon && !isDraw && <Crown className="w-4 h-4 text-[#F59E0B] mx-auto mt-1" />}
+                            <div className="text-sm font-semibold text-[#1B1B18]">{oppName}</div>
+                            {!iWon && !isDraw && <Crown className="w-4 h-4 text-[#93670F] mx-auto mt-1" />}
                         </div>
                     </div>
 
@@ -178,14 +178,14 @@ export default function BattleResultsPage() {
                     <div className="px-5 pb-5">
                         <div className="grid grid-cols-[1fr_auto_1fr] gap-2 text-center text-xs">
                             {[
-                                { myV: `${myResult.score}/${myResult.total_questions}`, icon: <Target className="w-3.5 h-3.5 text-[#9CA3AF]" />, label: "Score", oppV: `${oppResult.score}/${oppResult.total_questions}` },
-                                { myV: `${Number(myResult.accuracy).toFixed(1)}%`, icon: <CheckCircle className="w-3.5 h-3.5 text-[#9CA3AF]" />, label: "Accuracy", oppV: `${Number(oppResult.accuracy).toFixed(1)}%` },
-                                { myV: formatTime(myResult.time_taken_seconds), icon: <Clock className="w-3.5 h-3.5 text-[#9CA3AF]" />, label: "Time", oppV: formatTime(oppResult.time_taken_seconds) },
+                                { myV: `${myResult.score}/${myResult.total_questions}`, icon: <Target className="w-3.5 h-3.5 text-[#8C8B82]" />, label: "Score", oppV: `${oppResult.score}/${oppResult.total_questions}` },
+                                { myV: `${Number(myResult.accuracy).toFixed(1)}%`, icon: <CheckCircle className="w-3.5 h-3.5 text-[#8C8B82]" />, label: "Accuracy", oppV: `${Number(oppResult.accuracy).toFixed(1)}%` },
+                                { myV: formatTime(myResult.time_taken_seconds), icon: <Clock className="w-3.5 h-3.5 text-[#8C8B82]" />, label: "Time", oppV: formatTime(oppResult.time_taken_seconds) },
                             ].map(row => (
-                                <div key={row.label} className="bg-[#F9FAFB] rounded-xl p-3">
-                                    <div className="font-black text-[#111827] mb-0.5">{row.myV}</div>
-                                    <div className="flex items-center justify-center gap-1 text-[#9CA3AF]">{row.icon} {row.label}</div>
-                                    <div className="font-black text-[#EF4444] mt-1">{row.oppV}</div>
+                                <div key={row.label} className="bg-[#FAFAF8] p-3">
+                                    <div className="font-semibold text-[#1B1B18] mb-0.5">{row.myV}</div>
+                                    <div className="flex items-center justify-center gap-1 text-[#8C8B82]">{row.icon} {row.label}</div>
+                                    <div className="font-semibold text-[#8C2E24] mt-1">{row.oppV}</div>
                                 </div>
                             ))}
                         </div>
@@ -194,30 +194,30 @@ export default function BattleResultsPage() {
             )}
 
             {/* Battle info */}
-            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-5 py-4 mb-6 flex items-center gap-4 text-sm">
-                <Swords className="w-5 h-5 text-[#6B7280] flex-shrink-0" />
+            <div className="bg-[#FAFAF8] border border-[#DEDCD3] px-5 py-4 mb-6 flex items-center gap-4 text-sm">
+                <Swords className="w-5 h-5 text-[#5B5A52] flex-shrink-0" />
                 <div>
-                    <span className="font-bold text-[#374151]">{battle.topic}</span>
-                    <span className="text-[#9CA3AF] mx-2">·</span>
-                    <span className="capitalize text-[#6B7280]">{battle.difficulty}</span>
-                    <span className="text-[#9CA3AF] mx-2">·</span>
-                    <span className="text-[#6B7280]">{battle.questions_count} questions</span>
+                    <span className="font-semibold text-[#3F3E38]">{battle.topic}</span>
+                    <span className="text-[#8C8B82] mx-2">·</span>
+                    <span className="capitalize text-[#5B5A52]">{battle.difficulty}</span>
+                    <span className="text-[#8C8B82] mx-2">·</span>
+                    <span className="text-[#5B5A52]">{battle.questions_count} questions</span>
                 </div>
             </div>
 
             {/* CTAs */}
             <div className="flex gap-3">
                 <Link href="/dashboard/battles"
-                    className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-[#6B7280] font-semibold px-5 py-3 rounded-xl hover:bg-[#F9FAFB] text-sm transition-all">
-                    <ArrowLeft className="w-4 h-4" /> All Battles
+                    className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#DEDCD3] text-[#5B5A52] font-medium px-5 py-3 hover:bg-[#FAFAF8] text-sm transition-colors">
+                    <ArrowLeft className="w-4 h-4" /> All battles
                 </Link>
                 <Link href="/dashboard/battles/leaderboard"
-                    className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-[#6B7280] font-semibold px-5 py-3 rounded-xl hover:bg-[#F9FAFB] text-sm transition-all">
+                    className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#DEDCD3] text-[#5B5A52] font-medium px-5 py-3 hover:bg-[#FAFAF8] text-sm transition-colors">
                     <Trophy className="w-4 h-4" /> Rankings
                 </Link>
                 <Link href="/dashboard/battles"
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white font-bold px-5 py-3 rounded-xl text-sm transition-all hover:shadow-lg hover:shadow-[#6366F1]/25">
-                    <Zap className="w-4 h-4" /> Battle Again
+                    className="flex-1 flex items-center justify-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white font-medium px-5 py-3 text-sm transition-colors">
+                    <Zap className="w-4 h-4" /> Battle again
                 </Link>
             </div>
         </div>

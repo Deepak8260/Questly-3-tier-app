@@ -2,8 +2,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-    Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle,
-    CheckCircle, XCircle, Loader2, Brain, Swords, Zap
+    Clock, ChevronLeft, ChevronRight, AlertCircle,
+    CheckCircle, XCircle, Loader2, Brain, Swords
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import type { QuizBattle } from "@/app/dashboard/battles/types";
@@ -41,7 +41,7 @@ function Timer({ endMs, onExpire }: { endMs: number; onExpire: () => void }) {
     const m = Math.floor(secs / 60), s = secs % 60;
     const urgent = rem < 60_000;
     return (
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-mono font-bold text-sm transition-all ${urgent ? "bg-[#FEE2E2] text-[#EF4444] border border-[#FECACA] animate-pulse" : "bg-[#F3F4F6] text-[#374151] border border-[#E5E7EB]"}`}>
+        <div className={`flex items-center gap-2 px-3 py-1.5 font-mono font-semibold text-sm border transition-colors ${urgent ? "bg-[#F5E7E4] text-[#8C2E24] border-[#E0B8AF] animate-pulse" : "bg-[#EDECE6] text-[#3F3E38] border-[#DEDCD3]"}`}>
             <Clock className="w-3.5 h-3.5" />{pad(m)}:{pad(s)}
         </div>
     );
@@ -51,20 +51,20 @@ function Timer({ endMs, onExpire }: { endMs: number; onExpire: () => void }) {
 function OpponentProgress({ answersCount, total, name }: { answersCount: number; total: number; name: string }) {
     const pct = Math.round((answersCount / total) * 100);
     return (
-        <div className="bg-[#FEE2E2] border border-[#FECACA] rounded-xl px-4 py-2.5 flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-[#EF4444] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+        <div className="bg-[#F5E7E4] border border-[#E0B8AF] px-4 py-2.5 flex items-center gap-3">
+            <div className="w-7 h-7 bg-[#8C2E24] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                 {name[0]?.toUpperCase()}
             </div>
             <div className="flex-1">
                 <div className="flex justify-between text-xs mb-1">
-                    <span className="font-semibold text-[#991B1B]">{name}</span>
-                    <span className="text-[#EF4444] font-bold">{answersCount}/{total}</span>
+                    <span className="font-semibold text-[#8C2E24]">{name}</span>
+                    <span className="text-[#8C2E24] font-semibold">{answersCount}/{total}</span>
                 </div>
-                <div className="h-1.5 bg-[#FECACA] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#EF4444] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                <div className="h-1.5 bg-[#E0B8AF] overflow-hidden">
+                    <div className="h-full bg-[#8C2E24] transition-all duration-500" style={{ width: `${pct}%` }} />
                 </div>
             </div>
-            <Swords className="w-4 h-4 text-[#EF4444] flex-shrink-0" />
+            <Swords className="w-4 h-4 text-[#8C2E24] flex-shrink-0" />
         </div>
     );
 }
@@ -224,25 +224,25 @@ export default function BattleQuizPage() {
     };
 
     if (loading) return (
-        <div className="flex items-center justify-center py-32 text-[#6B7280]">
+        <div className="flex items-center justify-center py-32 text-[#8C8B82]">
             <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading battle…
         </div>
     );
 
     if (error) return (
         <div className="max-w-md mx-auto text-center py-20">
-            <AlertCircle className="w-14 h-14 text-[#EF4444] mx-auto mb-4" />
-            <h2 className="text-xl font-black text-[#111827] mb-2">Cannot Enter Battle</h2>
-            <p className="text-[#6B7280]">{error}</p>
+            <AlertCircle className="w-12 h-12 text-[#8C2E24] mx-auto mb-4" />
+            <h2 className="font-heading text-xl font-medium text-[#1B1B18] mb-2">Cannot enter battle</h2>
+            <p className="text-[#5B5A52]">{error}</p>
         </div>
     );
 
     if (submitting) return (
-        <div className="flex flex-col items-center justify-center py-32 text-center animate-fade-in-up">
-            <div className="text-4xl mb-4">⚔️</div>
-            <Loader2 className="w-8 h-8 text-[#6366F1] animate-spin mb-3" />
-            <h2 className="text-lg font-black text-[#111827] mb-1">Submitting your answers…</h2>
-            <p className="text-sm text-[#6B7280]">Calculating who won the battle!</p>
+        <div className="flex flex-col items-center justify-center py-32 text-center">
+            <Swords className="w-9 h-9 text-[#6B2737] mb-4" />
+            <Loader2 className="w-6 h-6 text-[#6B2737] animate-spin mb-3" />
+            <h2 className="font-heading text-lg font-medium text-[#1B1B18] mb-1">Submitting your answers…</h2>
+            <p className="text-sm text-[#5B5A52]">Calculating who won the battle.</p>
         </div>
     );
 
@@ -253,12 +253,14 @@ export default function BattleQuizPage() {
     const progress = (answeredCount / questions.length) * 100;
 
     return (
-        <div className="max-w-2xl mx-auto animate-fade-in-up">
+        <div className="max-w-2xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h1 className="text-base font-black text-[#111827]">⚔️ {battle!.topic} Battle</h1>
-                    <p className="text-xs text-[#9CA3AF] capitalize">{battle!.difficulty}</p>
+                    <h1 className="font-heading text-base font-medium text-[#1B1B18] flex items-center gap-1.5">
+                        <Swords className="w-4 h-4 text-[#6B2737]" /> {battle!.topic} battle
+                    </h1>
+                    <p className="text-xs text-[#8C8B82] capitalize">{battle!.difficulty}</p>
                 </div>
                 <Timer endMs={endMs} onExpire={handleTimerExpire} />
             </div>
@@ -269,29 +271,29 @@ export default function BattleQuizPage() {
             </div>
 
             {/* My progress bar */}
-            <div className="bg-[#F3F4F6] rounded-full h-2 mb-5 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+            <div className="bg-[#EDECE6] h-1.5 mb-5 overflow-hidden">
+                <div className="h-full bg-[#6B2737] transition-all duration-500" style={{ width: `${progress}%` }} />
             </div>
 
             {/* Question navigation dots */}
             <div className="flex gap-1.5 mb-5 flex-wrap">
                 {questions.map((_, i) => (
                     <button key={i} onClick={() => setCurrentQ(i)}
-                        className={`w-8 h-8 rounded-full text-xs font-bold transition-all ${i === currentQ ? "bg-[#6366F1] text-white scale-110 shadow-md" : answers[i] !== null ? "bg-[#D1FAE5] text-[#065F46] border border-[#6EE7B7]" : "bg-[#F3F4F6] text-[#9CA3AF] hover:bg-[#E5E7EB]"}`}>
+                        className={`w-7 h-7 text-xs font-semibold transition-colors ${i === currentQ ? "bg-[#6B2737] text-white" : answers[i] !== null ? "bg-[#E9F1E9] text-[#2F6B3A] border border-[#B8D8B8]" : "bg-[#EDECE6] text-[#8C8B82] hover:bg-[#DEDCD3]"}`}>
                         {i + 1}
                     </button>
                 ))}
             </div>
 
             {/* Question card */}
-            <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-6 mb-4">
+            <div className="bg-white border border-[#DEDCD3] p-6 mb-4">
                 <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-black text-[#6366F1] uppercase tracking-wider">Question {currentQ + 1} of {questions.length}</span>
-                    <span className="text-xs text-[#9CA3AF]">{answeredCount}/{questions.length} answered</span>
+                    <span className="text-xs font-semibold text-[#6B2737] uppercase tracking-wider">Question {currentQ + 1} of {questions.length}</span>
+                    <span className="text-xs text-[#8C8B82]">{answeredCount}/{questions.length} answered</span>
                 </div>
-                <p className="text-base font-semibold text-[#111827] leading-relaxed mb-4">{q.question}</p>
+                <p className="text-base font-medium text-[#1B1B18] leading-relaxed mb-4">{q.question}</p>
                 {q.code && (
-                    <pre className="bg-[#0F172A] text-[#E2E8F0] text-xs font-mono rounded-xl p-4 mb-4 overflow-x-auto border border-[#1E293B]">
+                    <pre className="bg-[#1B1B18] text-[#E8E6DE] text-xs font-mono p-4 mb-4 overflow-x-auto border border-[#35352C]">
                         <code>{q.code}</code>
                     </pre>
                 )}
@@ -300,13 +302,13 @@ export default function BattleQuizPage() {
                         const isSelected = userAnswer === i;
                         return (
                             <button key={i} onClick={() => selectAnswer(i)}
-                                className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all
+                                className={`w-full text-left px-4 py-3 border text-sm font-medium transition-colors
                   ${isSelected
-                                        ? "border-[#6366F1] bg-[#EEF2FF] text-[#4338CA] ring-2 ring-[#6366F1]/20"
-                                        : "border-[#E5E7EB] hover:border-[#6366F1] hover:bg-[#F5F3FF] text-[#374151] cursor-pointer"}`}>
-                                <span className={`font-black mr-2.5 ${isSelected ? "text-[#6366F1]" : "text-[#9CA3AF]"}`}>{["A", "B", "C", "D"][i]}.</span>
+                                        ? "border-[#6B2737] bg-[#F3E7E9] text-[#6B2737] ring-2 ring-[#6B2737]/15"
+                                        : "border-[#DEDCD3] hover:border-[#6B2737] hover:bg-[#F3E7E9] text-[#3F3E38] cursor-pointer"}`}>
+                                <span className={`font-semibold mr-2.5 ${isSelected ? "text-[#6B2737]" : "text-[#8C8B82]"}`}>{["A", "B", "C", "D"][i]}.</span>
                                 {opt}
-                                {isSelected && <CheckCircle className="w-4 h-4 text-[#6366F1] inline ml-2" />}
+                                {isSelected && <CheckCircle className="w-4 h-4 text-[#6B2737] inline ml-2" />}
                             </button>
                         );
                     })}
@@ -315,41 +317,41 @@ export default function BattleQuizPage() {
 
             {/* Unanswered warning */}
             {!answeredAll && (
-                <div className="flex items-center gap-2 text-xs text-[#F59E0B] bg-[#FEF3C7] border border-[#FCD34D] rounded-xl px-4 py-2.5 mb-4">
+                <div className="flex items-center gap-2 text-xs text-[#93670F] bg-[#F5EEDD] border border-[#E3CE9C] px-4 py-2.5 mb-4">
                     <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                    {questions.length - answeredCount} unanswered — unanswered = wrong
+                    {questions.length - answeredCount} unanswered — unanswered counts as wrong
                 </div>
             )}
 
             {/* Navigation */}
             <div className="flex items-center justify-between">
                 <button onClick={() => setCurrentQ(i => i - 1)} disabled={currentQ === 0}
-                    className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-[#6B7280] border border-[#E5E7EB] bg-white rounded-xl hover:bg-[#F9FAFB] disabled:opacity-40 disabled:pointer-events-none transition-all">
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-[#5B5A52] border border-[#DEDCD3] bg-white hover:bg-[#FAFAF8] disabled:opacity-40 disabled:pointer-events-none transition-colors">
                     <ChevronLeft className="w-4 h-4" /> Previous
                 </button>
                 <div className="flex items-center gap-2">
                     {currentQ < questions.length - 1 && (
                         <button onClick={() => setCurrentQ(i => i + 1)}
-                            className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl transition-all">
+                            className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-[#6B2737] hover:bg-[#551F2C] text-white transition-colors">
                             Next <ChevronRight className="w-4 h-4" />
                         </button>
                     )}
                     <button onClick={() => handleSubmit()} disabled={submitting}
-                        className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold bg-[#EF4444] hover:bg-[#DC2626] text-white rounded-xl transition-all hover:shadow-lg disabled:opacity-50">
+                        className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-[#8C2E24] hover:bg-[#732419] text-white transition-colors disabled:opacity-50">
                         {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Swords className="w-4 h-4" /> Submit</>}
                     </button>
                 </div>
             </div>
 
             {/* Summary bar */}
-            <div className="mt-6 border border-[#E5E7EB] bg-white rounded-xl px-5 py-3 flex items-center justify-between text-sm">
+            <div className="mt-6 border border-[#DEDCD3] bg-white px-5 py-3 flex items-center justify-between text-sm">
                 <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1 text-[#10B981] font-bold"><CheckCircle className="w-3.5 h-3.5" /> {answeredCount} answered</span>
+                    <span className="flex items-center gap-1 text-[#2F6B3A] font-semibold"><CheckCircle className="w-3.5 h-3.5" /> {answeredCount} answered</span>
                     {questions.length - answeredCount > 0 && (
-                        <span className="flex items-center gap-1 text-[#F59E0B] font-bold"><XCircle className="w-3.5 h-3.5" /> {questions.length - answeredCount} skipped</span>
+                        <span className="flex items-center gap-1 text-[#93670F] font-semibold"><XCircle className="w-3.5 h-3.5" /> {questions.length - answeredCount} skipped</span>
                     )}
                 </div>
-                <span className="flex items-center gap-1 text-[#9CA3AF] text-xs"><Brain className="w-3.5 h-3.5" /> {battle!.topic}</span>
+                <span className="flex items-center gap-1 text-[#8C8B82] text-xs"><Brain className="w-3.5 h-3.5" /> {battle!.topic}</span>
             </div>
         </div>
     );

@@ -281,6 +281,7 @@ export default function SettingsPage() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const [showViewImageModal, setShowViewImageModal] = useState(false);
 
   // Password state
   const [currentPwd, setCurrentPwd] = useState("");
@@ -531,7 +532,7 @@ export default function SettingsPage() {
                         <button
                           onClick={() => {
                             setShowAvatarMenu(false);
-                            window.open(avatarUrl, '_blank');
+                            setShowViewImageModal(true);
                           }}
                           className="flex items-center gap-3 px-4 py-2 text-sm text-[#374151] dark:text-[#f8fafc] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] w-full text-left"
                         >
@@ -876,6 +877,29 @@ export default function SettingsPage() {
                 onCropComplete={handleCroppedImage}
                 onCancel={() => setShowCropper(false)}
               />
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* View Image Modal */}
+      <Dialog.Root open={showViewImageModal} onOpenChange={setShowViewImageModal}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-[9998] bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] max-h-[90vh] w-[90vw] max-w-[700px] bg-transparent focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 border-0">
+            <Dialog.Title className="sr-only">Profile picture</Dialog.Title>
+            <Dialog.Description className="sr-only">View and close your profile picture</Dialog.Description>
+            <Dialog.Close className="absolute -top-4 -right-4 w-10 h-10 bg-white dark:bg-[#1e293b] rounded-full flex items-center justify-center text-[#374151] dark:text-[#f8fafc] hover:bg-gray-100 dark:hover:bg-[#334155] transition-all shadow-lg z-10">
+              <X className="w-6 h-6" />
+            </Dialog.Close>
+            {avatarUrl && (
+              <div className="shadow-2xl rounded-3xl overflow-hidden">
+                <img
+                  src={avatarUrl}
+                  alt="Profile picture"
+                  className="w-full h-auto object-contain"
+                />
+              </div>
             )}
           </Dialog.Content>
         </Dialog.Portal>

@@ -93,17 +93,18 @@ router.post("/init-db", async (req: Request, res: Response) => {
     );
 
     const migrations = [
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS topic text",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS difficulty text",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS question_type text",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS total_questions int",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS correct_answers int",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS score_pct int",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS time_taken_secs int",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS passed boolean",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS certificate_earned boolean",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS user_id uuid",
-      "ALTER TABLE quiz_attempts ADD COLUMN IF NOT EXISTS created_at timestamptz default now()"
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS topic text",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS difficulty text",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS question_type text",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS total_questions int",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS correct_answers int",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS score_pct int",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS time_taken_secs int",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS passed boolean",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS certificate_earned boolean",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS user_id uuid",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS created_at timestamptz default now()",
+      "ALTER TABLE questly_quiz_attempts ADD COLUMN IF NOT EXISTS questions_data jsonb"
     ];
 
     const errors: string[] = [];

@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle,
-    CheckCircle, XCircle, Loader2, Brain, Zap, Swords
+    CheckCircle, XCircle, Loader2, Brain, Swords
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import type { Contest, ContestQuestion } from "@/app/admin/contests/types";
@@ -112,9 +112,9 @@ function Timer({
     const urgent = remaining < 60_000;  // last minute
 
     return (
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-mono font-bold text-sm transition-all ${urgent
-                ? "bg-[#FEE2E2] text-[#EF4444] border border-[#FECACA] animate-pulse"
-                : "bg-[#F3F4F6] text-[#374151] border border-[#E5E7EB]"
+        <div className={`flex items-center gap-2 px-3 py-1.5 font-mono font-semibold text-sm border transition-colors ${urgent
+                ? "bg-[#F5E7E4] text-[#8C2E24] border-[#E0B8AF] animate-pulse"
+                : "bg-[#EDECE6] text-[#3F3E38] border-[#DEDCD3]"
             }`}>
             <Clock className="w-3.5 h-3.5" />
             {pad(mins)}:{pad(secs)}
@@ -275,7 +275,7 @@ export default function ContestQuizPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-32 text-[#6B7280]">
+            <div className="flex items-center justify-center py-32 text-[#8C8B82]">
                 <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading contest quiz…
             </div>
         );
@@ -283,17 +283,12 @@ export default function ContestQuizPage() {
 
     if (waitingForLive) {
         return (
-            <div className="max-w-md mx-auto text-center py-20 animate-fade-in-up">
-                <div className="relative inline-flex items-center justify-center w-20 h-20 mb-5">
-                    <div className="absolute inset-0 rounded-full bg-[#EEF2FF] animate-ping opacity-50" />
-                    <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center shadow-lg shadow-[#6366F1]/30">
-                        <Swords className="w-9 h-9 text-white" />
-                    </div>
-                </div>
-                <h2 className="text-xl font-black text-[#111827] mb-2">Contest Starting Soon…</h2>
-                <p className="text-[#6B7280] mb-2">You&apos;re enrolled and ready to go!</p>
-                <p className="text-sm text-[#9CA3AF] mb-6">This page will automatically load your quiz the moment the contest goes live. No need to refresh.</p>
-                <div className="flex items-center justify-center gap-2 text-xs text-[#6366F1] font-semibold bg-[#EEF2FF] px-4 py-2 rounded-full">
+            <div className="max-w-md mx-auto text-center py-20">
+                <Swords className="w-12 h-12 text-[#6B2737] mx-auto mb-5" />
+                <h2 className="font-heading text-xl font-medium text-[#1B1B18] mb-2">Contest starting soon…</h2>
+                <p className="text-[#5B5A52] mb-2">You&apos;re enrolled and ready to go.</p>
+                <p className="text-sm text-[#8C8B82] mb-6">This page will automatically load your quiz the moment the contest goes live. No need to refresh.</p>
+                <div className="flex items-center justify-center gap-2 text-xs text-[#6B2737] font-semibold bg-[#F3E7E9] px-4 py-2 mx-auto w-fit">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     Checking every 3 seconds…
                 </div>
@@ -303,13 +298,13 @@ export default function ContestQuizPage() {
 
     if (error) {
         return (
-            <div className="max-w-md mx-auto text-center py-20 animate-fade-in-up">
-                <AlertCircle className="w-14 h-14 text-[#EF4444] mx-auto mb-4" />
-                <h2 className="text-xl font-black text-[#111827] mb-2">Cannot Enter Quiz</h2>
-                <p className="text-[#6B7280] mb-5">{error}</p>
+            <div className="max-w-md mx-auto text-center py-20">
+                <AlertCircle className="w-12 h-12 text-[#8C2E24] mx-auto mb-4" />
+                <h2 className="font-heading text-xl font-medium text-[#1B1B18] mb-2">Cannot enter quiz</h2>
+                <p className="text-[#5B5A52] mb-5">{error}</p>
                 <button onClick={() => router.push(`/dashboard/contests/${id}/lobby`)}
-                    className="inline-flex items-center gap-2 bg-[#6366F1] text-white font-bold px-5 py-2.5 rounded-xl hover:bg-[#4F46E5] transition-all">
-                    Back to Lobby
+                    className="inline-flex items-center gap-2 bg-[#6B2737] text-white font-medium px-5 py-2.5 hover:bg-[#551F2C] transition-colors">
+                    Back to lobby
                 </button>
             </div>
         );
@@ -317,38 +312,37 @@ export default function ContestQuizPage() {
 
     if (submitting) {
         return (
-            <div className="flex flex-col items-center justify-center py-32 text-center animate-fade-in-up">
-                <div className="text-4xl mb-4">🏆</div>
-                <Loader2 className="w-8 h-8 text-[#6366F1] animate-spin mb-3" />
-                <h2 className="text-lg font-black text-[#111827] mb-1">Submitting your answers…</h2>
-                <p className="text-sm text-[#6B7280]">Calculating your score and updating the leaderboard.</p>
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+                <Trophy className="w-9 h-9 text-[#6B2737] mb-4" />
+                <Loader2 className="w-6 h-6 text-[#6B2737] animate-spin mb-3" />
+                <h2 className="font-heading text-lg font-medium text-[#1B1B18] mb-1">Submitting your answers…</h2>
+                <p className="text-sm text-[#5B5A52]">Calculating your score and updating the leaderboard.</p>
             </div>
         );
     }
 
     const q = questions[currentQ];
     const userAnswer = answers[currentQ];
-    const answered = userAnswer !== null;
     const answeredAll = answers.every(a => a !== null);
     const answeredCount = answers.filter(a => a !== null).length;
     const progress = (answeredCount / questions.length) * 100;
 
     return (
-        <div className="max-w-2xl mx-auto animate-fade-in-up">
+        <div className="max-w-2xl mx-auto">
 
             {/* ── Header ──────────────────────────────────────────────── */}
             <div className="flex items-center justify-between mb-5">
                 <div className="min-w-0">
-                    <h1 className="text-base font-black text-[#111827] truncate">{contest!.title}</h1>
-                    <p className="text-xs text-[#9CA3AF] capitalize">{contest!.topic} · {contest!.difficulty}</p>
+                    <h1 className="font-heading text-base font-medium text-[#1B1B18] truncate">{contest!.title}</h1>
+                    <p className="text-xs text-[#8C8B82] capitalize">{contest!.topic} · {contest!.difficulty}</p>
                 </div>
                 <Timer endMs={endMs} onExpire={handleTimerExpire} />
             </div>
 
             {/* ── Progress bar ────────────────────────────────────────── */}
-            <div className="bg-[#F3F4F6] rounded-full h-2 mb-5 overflow-hidden">
+            <div className="bg-[#EDECE6] h-1.5 mb-5 overflow-hidden">
                 <div
-                    className="h-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-full transition-all duration-500"
+                    className="h-full bg-[#6B2737] transition-all duration-500"
                     style={{ width: `${progress}%` }}
                 />
             </div>
@@ -359,11 +353,11 @@ export default function ContestQuizPage() {
                     <button
                         key={i}
                         onClick={() => setCurrentQ(i)}
-                        className={`w-8 h-8 rounded-full text-xs font-bold transition-all ${i === currentQ
-                                ? "bg-[#6366F1] text-white scale-110 shadow-md"
+                        className={`w-7 h-7 text-xs font-semibold transition-colors ${i === currentQ
+                                ? "bg-[#6B2737] text-white"
                                 : answers[i] !== null
-                                    ? "bg-[#D1FAE5] text-[#065F46] border border-[#6EE7B7]"
-                                    : "bg-[#F3F4F6] text-[#9CA3AF] hover:bg-[#E5E7EB]"
+                                    ? "bg-[#E9F1E9] text-[#2F6B3A] border border-[#B8D8B8]"
+                                    : "bg-[#EDECE6] text-[#8C8B82] hover:bg-[#DEDCD3]"
                             }`}
                     >
                         {i + 1}
@@ -372,22 +366,22 @@ export default function ContestQuizPage() {
             </div>
 
             {/* ── Question card ────────────────────────────────────────── */}
-            <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-6 mb-4">
+            <div className="bg-white border border-[#DEDCD3] p-6 mb-4">
                 <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-black text-[#6366F1] uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-[#6B2737] uppercase tracking-wider">
                         Question {currentQ + 1} of {questions.length}
                     </span>
-                    <span className="text-xs text-[#9CA3AF]">
+                    <span className="text-xs text-[#8C8B82]">
                         {answeredCount}/{questions.length} answered
                     </span>
                 </div>
 
                 {/* Question text */}
-                <p className="text-base font-semibold text-[#111827] leading-relaxed mb-4">{q.question}</p>
+                <p className="text-base font-medium text-[#1B1B18] leading-relaxed mb-4">{q.question}</p>
 
                 {/* Optional code block */}
                 {q.code && (
-                    <pre className="bg-[#0F172A] text-[#E2E8F0] text-xs font-mono rounded-xl p-4 mb-4 overflow-x-auto leading-relaxed border border-[#1E293B]">
+                    <pre className="bg-[#1B1B18] text-[#E8E6DE] text-xs font-mono p-4 mb-4 overflow-x-auto leading-relaxed border border-[#35352C]">
                         <code>{q.code}</code>
                     </pre>
                 )}
@@ -396,19 +390,19 @@ export default function ContestQuizPage() {
                 <div className="grid grid-cols-1 gap-2.5">
                     {q.options.filter(o => o).map((opt, i) => {
                         const isSelected = userAnswer === i;
-                        let cls = "w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all ";
+                        let cls = "w-full text-left px-4 py-3 border text-sm font-medium transition-colors ";
                         if (isSelected) {
-                            cls += "border-[#6366F1] bg-[#EEF2FF] text-[#4338CA] ring-2 ring-[#6366F1]/20";
+                            cls += "border-[#6B2737] bg-[#F3E7E9] text-[#6B2737] ring-2 ring-[#6B2737]/15";
                         } else {
-                            cls += "border-[#E5E7EB] hover:border-[#6366F1] hover:bg-[#F5F3FF] text-[#374151] cursor-pointer";
+                            cls += "border-[#DEDCD3] hover:border-[#6B2737] hover:bg-[#F3E7E9] text-[#3F3E38] cursor-pointer";
                         }
                         return (
                             <button key={i} className={cls} onClick={() => selectAnswer(i)}>
-                                <span className={`font-black mr-2.5 ${isSelected ? "text-[#6366F1]" : "text-[#9CA3AF]"}`}>
+                                <span className={`font-semibold mr-2.5 ${isSelected ? "text-[#6B2737]" : "text-[#8C8B82]"}`}>
                                     {["A", "B", "C", "D"][i]}.
                                 </span>
                                 {opt}
-                                {isSelected && <CheckCircle className="w-4 h-4 text-[#6366F1] inline ml-2" />}
+                                {isSelected && <CheckCircle className="w-4 h-4 text-[#6B2737] inline ml-2" />}
                             </button>
                         );
                     })}
@@ -417,7 +411,7 @@ export default function ContestQuizPage() {
 
             {/* ── Unanswered warning ──────────────────────────────────── */}
             {!answeredAll && (
-                <div className="flex items-center gap-2 text-xs text-[#F59E0B] bg-[#FEF3C7] border border-[#FCD34D] rounded-xl px-4 py-2.5 mb-4">
+                <div className="flex items-center gap-2 text-xs text-[#93670F] bg-[#F5EEDD] border border-[#E3CE9C] px-4 py-2.5 mb-4">
                     <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                     {questions.length - answeredCount} question{questions.length - answeredCount !== 1 ? "s" : ""} unanswered — you can still submit, unanswered = wrong
                 </div>
@@ -428,7 +422,7 @@ export default function ContestQuizPage() {
                 <button
                     onClick={() => setCurrentQ(i => i - 1)}
                     disabled={currentQ === 0}
-                    className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-[#6B7280] border border-[#E5E7EB] bg-white rounded-xl hover:bg-[#F9FAFB] disabled:opacity-40 disabled:pointer-events-none transition-all"
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-[#5B5A52] border border-[#DEDCD3] bg-white hover:bg-[#FAFAF8] disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 >
                     <ChevronLeft className="w-4 h-4" /> Previous
                 </button>
@@ -437,7 +431,7 @@ export default function ContestQuizPage() {
                     {currentQ < questions.length - 1 ? (
                         <button
                             onClick={() => setCurrentQ(i => i + 1)}
-                            className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl transition-all"
+                            className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-[#6B2737] hover:bg-[#551F2C] text-white transition-colors"
                         >
                             Next <ChevronRight className="w-4 h-4" />
                         </button>
@@ -447,7 +441,7 @@ export default function ContestQuizPage() {
                     <button
                         onClick={() => handleSubmit(false)}
                         disabled={submitting}
-                        className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold bg-[#10B981] hover:bg-[#059669] text-white rounded-xl transition-all hover:shadow-lg disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-[#2F6B3A] hover:bg-[#255A2E] text-white transition-colors disabled:opacity-50"
                     >
                         {submitting
                             ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -458,18 +452,18 @@ export default function ContestQuizPage() {
             </div>
 
             {/* ── Summary bar ─────────────────────────────────────────── */}
-            <div className="mt-6 border border-[#E5E7EB] bg-white rounded-xl px-5 py-3 flex items-center justify-between text-sm">
+            <div className="mt-6 border border-[#DEDCD3] bg-white px-5 py-3 flex items-center justify-between text-sm">
                 <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1 text-[#10B981] font-bold">
+                    <span className="flex items-center gap-1 text-[#2F6B3A] font-semibold">
                         <CheckCircle className="w-3.5 h-3.5" /> {answeredCount} answered
                     </span>
                     {questions.length - answeredCount > 0 && (
-                        <span className="flex items-center gap-1 text-[#F59E0B] font-bold">
+                        <span className="flex items-center gap-1 text-[#93670F] font-semibold">
                             <XCircle className="w-3.5 h-3.5" /> {questions.length - answeredCount} skipped
                         </span>
                     )}
                 </div>
-                <span className="flex items-center gap-1 text-[#9CA3AF] text-xs">
+                <span className="flex items-center gap-1 text-[#8C8B82] text-xs">
                     <Brain className="w-3.5 h-3.5" /> {contest!.topic}
                 </span>
             </div>

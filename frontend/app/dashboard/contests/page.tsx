@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
     Swords, Clock, Users, Zap, CheckCircle, Loader2,
-    Calendar, Filter, AlertCircle, X, BookOpen, Trophy, ArrowRight
+    Calendar, Filter, AlertCircle, X, BookOpen, Trophy, ArrowRight, Radio
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import type { Contest, ContestDifficulty } from "@/app/admin/contests/types";
@@ -28,9 +28,9 @@ function formatDate(iso: string) {
 }
 
 const DIFF_STYLE: Record<ContestDifficulty, { bg: string; text: string; label: string }> = {
-    easy: { bg: "#D1FAE5", text: "#065F46", label: "🟢 Easy" },
-    medium: { bg: "#FEF3C7", text: "#92400E", label: "🟡 Medium" },
-    hard: { bg: "#FEE2E2", text: "#991B1B", label: "🔴 Hard" },
+    easy: { bg: "#E9F1E9", text: "#2F6B3A", label: "Easy" },
+    medium: { bg: "#F5EEDD", text: "#93670F", label: "Medium" },
+    hard: { bg: "#F5E7E4", text: "#8C2E24", label: "Hard" },
 };
 
 // ── Enroll Confirmation Modal ────────────────────────────────────
@@ -44,39 +44,39 @@ function EnrollModal({
 }) {
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
         >
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-[#E5E7EB] animate-fade-in-up">
-                <div className="bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF] px-6 py-5 border-b border-[#E5E7EB]">
-                    <div className="text-3xl mb-2">🏆</div>
-                    <h2 className="text-lg font-black text-[#111827]">Enroll in Contest?</h2>
-                    <p className="text-sm text-[#6B7280] mt-0.5">{contest.title}</p>
+            <div className="bg-white max-w-md w-full overflow-hidden border border-[#DEDCD3]">
+                <div className="bg-[#1B1B18] px-6 py-5 border-b border-[#35352C]">
+                    <Trophy className="w-6 h-6 text-[#B5677A] mb-2" />
+                    <h2 className="font-heading text-lg font-medium text-white">Enroll in contest?</h2>
+                    <p className="text-sm text-[#ABA99C] mt-0.5">{contest.title}</p>
                 </div>
                 <div className="px-6 py-5 space-y-3">
-                    <div className="text-sm font-bold text-[#374151] mb-1">Contest Rules</div>
-                    <ul className="space-y-2 text-sm text-[#6B7280]">
-                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-0.5" /> You must be present at the scheduled start time</li>
-                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-0.5" /> Once you start the quiz, you cannot pause it</li>
-                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-0.5" /> You can only submit answers once — no re-attempts</li>
-                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-0.5" /> The quiz auto-submits when the timer runs out</li>
-                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-0.5" /> Rankings: highest score wins; ties broken by fastest time, then name</li>
+                    <div className="text-sm font-semibold text-[#3F3E38] mb-1">Contest rules</div>
+                    <ul className="space-y-2 text-sm text-[#5B5A52]">
+                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#2F6B3A] flex-shrink-0 mt-0.5" /> You must be present at the scheduled start time</li>
+                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#2F6B3A] flex-shrink-0 mt-0.5" /> Once you start the quiz, you cannot pause it</li>
+                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#2F6B3A] flex-shrink-0 mt-0.5" /> You can only submit answers once — no re-attempts</li>
+                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#2F6B3A] flex-shrink-0 mt-0.5" /> The quiz auto-submits when the timer runs out</li>
+                        <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-[#2F6B3A] flex-shrink-0 mt-0.5" /> Rankings: highest score wins; ties broken by fastest time, then name</li>
                     </ul>
-                    <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-3 mt-2 grid grid-cols-2 gap-2 text-xs">
-                        <div><span className="text-[#9CA3AF]">Duration</span><br /><strong className="text-[#111827]">{contest.duration_minutes} min</strong></div>
-                        <div><span className="text-[#9CA3AF]">Questions</span><br /><strong className="text-[#111827]">{contest.questions_count}</strong></div>
-                        <div><span className="text-[#9CA3AF]">Difficulty</span><br /><strong className="text-[#111827] capitalize">{contest.difficulty}</strong></div>
-                        <div><span className="text-[#9CA3AF]">Max Players</span><br /><strong className="text-[#111827]">{contest.max_participants ?? "Unlimited"}</strong></div>
+                    <div className="bg-[#FAFAF8] border border-[#DEDCD3] p-3 mt-2 grid grid-cols-2 gap-2 text-xs">
+                        <div><span className="text-[#8C8B82]">Duration</span><br /><strong className="text-[#1B1B18]">{contest.duration_minutes} min</strong></div>
+                        <div><span className="text-[#8C8B82]">Questions</span><br /><strong className="text-[#1B1B18]">{contest.questions_count}</strong></div>
+                        <div><span className="text-[#8C8B82]">Difficulty</span><br /><strong className="text-[#1B1B18] capitalize">{contest.difficulty}</strong></div>
+                        <div><span className="text-[#8C8B82]">Max players</span><br /><strong className="text-[#1B1B18]">{contest.max_participants ?? "Unlimited"}</strong></div>
                     </div>
                 </div>
                 <div className="flex gap-3 px-6 pb-5">
                     <button onClick={onCancel} disabled={loading}
-                        className="flex-1 py-3 text-sm font-semibold text-[#6B7280] border border-[#E5E7EB] rounded-xl hover:bg-[#F9FAFB] transition-all">
+                        className="flex-1 py-3 text-sm font-medium text-[#5B5A52] border border-[#DEDCD3] hover:bg-[#FAFAF8] transition-colors">
                         Cancel
                     </button>
                     <button onClick={onConfirm} disabled={loading}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold text-white bg-[#6366F1] hover:bg-[#4F46E5] rounded-xl transition-all disabled:opacity-60 hover:shadow-lg hover:shadow-[#6366F1]/25">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4" /> Enroll Now</>}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] transition-colors disabled:opacity-60">
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4" /> Enroll now</>}
                     </button>
                 </div>
             </div>
@@ -110,13 +110,13 @@ function ContestCard({
     const full = contest.max_participants != null && participantCount >= contest.max_participants;
 
     return (
-        <div className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden ${isLive ? "border-[#10B981] shadow-[#10B981]/10" : "border-[#E5E7EB]"
+        <div className={`bg-white border transition-colors overflow-hidden ${isLive ? "border-[#2F6B3A]" : "border-[#DEDCD3]"
             }`}>
             {/* Live banner */}
             {isLive && (
-                <div className="bg-[#10B981] px-4 py-1.5 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                    <span className="text-white text-xs font-black tracking-wider uppercase">Live Now</span>
+                <div className="bg-[#2F6B3A] px-4 py-1.5 flex items-center gap-2">
+                    <Radio className="w-3 h-3 text-white animate-pulse" />
+                    <span className="text-white text-xs font-semibold tracking-wider uppercase">Live now</span>
                 </div>
             )}
 
@@ -124,87 +124,87 @@ function ContestCard({
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                        <h3 className="text-base font-black text-[#111827] leading-snug">{contest.title}</h3>
+                        <h3 className="font-heading text-base font-medium text-[#1B1B18] leading-snug">{contest.title}</h3>
                         <div className="flex items-center gap-2 mt-1.5">
-                            <span className="text-xs font-semibold text-[#6B7280] flex items-center gap-1">
+                            <span className="text-xs font-medium text-[#5B5A52] flex items-center gap-1">
                                 <BookOpen className="w-3 h-3" /> {contest.topic}
                             </span>
-                            <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+                            <span className="text-xs px-2 py-0.5 font-semibold"
                                 style={{ backgroundColor: diff.bg, color: diff.text }}>
                                 {diff.label}
                             </span>
                         </div>
                     </div>
                     {isEnrolled && (
-                        <span className="flex items-center gap-1 text-xs font-bold text-[#10B981] bg-[#D1FAE5] px-2.5 py-1 rounded-full flex-shrink-0">
+                        <span className="flex items-center gap-1 text-xs font-semibold text-[#2F6B3A] bg-[#E9F1E9] px-2.5 py-1 flex-shrink-0">
                             <CheckCircle className="w-3 h-3" /> Enrolled
                         </span>
                     )}
                 </div>
 
                 {contest.description && (
-                    <p className="text-sm text-[#6B7280] mb-3 line-clamp-2">{contest.description}</p>
+                    <p className="text-sm text-[#5B5A52] mb-3 line-clamp-2">{contest.description}</p>
                 )}
 
                 {/* Meta info */}
                 <div className="grid grid-cols-3 gap-2 mb-4">
-                    <div className="bg-[#F9FAFB] rounded-xl p-2.5 text-center">
-                        <div className="flex items-center justify-center gap-1 text-[#9CA3AF] mb-1">
+                    <div className="bg-[#FAFAF8] p-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1 text-[#8C8B82] mb-1">
                             <Calendar className="w-3 h-3" />
                         </div>
-                        <div className="text-xs font-bold text-[#111827]">
+                        <div className="text-xs font-semibold text-[#1B1B18]">
                             {isLive ? "Now" : countdown(contest.start_time)}
                         </div>
-                        <div className="text-[10px] text-[#9CA3AF]">{isLive ? "Live" : "Starts in"}</div>
+                        <div className="text-[10px] text-[#8C8B82]">{isLive ? "Live" : "Starts in"}</div>
                     </div>
-                    <div className="bg-[#F9FAFB] rounded-xl p-2.5 text-center">
-                        <div className="flex items-center justify-center gap-1 text-[#9CA3AF] mb-1">
+                    <div className="bg-[#FAFAF8] p-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1 text-[#8C8B82] mb-1">
                             <Clock className="w-3 h-3" />
                         </div>
-                        <div className="text-xs font-bold text-[#111827]">{contest.duration_minutes}m</div>
-                        <div className="text-[10px] text-[#9CA3AF]">Duration</div>
+                        <div className="text-xs font-semibold text-[#1B1B18]">{contest.duration_minutes}m</div>
+                        <div className="text-[10px] text-[#8C8B82]">Duration</div>
                     </div>
-                    <div className="bg-[#F9FAFB] rounded-xl p-2.5 text-center">
-                        <div className="flex items-center justify-center gap-1 text-[#9CA3AF] mb-1">
+                    <div className="bg-[#FAFAF8] p-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1 text-[#8C8B82] mb-1">
                             <Users className="w-3 h-3" />
                         </div>
-                        <div className="text-xs font-bold text-[#111827]">
+                        <div className="text-xs font-semibold text-[#1B1B18]">
                             {participantCount}{contest.max_participants ? `/${contest.max_participants}` : ""}
                         </div>
-                        <div className="text-[10px] text-[#9CA3AF]">Players</div>
+                        <div className="text-[10px] text-[#8C8B82]">Players</div>
                     </div>
                 </div>
 
                 {/* CTA button */}
                 {isLive && isEnrolled ? (
                     <button onClick={onJoin}
-                        className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[#10B981]/25">
-                        <Swords className="w-4 h-4" /> Join Contest Now!
+                        className="w-full bg-[#2F6B3A] hover:bg-[#255A2E] text-white font-medium py-3 text-sm transition-colors flex items-center justify-center gap-2">
+                        <Swords className="w-4 h-4" /> Join contest now
                     </button>
                 ) : isEnrolled ? (
                     <button disabled
-                        className="w-full bg-[#EEF2FF] text-[#6366F1] font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 cursor-default">
-                        <CheckCircle className="w-4 h-4" /> Enrolled — Waiting for Start
+                        className="w-full bg-[#F3E7E9] text-[#6B2737] font-medium py-3 text-sm flex items-center justify-center gap-2 cursor-default">
+                        <CheckCircle className="w-4 h-4" /> Enrolled — waiting for start
                     </button>
                 ) : isLive ? (
                     <button disabled
-                        className="w-full bg-[#F9FAFB] text-[#9CA3AF] font-semibold py-3 rounded-xl text-sm cursor-not-allowed border border-[#E5E7EB]">
+                        className="w-full bg-[#FAFAF8] text-[#8C8B82] font-medium py-3 text-sm cursor-not-allowed border border-[#DEDCD3]">
                         Contest already started
                     </button>
                 ) : full ? (
                     <button disabled
-                        className="w-full bg-[#FEF2F2] text-[#EF4444] font-semibold py-3 rounded-xl text-sm cursor-not-allowed border border-[#FECACA]">
-                        Contest Full
+                        className="w-full bg-[#F5E7E4] text-[#8C2E24] font-medium py-3 text-sm cursor-not-allowed border border-[#E0B8AF]">
+                        Contest full
                     </button>
                 ) : (
                     <button onClick={onEnroll}
-                        className="w-full bg-[#6366F1] hover:bg-[#4F46E5] text-white font-bold py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[#6366F1]/25 hover:-translate-y-0.5">
-                        <Zap className="w-4 h-4" /> Enroll Now
+                        className="w-full bg-[#6B2737] hover:bg-[#551F2C] text-white font-medium py-3 text-sm transition-colors flex items-center justify-center gap-2">
+                        <Zap className="w-4 h-4" /> Enroll now
                     </button>
                 )}
 
                 {/* Date line */}
-                <div className="mt-2.5 text-center text-xs text-[#9CA3AF] flex items-center justify-center gap-1">
+                <div className="mt-2.5 text-center text-xs text-[#8C8B82] flex items-center justify-center gap-1">
                     <Calendar className="w-3 h-3" /> {formatDate(contest.start_time)}
                     {!isLive && !isEnrolled && ` · ${contest.questions_count} questions`}
                 </div>
@@ -405,7 +405,7 @@ export default function ContestsPage() {
     });
 
     return (
-        <div className="animate-fade-in-up">
+        <div>
 
             {/* Enroll modal */}
             {toEnroll && (
@@ -419,9 +419,9 @@ export default function ContestsPage() {
 
             {/* Flash message */}
             {flashMsg && (
-                <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-semibold max-w-sm animate-fade-in ${flashMsg.type === "success"
-                    ? "bg-[#D1FAE5] text-[#065F46] border border-[#6EE7B7]"
-                    : "bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]"
+                <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 text-sm font-medium max-w-sm border ${flashMsg.type === "success"
+                    ? "bg-[#E9F1E9] text-[#2F6B3A] border-[#B8D8B8]"
+                    : "bg-[#F5E7E4] text-[#8C2E24] border-[#E0B8AF]"
                     }`}>
                     {flashMsg.type === "success" ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
                     <span className="flex-1">{flashMsg.text}</span>
@@ -432,22 +432,22 @@ export default function ContestsPage() {
             {/* Page header */}
             <div className="flex items-center justify-between mb-7">
                 <div>
-                    <h1 className="text-2xl font-black text-[#111827] mb-1 flex items-center gap-2.5">
-                        <Swords className="w-6 h-6 text-[#6366F1]" /> Live Contests
+                    <h1 className="font-heading text-2xl font-medium text-[#1B1B18] mb-1 flex items-center gap-2.5">
+                        <Swords className="w-5 h-5 text-[#6B2737]" /> Live contests
                     </h1>
-                    <p className="text-sm text-[#6B7280]">
-                        Compete against other learners in real-time timed quizzes. Top scorers win!
+                    <p className="text-sm text-[#5B5A52]">
+                        Compete against other learners in real-time timed quizzes. Top scorers win.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
                     {(["all", "upcoming", "live"] as const).map(f => (
                         <button key={f} onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all ${filter === f
-                                ? "bg-[#6366F1] text-white shadow-sm"
-                                : "bg-white text-[#6B7280] border border-[#E5E7EB] hover:border-[#6366F1] hover:text-[#6366F1]"
+                            className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${filter === f
+                                ? "bg-[#6B2737] text-white"
+                                : "bg-white text-[#5B5A52] border border-[#DEDCD3] hover:border-[#ABA99C]"
                                 }`}>
-                            <Filter className={`w-3.5 h-3.5 inline mr-1.5 ${filter === f ? "text-white" : "text-[#9CA3AF]"}`} />
-                            {f === "all" ? "All" : f === "upcoming" ? "Upcoming" : "🔴 Live"}
+                            <Filter className={`w-3.5 h-3.5 inline mr-1.5 ${filter === f ? "text-white" : "text-[#8C8B82]"}`} />
+                            {f === "all" ? "All" : f === "upcoming" ? "Upcoming" : "Live"}
                         </button>
                     ))}
                 </div>
@@ -466,33 +466,33 @@ export default function ContestsPage() {
                     : null;
 
                 return hasLive ? (
-                    // 🔴 Urgent banner — contest is live right now!
-                    <div className="mb-6 bg-gradient-to-r from-[#ECFDF5] to-[#D1FAE5] border border-[#6EE7B7] rounded-2xl p-4 flex items-center gap-3">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-ping flex-shrink-0" />
+                    // Urgent banner — contest is live right now
+                    <div className="mb-6 bg-[#E9F1E9] border border-[#B8D8B8] p-4 flex items-center gap-3">
+                        <Radio className="w-4 h-4 text-[#2F6B3A] animate-pulse flex-shrink-0" />
                         <div className="flex-1">
-                            <span className="text-sm font-bold text-[#065F46]">
+                            <span className="text-sm font-semibold text-[#2F6B3A]">
                                 {liveEnrolled.length === 1
-                                    ? `"${liveEnrolled[0].title}" is live right now!`
-                                    : `${liveEnrolled.length} of your enrolled contests are live!`}
+                                    ? `"${liveEnrolled[0].title}" is live right now`
+                                    : `${liveEnrolled.length} of your enrolled contests are live`}
                             </span>
-                            <span className="text-sm text-[#059669] ml-2">Don&apos;t miss it!</span>
+                            <span className="text-sm text-[#2F6B3A] ml-2">Don&apos;t miss it.</span>
                         </div>
                         <button
                             onClick={() => router.push(liveQuizHref!)}
-                            className="flex items-center gap-1.5 bg-[#10B981] hover:bg-[#059669] text-white text-xs font-black px-4 py-2 rounded-xl transition-all hover:shadow-lg hover:shadow-[#10B981]/25 whitespace-nowrap flex-shrink-0"
+                            className="flex items-center gap-1.5 bg-[#2F6B3A] hover:bg-[#255A2E] text-white text-xs font-semibold px-4 py-2 transition-colors whitespace-nowrap flex-shrink-0"
                         >
-                            Go to Quiz Now! <ArrowRight className="w-3.5 h-3.5" />
+                            Go to quiz now <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 ) : (
-                    // 📋 Default banner — enrolled but waiting for start
-                    <div className="mb-6 bg-gradient-to-r from-[#EEF2FF] to-[#F5F3FF] border border-[#C7D2FE] rounded-2xl p-4 flex items-center gap-3">
-                        <Trophy className="w-5 h-5 text-[#6366F1] flex-shrink-0" />
+                    // Default banner — enrolled but waiting for start
+                    <div className="mb-6 bg-[#F3E7E9] border border-[#DCC0C6] p-4 flex items-center gap-3">
+                        <Trophy className="w-5 h-5 text-[#6B2737] flex-shrink-0" />
                         <div>
-                            <span className="text-sm font-bold text-[#4338CA]">
+                            <span className="text-sm font-semibold text-[#6B2737]">
                                 You&apos;re enrolled in {enrolled.size} contest{enrolled.size > 1 ? "s" : ""}
                             </span>
-                            <span className="text-sm text-[#6366F1] ml-2">— visit the lobby when it goes live!</span>
+                            <span className="text-sm text-[#6B2737] ml-2">— visit the lobby when it goes live.</span>
                         </div>
                     </div>
                 );
@@ -500,19 +500,19 @@ export default function ContestsPage() {
 
             {/* Contest grid */}
             {loading ? (
-                <div className="flex items-center justify-center py-24 text-[#6B7280]">
+                <div className="flex items-center justify-center py-24 text-[#8C8B82]">
                     <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading contests…
                 </div>
             ) : displayed.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-24 text-center">
-                    <Swords className="w-16 h-16 text-[#E5E7EB] mb-4" />
-                    <h2 className="text-xl font-black text-[#374151] mb-2">
+                <div className="flex flex-col items-center justify-center py-24 text-center border border-[#DEDCD3] bg-white">
+                    <Swords className="w-12 h-12 text-[#DEDCD3] mb-4" />
+                    <h2 className="font-heading text-xl font-medium text-[#3F3E38] mb-2">
                         {filter === "live" ? "No live contests right now" : "No contests yet"}
                     </h2>
-                    <p className="text-[#9CA3AF] text-sm max-w-sm">
+                    <p className="text-[#8C8B82] text-sm max-w-sm">
                         {filter === "live"
                             ? "Check back later or switch to \"Upcoming\" to see what's scheduled."
-                            : "Contests are created by admins. Check back soon!"}
+                            : "Contests are created by admins. Check back soon."}
                     </p>
                 </div>
             ) : (

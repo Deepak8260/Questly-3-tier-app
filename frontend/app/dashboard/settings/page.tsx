@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import {
   User, Mail, Lock, Moon, Sun, LogOut, Trash2,
   Save, CheckCircle, AlertTriangle, Eye, EyeOff, Loader2,
-  Upload, Camera, X, Twitter, Linkedin, Github, Globe, Bell,
+  Upload, Camera, X, Twitter, Linkedin, Github, Globe, Bell, Pencil,
   MessageSquare, Zap, Shield, Crop, RotateCw, ZoomIn, ZoomOut, Move
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
@@ -280,6 +280,7 @@ export default function SettingsPage() {
   const [profileMsg, setProfileMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 
   // Password state
   const [currentPwd, setCurrentPwd] = useState("");
@@ -499,7 +500,7 @@ export default function SettingsPage() {
         <Section title="Profile" description="Update your display name, avatar, and bio" icon={<User className="w-4 h-4" />}>
           <div className="flex items-center gap-4 mb-5">
             {/* Avatar */}
-            <div className="relative">
+            <div className="relative group">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -511,27 +512,67 @@ export default function SettingsPage() {
                   {initials}
                 </div>
               )}
-              {/* Upload/Remove buttons */}
-              <div className="absolute -bottom-1 -right-1 flex gap-1">
-                <label className="w-8 h-8 bg-[#6366F1] rounded-xl flex items-center justify-center text-white cursor-pointer hover:bg-[#4F46E5] transition-colors shadow-lg">
-                  {avatarUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                    disabled={avatarUploading}
-                  />
-                </label>
-                {avatarUrl && (
-                  <button
-                    onClick={removeAvatar}
-                    className="w-8 h-8 bg-[#EF4444] rounded-xl flex items-center justify-center text-white hover:bg-[#DC2626] transition-colors shadow-lg"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
+              {/* Edit button */}
+              <div className="absolute -bottom-1 -right-1">
+                <button
+                  onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                  className="w-8 h-8 bg-[#6366F1] rounded-xl flex items-center justify-center text-white cursor-pointer hover:bg-[#4F46E5] transition-colors shadow-lg"
+                >
+                  {avatarUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+                </button>
               </div>
+
+              {/* Avatar menu */}
+              {showAvatarMenu && (
+                <>
+                  <div className="absolute top-full left-0 z-50 w-48 mt-2 bg-white dark:bg-[#1e293b] border border-[#E5E7EB] dark:border-[#334155] rounded-xl shadow-lg overflow-hidden">
+                    <div className="py-1">
+                      {avatarUrl && (
+                        <button
+                          onClick={() => {
+                            setShowAvatarMenu(false);
+                            window.open(avatarUrl, '_blank');
+                          }}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-[#374151] dark:text-[#f8fafc] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] w-full text-left"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View photo
+                        </button>
+                      )}
+                      <label className="flex items-center gap-3 px-4 py-2 text-sm text-[#374151] dark:text-[#f8fafc] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] cursor-pointer w-full text-left">
+                        <Camera className="w-4 h-4" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            setShowAvatarMenu(false);
+                            handleImageSelect(e);
+                          }}
+                          className="hidden"
+                          disabled={avatarUploading}
+                        />
+                        Change photo
+                      </label>
+                      {avatarUrl && (
+                        <button
+                          onClick={() => {
+                            setShowAvatarMenu(false);
+                            removeAvatar();
+                          }}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-[#EF4444] hover:bg-[#FEF2F2] dark:hover:bg-[#1c0809] w-full text-left"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Remove photo
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowAvatarMenu(false)}
+                  />
+                </>
+              )}
             </div>
             <div>
               <p className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc]">{displayName || "—"}</p>

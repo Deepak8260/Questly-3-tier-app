@@ -8,6 +8,7 @@ import {
     Radio, BookOpen, AlertCircle, X, Shield, Info
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { API_BASE_URL } from "@/lib/api";
 import type { QuizBattle, BattleDifficulty } from "./types";
 
 const TOPICS = [
@@ -77,7 +78,7 @@ function ChallengeModal({ userId, onClose, onCreated }: {
         }
 
         // Generate questions
-        const res = await fetch("/api/quiz/generate", {
+        const res = await fetch(`${API_BASE_URL}/api/quiz/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ topic, difficulty, numQuestions: count, questionType: "mcq", aiMode: "standard" }),
@@ -212,7 +213,7 @@ function QuickMatchModal({ userId, onClose, onJoined }: {
         }
 
         // No match found — create a new random battle and wait
-        const res = await fetch("/api/quiz/generate", {
+        const res = await fetch(`${API_BASE_URL}/api/quiz/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ topic, difficulty, numQuestions: 10, questionType: "mcq", aiMode: "standard" }),

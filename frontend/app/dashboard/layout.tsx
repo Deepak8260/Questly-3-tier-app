@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   LayoutDashboard, Zap, BookOpen, Map, Trophy, BarChart3,
   Users, Settings, LogOut, ChevronRight, Flame, Swords
@@ -14,7 +14,7 @@ const NAV = [
   { href: "/dashboard/generate", icon: Zap, label: "Generate quiz" },
   { href: "/dashboard/quizzes", icon: BookOpen, label: "My quizzes" },
   { href: "/dashboard/contests", icon: Swords, label: "Live contests", badge: "LIVE" },
-  { href: "/dashboard/battles", icon: Swords, label: "Battle mode", badge: "NEW" },
+  { href: "/dashboard/battles", icon: Swords, label: "Battle mode" },
   { href: "/dashboard/roadmap", icon: Map, label: "Study roadmap" },
   { href: "/dashboard/certificates", icon: Trophy, label: "Certificates" },
   { href: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
@@ -25,10 +25,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const path = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<{ name: string; email: string; initials: string } | null>(null);
+  const [pendingBattlesCount, setPendingBattlesCount] = useState(0);
+
+  const loadPendingBattles = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { count } = await supabase
+      .from("quiz_battles")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending")
+      .eq("player_two", user.id);
+
+    setPendingBattlesCount(count ?? 0);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
     let presenceChannel: ReturnType<typeof supabase.channel> | null = null;
+    let battleChannel: ReturnType<typeof supabase.channel> | null = null;
 
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
@@ -40,9 +56,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setUser({ name, email: user.email ?? "", initials });
 
       // ── 1. Realtime Presence — "Online Now" heartbeat ──────────────
-      // Subscribes this user to the shared presence channel.
-      // Admin can see everyone currently subscribed (= currently on dashboard).
-      // Automatically removed when browser tab closes.
       presenceChannel = supabase.channel("questly-presence", {
         config: { presence: { key: user.id } },
       });
@@ -57,23 +70,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
       });
 
-      // ── 2. Profile upsert — safe, no last_seen_at yet ─────────────
+      // ── 2. Profile upsert ─────────────────────────────────────────
       supabase.from("profiles").upsert(
         { id: user.id, full_name: name, email: user.email ?? "" },
         { onConflict: "id" }
       ).then(() => {
-        // Try updating last_seen_at separately (silently fails if column missing)
         supabase.from("profiles")
           .update({ last_seen_at: new Date().toISOString() } as Record<string, string>)
           .eq("id", user.id)
           .then(() => {/* silent */ });
       });
+
+      // ── 3. Load pending battles and subscribe to changes ──────────
+      loadPendingBattles();
+      
+      battleChannel = supabase.channel("pending-battles")
+        .on("postgres_changes", { event: "*", schema: "public", table: "quiz_battles" }, () => {
+          loadPendingBattles();
+        })
+        .subscribe();
     });
 
     return () => {
       if (presenceChannel) supabase.removeChannel(presenceChannel);
+      if (battleChannel) supabase.removeChannel(battleChannel);
     };
-  }, []);
+  }, [loadPendingBattles]);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -121,6 +143,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {NAV.map((item) => {
             const active = path === item.href || (item.href !== "/dashboard" && path.startsWith(item.href));
             const navItem = item as typeof item & { badge?: string };
+            const isBattleMode = item.href === "/dashboard/battles";
+            const showPendingBadge = isBattleMode && pendingBattlesCount > 0;
+            
             return (
               <Link
                 key={item.href}
@@ -132,7 +157,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#8C8B82] group-hover:text-[#5B5A52]"}`} />
                 {item.label}
-                {navItem.badge && !active && (
+                {showPendingBadge && (
+                  <span className="ml-1 text-[9px] font-semibold bg-[#6B2737] text-white px-1.5 py-0.5 rounded-full">
+                    {pendingBattlesCount}
+                  </span>
+                )}
+                {navItem.badge && !active && !showPendingBadge && (
                   <span className="ml-1 text-[9px] font-semibold border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] px-1.5 py-0.5 tracking-wider">
                     {navItem.badge}
                   </span>

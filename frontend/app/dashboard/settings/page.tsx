@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   User, Mail, Lock, Moon, Sun, LogOut, Trash2,
-  Save, CheckCircle, AlertTriangle, Eye, EyeOff, Loader2
+  Save, CheckCircle, AlertTriangle, Eye, EyeOff, Loader2,
+  Upload, Camera, X, Twitter, Linkedin, Github, Globe, Bell,
+  MessageSquare, Zap, Shield
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTheme } from "@/lib/ThemeContext";
@@ -46,6 +48,44 @@ function Field({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> 
   );
 }
 
+// ── Textarea field ─────────────────────────────────────────────────
+function TextArea({ label, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-[#374151] dark:text-[#94a3b8]">{label}</label>
+      <textarea
+        {...props}
+        rows={4}
+        className="w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155]
+                   bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc]
+                   placeholder:text-[#9CA3AF] outline-none resize-none
+                   focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+      />
+    </div>
+  );
+}
+
+// ── Toggle switch ─────────────────────────────────────────────────
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <div className="flex items-center justify-between py-3 border-b border-[#F3F4F6] dark:border-[#334155] last:border-0">
+      <span className="text-sm text-[#374151] dark:text-[#f8fafc]">{label}</span>
+      <button
+        onClick={() => onChange(!checked)}
+        className={`relative w-11 h-6 rounded-full transition-colors ${
+          checked ? "bg-[#6366F1]" : "bg-[#E5E7EB] dark:bg-[#334155]"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
 // ── Toast message ─────────────────────────────────────────────────
 function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
   return (
@@ -75,8 +115,23 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [initials, setInitials] = useState("?");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [bio, setBio] = useState("");
+  const [socialLinks, setSocialLinks] = useState({
+    twitter: "",
+    linkedin: "",
+    github: "",
+    website: ""
+  });
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    email_notifications: true,
+    push_notifications: true,
+    battle_invites: true,
+    contest_reminders: true
+  });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   // Password state
   const [currentPwd, setCurrentPwd] = useState("");
@@ -93,18 +148,109 @@ export default function SettingsPage() {
 
   // ── Load user on mount ───────────────────────────────────────────
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      const name = (user.user_metadata?.full_name as string)
-        || (user.user_metadata?.name as string)
-        || user.email?.split("@")[0]
-        || "";
-      setDisplayName(name);
-      setEmail(user.email ?? "");
-      setInitials(name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "?");
-    });
+    loadUserProfile();
   }, []);
+
+  const loadUserProfile = async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const name = (user.user_metadata?.full_name as string)
+      || (user.user_metadata?.name as string)
+      || user.email?.split("@")[0]
+      || "";
+    setDisplayName(name);
+    setEmail(user.email ?? "");
+    setInitials(name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "?");
+
+    // Load profile from profiles table
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (profile) {
+      setAvatarUrl(profile.avatar_url);
+      setBio(profile.bio || "");
+      setSocialLinks({
+        twitter: profile.social_links?.twitter || "",
+        linkedin: profile.social_links?.linkedin || "",
+        github: profile.social_links?.github || "",
+        website: profile.social_links?.website || ""
+      });
+      setNotificationPrefs({
+        email_notifications: profile.notification_preferences?.email_notifications ?? true,
+        push_notifications: profile.notification_preferences?.push_notifications ?? true,
+        battle_invites: profile.notification_preferences?.battle_invites ?? true,
+        contest_reminders: profile.notification_preferences?.contest_reminders ?? true
+      });
+    }
+  };
+
+  // ── Handle avatar upload ─────────────────────────────────────────
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith("image/")) {
+      setProfileMsg({ text: "Please upload an image file.", type: "error" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      setProfileMsg({ text: "Image size must be less than 5MB.", type: "error" });
+      return;
+    }
+
+    setAvatarUploading(true);
+    setProfileMsg(null);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${user.id}/${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      setAvatarUrl(publicUrl);
+      setProfileMsg({ text: "Avatar uploaded successfully! Click 'Save Profile' to keep it.", type: "success" });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      setProfileMsg({ text: error.message || "Failed to upload avatar. Make sure the storage bucket is set up.", type: "error" });
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  // ── Remove avatar ─────────────────────────────────────────────────
+  const removeAvatar = async () => {
+    try {
+      setAvatarUrl(null);
+      setProfileMsg({ text: "Avatar removed.", type: "success" });
+    } catch (error: any) {
+      setProfileMsg({ text: error.message || "Failed to remove avatar.", type: "error" });
+    }
+  };
 
   // ── Save profile ─────────────────────────────────────────────────
   const saveProfile = async () => {
@@ -119,11 +265,17 @@ export default function SettingsPage() {
     if (error) {
       setProfileMsg({ text: error.message, type: "error" });
     } else {
-      // Also update profiles table if it exists
+      // Also update profiles table
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from("profiles").upsert({
-          id: user.id, full_name: displayName.trim(), updated_at: new Date().toISOString(),
+          id: user.id,
+          full_name: displayName.trim(),
+          avatar_url: avatarUrl,
+          bio: bio,
+          social_links: socialLinks,
+          notification_preferences: notificationPrefs,
+          updated_at: new Date().toISOString(),
         });
       }
       const ini = displayName.trim().split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -153,7 +305,7 @@ export default function SettingsPage() {
   // ── Delete account ───────────────────────────────────────────────
   const deleteAccount = async () => {
     if (deleteConfirm !== "DELETE") {
-      setDeleteMsg({ text: 'Type DELETE (all caps) to confirm.', type: "error" }); return;
+      setDeleteMsg({ text: 'Type "DELETE" (all caps) to confirm.', type: "error" }); return;
     }
     setDeleting(true); setDeleteMsg(null);
     const supabase = createClient();
@@ -186,17 +338,48 @@ export default function SettingsPage() {
       <div className="space-y-6">
 
         {/* ── Profile ── */}
-        <Section title="Profile" description="Update your display name and avatar" icon={<User className="w-4 h-4" />}>
+        <Section title="Profile" description="Update your display name, avatar, and bio" icon={<User className="w-4 h-4" />}>
           <div className="flex items-center gap-4 mb-5">
             {/* Avatar */}
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white text-xl font-black flex-shrink-0">
-              {initials}
+            <div className="relative">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-[#E5E7EB] dark:border-[#334155]"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white text-2xl font-black">
+                  {initials}
+                </div>
+              )}
+              {/* Upload/Remove buttons */}
+              <div className="absolute -bottom-1 -right-1 flex gap-1">
+                <label className="w-8 h-8 bg-[#6366F1] rounded-xl flex items-center justify-center text-white cursor-pointer hover:bg-[#4F46E5] transition-colors shadow-lg">
+                  {avatarUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                    disabled={avatarUploading}
+                  />
+                </label>
+                {avatarUrl && (
+                  <button
+                    onClick={removeAvatar}
+                    className="w-8 h-8 bg-[#EF4444] rounded-xl flex items-center justify-center text-white hover:bg-[#DC2626] transition-colors shadow-lg"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
             <div>
               <p className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc]">{displayName || "—"}</p>
               <p className="text-xs text-[#9CA3AF]">{email}</p>
               <p className="text-[10px] text-[#9CA3AF] mt-1">
-                Avatar is auto-generated from your initials
+                Upload a profile picture (max 5MB)
               </p>
             </div>
           </div>
@@ -207,6 +390,55 @@ export default function SettingsPage() {
               onChange={e => setDisplayName(e.target.value)}
               placeholder="Your full name"
             />
+            <TextArea
+              label="Bio"
+              value={bio}
+              onChange={e => setBio(e.target.value)}
+              placeholder="Tell us a little about yourself..."
+            />
+            <div className="space-y-3 pt-2">
+              <p className="text-xs font-semibold text-[#374151] dark:text-[#94a3b8]">Social Links</p>
+              <div className="relative">
+                <Twitter className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <input
+                  type="url"
+                  placeholder="https://twitter.com/username"
+                  value={socialLinks.twitter}
+                  onChange={e => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                />
+              </div>
+              <div className="relative">
+                <Linkedin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <input
+                  type="url"
+                  placeholder="https://linkedin.com/in/username"
+                  value={socialLinks.linkedin}
+                  onChange={e => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                />
+              </div>
+              <div className="relative">
+                <Github className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <input
+                  type="url"
+                  placeholder="https://github.com/username"
+                  value={socialLinks.github}
+                  onChange={e => setSocialLinks({ ...socialLinks, github: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                />
+              </div>
+              <div className="relative">
+                <Globe className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <input
+                  type="url"
+                  placeholder="https://yourwebsite.com"
+                  value={socialLinks.website}
+                  onChange={e => setSocialLinks({ ...socialLinks, website: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                />
+              </div>
+            </div>
             <Field
               label="Email Address"
               value={email}
@@ -228,6 +460,32 @@ export default function SettingsPage() {
             {profileSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Save Profile
           </button>
+        </Section>
+
+        {/* ── Notifications ── */}
+        <Section title="Notifications" description="Manage your notification preferences" icon={<Bell className="w-4 h-4" />}>
+          <div className="space-y-0">
+            <Toggle
+              checked={notificationPrefs.email_notifications}
+              onChange={(v) => setNotificationPrefs({ ...notificationPrefs, email_notifications: v })}
+              label="Email Notifications"
+            />
+            <Toggle
+              checked={notificationPrefs.push_notifications}
+              onChange={(v) => setNotificationPrefs({ ...notificationPrefs, push_notifications: v })}
+              label="Push Notifications"
+            />
+            <Toggle
+              checked={notificationPrefs.battle_invites}
+              onChange={(v) => setNotificationPrefs({ ...notificationPrefs, battle_invites: v })}
+              label="Battle Invites"
+            />
+            <Toggle
+              checked={notificationPrefs.contest_reminders}
+              onChange={(v) => setNotificationPrefs({ ...notificationPrefs, contest_reminders: v })}
+              label="Contest Reminders"
+            />
+          </div>
         </Section>
 
         {/* ── Appearance ── */}

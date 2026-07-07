@@ -71,17 +71,48 @@ function makeCertId(attemptId: string, createdAt: string) {
 
 // Review Modal Component
 function ReviewModal({ attempt, onClose, userName }: { attempt: QuizAttempt, onClose: () => void, userName: string }) {
+  const [visible, setVisible] = useState(false);
+  
+  useEffect(() => {
+    // Animate in
+    setTimeout(() => setVisible(true), 10);
+  }, []);
+  
+  const handleClose = () => {
+    setVisible(false);
+    // Wait for animation to complete before unmounting
+    setTimeout(onClose, 300);
+  };
+  
   const hasData = attempt.questions_data && attempt.questions_data.length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white dark:bg-[#1C1C16] max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-[#DEDCD3] dark:border-[#35352C] rounded-sm" onClick={(e) => e.stopPropagation()}>
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      backgroundColor: visible ? "rgba(0,0,0,0.60)" : "rgba(0,0,0,0)",
+      backdropFilter: "blur(4px)",
+      padding: "16px",
+      transition: "background-color 300ms ease-out",
+    }} onClick={handleClose}>
+      <div style={{
+        width: "100%", maxWidth: 896,
+        backgroundColor: "white",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        border: "1px solid #DEDCD3",
+        borderRadius: 4,
+        transform: visible ? "scale(1) translateY(0)" : "scale(0.95) translateY(20px)",
+        opacity: visible ? 1 : 0,
+        transition: "opacity 300ms ease-out, transform 300ms ease-out",
+      }} onClick={(e) => e.stopPropagation()}>
+        {/* Modal Header */}
         <div className="sticky top-0 bg-white dark:bg-[#1C1C16] border-b border-[#DEDCD3] dark:border-[#35352C] px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="font-heading text-xl font-medium text-[#1B1B18] dark:text-[#F2F1EA]">Quiz Review: {attempt.topic}</h2>
             <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">Score: {attempt.score_pct}% ({attempt.correct_answers}/{attempt.total_questions} correct)</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
             <X className="w-5 h-5 text-[#5B5A52]" />
           </button>
         </div>

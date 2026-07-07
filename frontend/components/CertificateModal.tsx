@@ -16,24 +16,32 @@ interface CertificateModalProps {
 }
 
 export default function CertificateModal(props: CertificateModalProps) {
-  // Wait for client-side mount before using createPortal
   const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  
   useEffect(() => {
     setMounted(true);
-    // Prevent body scroll while modal is open
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    setTimeout(() => setVisible(true), 10);
+    return () => { 
+      document.body.style.overflow = ""; 
+    };
   }, []);
 
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(props.onClose, 300);
+  };
+
   if (!mounted) return null;
-  return createPortal(<ModalContent {...props} />, document.body);
+  return createPortal(<ModalContent {...props} onClose={handleClose} visible={visible} />, document.body);
 }
 
-/* ─── The actual modal UI, rendered into document.body ─── */
 function ModalContent({
   topic, scorePct, correctAnswers, totalQuestions,
   difficulty, userName, earnedAt, certId, onClose,
-}: CertificateModalProps) {
+  visible,
+}: CertificateModalProps & { visible: boolean }) {
   const formattedDate = new Date(earnedAt).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
   });
@@ -121,27 +129,28 @@ function ModalContent({
   };
 
   return (
-    /* ── Backdrop — rendered directly in document.body via portal ── */
     <div
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
         display: "flex", alignItems: "center", justifyContent: "center",
-        backgroundColor: "rgba(0,0,0,0.70)",
+        backgroundColor: visible ? "rgba(0,0,0,0.70)" : "rgba(0,0,0,0)",
         backdropFilter: "blur(4px)",
         padding: "24px",
+        transition: "background-color 300ms ease-out",
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* ── Modal — wide (landscape) ── */}
       <div style={{
         width: "100%", maxWidth: 760,
         display: "flex", flexDirection: "column",
         borderRadius: 16, overflow: "hidden",
         boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
         backgroundColor: "#ffffff",
+        transform: visible ? "scale(1) translateY(0)" : "scale(0.95) translateY(20px)",
+        opacity: visible ? 1 : 0,
+        transition: "opacity 300ms ease-out, transform 300ms ease-out",
       }}>
 
-        {/* Top bar */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "12px 20px",
@@ -163,7 +172,6 @@ function ModalContent({
           </button>
         </div>
 
-        {/* ── Landscape certificate (always light — print document) ── */}
         <div style={{ padding: "20px 20px 0" }}>
           <div style={{
             border: "7px solid #6366F1", borderRadius: 12,
@@ -171,48 +179,31 @@ function ModalContent({
             padding: "28px 48px 24px",
             textAlign: "center", position: "relative", overflow: "hidden",
           }}>
-            {/* Decorative rings */}
             <div style={{ position:"absolute", top:-20, left:-20, width:90, height:90,
               border:"3px solid #6366F1", borderRadius:"50%", opacity:0.1 }} />
             <div style={{ position:"absolute", bottom:-20, right:-20, width:75, height:75,
               border:"3px solid #6366F1", borderRadius:"50%", opacity:0.1 }} />
-
-            {/* Trophy */}
             <div style={{ fontSize:36, marginBottom:6 }}>🏆</div>
-
-            {/* Issuer */}
             <div style={{ fontSize:8, fontWeight:900, color:"#6366F1",
               letterSpacing:"4px", textTransform:"uppercase", marginBottom:10 }}>
               Questly · AI-Powered Learning Platform
             </div>
-
-            {/* Title */}
             <div style={{ fontSize:22, fontWeight:900, color:"#111827", marginBottom:0 }}>
               Certificate of Achievement
             </div>
-
-            {/* Divider */}
             <div style={{ width:60, height:3, background:"#6366F1",
               margin:"10px auto", borderRadius:2 }} />
-
-            {/* Certifies that */}
             <div style={{ fontSize:12, color:"#6B7280", marginBottom:5 }}>This certifies that</div>
-
-            {/* Name */}
             <div style={{ fontSize:20, fontWeight:700, color:"#6366F1",
               fontStyle:"italic", marginBottom:8 }}>
               {userName}
             </div>
-
-            {/* Body */}
             <div style={{ fontSize:12, color:"#374151", marginBottom:3 }}>
               has successfully completed the quiz on
             </div>
             <div style={{ fontSize:16, fontWeight:900, color:"#111827", marginBottom:14 }}>
               {topic}
             </div>
-
-            {/* Score row */}
             <div style={{ display:"flex", alignItems:"center",
               justifyContent:"center", gap:20, marginBottom:16 }}>
               <div style={{ fontSize:42, fontWeight:900, color:"#059669", lineHeight:1 }}>
@@ -228,8 +219,6 @@ function ModalContent({
                 <div style={{ fontSize:13, fontWeight:700, color:"#374151" }}>{diffLabel}</div>
               </div>
             </div>
-
-            {/* Footer strip */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8,
               borderTop:"1px solid #E5E7EB", paddingTop:12,
               fontSize:9, color:"#9CA3AF", textAlign:"center" }}>
@@ -237,15 +226,12 @@ function ModalContent({
               <div>✅ Passing: ≥ 70%</div>
               <div>🎓 Verified by Questly</div>
             </div>
-
-            {/* Cert ID */}
             <div style={{ fontFamily:"monospace", fontSize:8, color:"#D1D5DB", marginTop:8 }}>
               {certId}
             </div>
           </div>
         </div>
 
-        {/* ── Action footer ── */}
         <div style={{ display:"flex", gap:12, padding:"16px 20px",
           borderTop:"1px solid #F3F4F6", backgroundColor:"#F9FAFB", marginTop:20 }}>
           <button onClick={handleDownload} style={{

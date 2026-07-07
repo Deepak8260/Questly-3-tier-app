@@ -1,14 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   User, Mail, Lock, Moon, Sun, LogOut, Trash2,
   Save, CheckCircle, AlertTriangle, Eye, EyeOff, Loader2,
   Upload, Camera, X, Twitter, Linkedin, Github, Globe, Bell,
-  MessageSquare, Zap, Shield
+  MessageSquare, Zap, Shield, Crop, RotateCw, ZoomIn, ZoomOut, Move
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTheme } from "@/lib/ThemeContext";
+import * as Dialog from "@radix-ui/react-dialog";
 
 // ── Reusable section card ─────────────────────────────────────────
 function Section({ title, description, icon, children }: {
@@ -89,7 +90,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 // ── Toast message ─────────────────────────────────────────────────
 function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
   return (
-    <div className={`flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl border mt-4 ${type === "success"
+    <div className={`flex items-center gap-2 text-sm px-4 py-3 rounded-xl border ${type === "success"
       ? "bg-[#D1FAE5] border-[#6EE7B7] text-[#065F46]"
       : "bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]"
       }`}>
@@ -97,6 +98,151 @@ function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
         ? <CheckCircle className="w-4 h-4 flex-shrink-0" />
         : <AlertTriangle className="w-4 h-4 flex-shrink-0" />}
       {msg}
+    </div>
+  );
+}
+
+// ── Image Cropper Component ─────────────────────────────────────────────
+function ImageCropper({ imageSrc, onCropComplete, onCancel }: { imageSrc: string; onCropComplete: (croppedBlob: Blob) => void; onCancel: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef(1);
+  const [rotation, setRotation] = useState(0);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      imgRef.current = img;
+      drawImage();
+    };
+    img.src = imageSrc;
+  }, [imageSrc]);
+
+  useEffect(() => {
+    drawImage();
+  }, [offset, rotation]);
+
+  const drawImage = () => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(offset.x, offset.y);
+    ctx.scale(zoomRef.current, zoomRef.current);
+
+    const size = Math.min(img.width, img.height);
+    const sx = (img.width - size) / 2;
+    const sy = (img.height - size) / 2;
+    ctx.drawImage(
+      img,
+      sx, sy, size, size,
+      -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height
+    );
+
+    ctx.restore();
+  };
+
+  const getRelativeCoords = (e: React.MouseEvent | React.TouchEvent) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+    
+    let clientX: number, clientY: number;
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    return {
+      x: clientX - rect.left - rect.width / 2,
+      y: clientY - rect.top - rect.height / 2
+    };
+  };
+
+  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    const coords = getRelativeCoords(e);
+    setDragStart({ x: coords.x - offset.x, y: coords.y - offset.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return;
+    const coords = getRelativeCoords(e);
+    setOffset({
+      x: coords.x - dragStart.x,
+      y: coords.y - dragStart.y
+    });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleZoom = (delta: number) => {
+    zoomRef.current = Math.max(0.5, Math.min(3, zoomRef.current + delta));
+    drawImage();
+  };
+
+  const handleRotate = () => {
+    setRotation(prev => (prev + 90) % 360);
+  };
+
+  const handleApply = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.toBlob((blob) => {
+      if (blob) onCropComplete(blob);
+    }, "image/png");
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div
+        ref={containerRef}
+        className="relative overflow-hidden rounded-full w-64 h-64 bg-gray-100 dark:bg-gray-800 cursor-move select-none"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleMouseDown}
+        onTouchMove={handleMouseMove}
+        onTouchEnd={handleMouseUp}
+      >
+        <canvas ref={canvasRef} width={256} height={256} className="w-full h-full" />
+        <div className="absolute inset-0 rounded-full border-4 border-white/50 pointer-events-none" />
+      </div>
+      <div className="flex items-center gap-4">
+        <button onClick={() => handleZoom(0.2)} className="p-2 bg-gray-100 dark:bg-gray-700 rounded-xl">
+          <ZoomIn className="w-5 h-5" />
+        </button>
+        <button onClick={() => handleZoom(-0.2)} className="p-2 bg-gray-100 dark:bg-gray-700 rounded-xl">
+          <ZoomOut className="w-5 h-5" />
+        </button>
+        <button onClick={handleRotate} className="p-2 bg-gray-100 dark:bg-gray-700 rounded-xl">
+          <RotateCw className="w-5 h-5" />
+        </button>
+      </div>
+      <div className="flex gap-3">
+        <button onClick={onCancel} className="px-6 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-700 dark:text-gray-300">
+          Cancel
+        </button>
+        <button onClick={handleApply} className="px-6 py-2 bg-[#6366F1] text-white rounded-xl flex items-center gap-2">
+          <Crop className="w-4 h-4" /> Apply
+        </button>
+      </div>
     </div>
   );
 }
@@ -116,6 +262,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [initials, setInitials] = useState("?");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
   const [bio, setBio] = useState("");
   const [socialLinks, setSocialLinks] = useState({
     twitter: "",
@@ -132,6 +279,7 @@ export default function SettingsPage() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
 
   // Password state
   const [currentPwd, setCurrentPwd] = useState("");
@@ -146,7 +294,7 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteMsg, setDeleteMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  // ── Load user on mount ───────────────────────────────────────────
+  // ── Load user on mount ─────────────────────────────────────────
   useEffect(() => {
     loadUserProfile();
   }, []);
@@ -189,8 +337,8 @@ export default function SettingsPage() {
     }
   };
 
-  // ── Handle avatar upload ─────────────────────────────────────────
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Handle image selection for cropping ───────────────────────────────────
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -204,6 +352,17 @@ export default function SettingsPage() {
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setTempAvatarUrl(event.target?.result as string);
+      setShowCropper(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ── Handle cropped image upload ─────────────────────────────────────────
+  const handleCroppedImage = async (croppedBlob: Blob) => {
+    setShowCropper(false);
     setAvatarUploading(true);
     setProfileMsg(null);
 
@@ -212,16 +371,16 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${user.id}/${fileName}`;
+      const fileName = `${user.id}/${Date.now()}.png`;
+      const filePath = `avatars/${fileName}`;
 
       // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, {
+        .upload(filePath, croppedBlob, {
           cacheControl: "3600",
-          upsert: true
+          upsert: true,
+          contentType: "image/png"
         });
 
       if (uploadError) throw uploadError;
@@ -233,10 +392,10 @@ export default function SettingsPage() {
 
       // Update profile with new avatar URL
       setAvatarUrl(publicUrl);
-      setProfileMsg({ text: "Avatar uploaded successfully! Click 'Save Profile' to keep it.", type: "success" });
+      setProfileMsg({ text: "Avatar cropped and uploaded successfully! Click 'Save Profile' to keep it.", type: "success" });
     } catch (error: any) {
       console.error("Upload error:", error);
-      setProfileMsg({ text: error.message || "Failed to upload avatar. Make sure the storage bucket is set up.", type: "error" });
+      setProfileMsg({ text: error.message || "Failed to upload avatar.", type: "error" });
     } finally {
       setAvatarUploading(false);
     }
@@ -246,7 +405,7 @@ export default function SettingsPage() {
   const removeAvatar = async () => {
     try {
       setAvatarUrl(null);
-      setProfileMsg({ text: "Avatar removed.", type: "success" });
+      setProfileMsg({ text: "Avatar removed! Click 'Save Profile' to confirm.", type: "success" });
     } catch (error: any) {
       setProfileMsg({ text: error.message || "Failed to remove avatar.", type: "error" });
     }
@@ -330,13 +489,12 @@ export default function SettingsPage() {
 
   return (
     <div className="animate-fade-in-up max-w-2xl">
-      <div className="mb-7">
-        <h1 className="text-2xl font-black text-[#111827] dark:text-[#f8fafc] mb-1">Settings</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#111827] dark:text-[#f8fafc] mb-1">Settings</h1>
         <p className="text-sm text-[#6B7280] dark:text-[#94a3b8]">Manage your account and preferences</p>
       </div>
 
       <div className="space-y-6">
-
         {/* ── Profile ── */}
         <Section title="Profile" description="Update your display name, avatar, and bio" icon={<User className="w-4 h-4" />}>
           <div className="flex items-center gap-4 mb-5">
@@ -360,7 +518,7 @@ export default function SettingsPage() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleAvatarUpload}
+                    onChange={handleImageSelect}
                     className="hidden"
                     disabled={avatarUploading}
                   />
@@ -450,16 +608,18 @@ export default function SettingsPage() {
               Email cannot be changed here. Contact support if needed.
             </p>
           </div>
-          {profileMsg && <Toast msg={profileMsg.text} type={profileMsg.type} />}
-          <button
-            onClick={saveProfile}
-            disabled={profileSaving}
-            className="mt-4 flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50
-                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-md"
-          >
-            {profileSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Save Profile
-          </button>
+          {profileMsg && <div className="mt-4">{<Toast msg={profileMsg.text} type={profileMsg.type} />}</div>}
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={saveProfile}
+              disabled={profileSaving}
+              className="flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50
+                         text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-md"
+            >
+              {profileSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Profile
+            </button>
+          </div>
         </Section>
 
         {/* ── Notifications ── */}
@@ -530,7 +690,8 @@ export default function SettingsPage() {
             <div className="relative">
               <Field
                 label="New Password"
-                type={showPwds ? "text" : "password"}
+                type={showPwds ? "text" : "password"
+                }
                 value={newPwd}
                 onChange={e => setNewPwd(e.target.value)}
                 placeholder="Min. 8 characters"
@@ -545,7 +706,8 @@ export default function SettingsPage() {
             </div>
             <Field
               label="Confirm Password"
-              type={showPwds ? "text" : "password"}
+              type={showPwds ? "text" : "password"
+              }
               value={confirmPwd}
               onChange={e => setConfirmPwd(e.target.value)}
               placeholder="Repeat new password"
@@ -576,12 +738,12 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-          {pwdMsg && <Toast msg={pwdMsg.text} type={pwdMsg.type} />}
+          {pwdMsg && <div className="mt-4">{<Toast msg={pwdMsg.text} type={pwdMsg.type} />}</div>}
           <button
             onClick={changePassword}
             disabled={pwdSaving || !newPwd || !confirmPwd}
             className="mt-4 flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50
-                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-md"
+                     text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-md"
           >
             {pwdSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
             Update Password
@@ -592,7 +754,7 @@ export default function SettingsPage() {
         <Section title="Account" description="Session and account management" icon={<LogOut className="w-4 h-4" />}>
           <div className="space-y-3">
             {/* Sign out */}
-            <div className="flex items-center justify-between py-3 border-b border-[#F9FAFB] dark:border-[#334155]">
+            <div className="flex items-center justify-between py-3 border-b border-[#F3F4F6] dark:border-[#334155]">
               <div>
                 <p className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc]">Sign Out</p>
                 <p className="text-xs text-[#9CA3AF]">End your current session</p>
@@ -608,7 +770,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Email info */}
-            <div className="flex items-center gap-3 py-3 border-b border-[#F9FAFB] dark:border-[#334155]">
+            <div className="flex items-center gap-3 py-3 border-b border-[#F3F4F6] dark:border-[#334155]">
               <Mail className="w-4 h-4 text-[#9CA3AF]" />
               <div>
                 <p className="text-xs text-[#9CA3AF]">Logged in as</p>
@@ -642,20 +804,41 @@ export default function SettingsPage() {
               onChange={e => setDeleteConfirm(e.target.value)}
               placeholder="DELETE"
             />
-            {deleteMsg && <Toast msg={deleteMsg.text} type={deleteMsg.type} />}
+            {deleteMsg && <div className="mt-4">{<Toast msg={deleteMsg.text} type={deleteMsg.type} />}</div>}
             <button
               onClick={deleteAccount}
               disabled={deleting || deleteConfirm !== "DELETE"}
               className="mt-4 flex items-center gap-2 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40
-                         text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
+                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
             >
               {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               Delete My Account
             </button>
           </div>
         </div>
-
       </div>
+
+      {/* Crop Dialog */}
+      <Dialog.Root open={showCropper} onOpenChange={setShowCropper}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white dark:bg-[#1e293b] border border-[#E5E7EB] dark:border-[#334155] p-6 focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]">
+            <Dialog.Title className="text-lg font-bold text-[#111827] dark:text-[#f8fafc] mb-4">
+              Crop & Adjust Your Avatar
+            </Dialog.Title>
+            <Dialog.Description className="text-sm text-[#6B7280] dark:text-[#94a3b8] mb-6">
+              Zoom, rotate, and drag to adjust your profile picture.
+            </Dialog.Description>
+            {tempAvatarUrl && (
+              <ImageCropper
+                imageSrc={tempAvatarUrl}
+                onCropComplete={handleCroppedImage}
+                onCancel={() => setShowCropper(false)}
+              />
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

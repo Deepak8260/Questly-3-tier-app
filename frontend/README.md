@@ -170,7 +170,7 @@ After the image is built successfully, start the container.
 docker run -d -p 3000:3000 --name frontcont frontimg
 ```
 
-### 📌 What this command does
+### What this command does
 
 - 🚀 Creates a container named **frontcont**
 
@@ -228,9 +228,9 @@ http://13.201.25.100:3000
 
 ---
 
-# 🛠 Useful Docker Commands
+# Useful Docker Commands
 
-## 📌 View Running Containers
+## View Running Containers
 
 ```bash
 docker ps
@@ -238,7 +238,7 @@ docker ps
 
 ---
 
-## 📌 View All Containers
+## View All Containers
 
 ```bash
 docker ps -a
@@ -246,7 +246,7 @@ docker ps -a
 
 ---
 
-## 📌 View Docker Images
+## View Docker Images
 
 ```bash
 docker images
@@ -254,7 +254,7 @@ docker images
 
 ---
 
-## 📌 Stop the Container
+## Stop the Container
 
 ```bash
 docker stop frontcont
@@ -262,7 +262,7 @@ docker stop frontcont
 
 ---
 
-## 📌 Start the Container Again
+## Start the Container Again
 
 ```bash
 docker start frontcont
@@ -270,7 +270,7 @@ docker start frontcont
 
 ---
 
-## 📌 Restart the Container
+## Restart the Container
 
 ```bash
 docker restart frontcont
@@ -278,7 +278,7 @@ docker restart frontcont
 
 ---
 
-## 📌 Remove the Container
+## Remove the Container
 
 ```bash
 docker rm -f frontcont
@@ -286,7 +286,7 @@ docker rm -f frontcont
 
 ---
 
-## 📌 Remove the Docker Image
+## Remove the Docker Image
 
 ```bash
 docker rmi frontimg
@@ -294,7 +294,7 @@ docker rmi frontimg
 
 ---
 
-# ❓ Troubleshooting
+# Troubleshooting
 
 ### 🚫 Unable to Access the Website?
 

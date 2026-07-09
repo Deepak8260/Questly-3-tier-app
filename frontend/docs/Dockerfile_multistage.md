@@ -70,7 +70,9 @@ Any line that starts with a `#` symbol in a Dockerfile is just a comment. Docker
 Let's break this single line into pieces, because every word here matters.
 
 - `FROM` is a Dockerfile instruction that means "start building on top of this existing image." Every Dockerfile must begin with a `FROM` line, because Docker cannot build an image out of absolutely nothing; it always needs a starting point.
+
 - `node:22-slim` tells Docker exactly which starting image to download and use. The part before the colon, `node`, is the name of the image (an official image maintained by the Node.js team that already has Node.js installed on top of a small Linux system). The part after the colon, `22-slim`, is called a "tag," and it tells Docker which specific version to grab. Here, `22` means Node.js version 22, and `slim` means it's a smaller, trimmed-down version of the usual Node image (it still has the basics like a shell and some Linux tools, but fewer extras than the biggest, fattest version of the Node image).
+
 - `AS builder` gives this stage a nickname: "builder." Imagine you're labeling one of your two kitchens with a sticky note that says "Builder Kitchen," so that later on, you can simply say "grab that dish from the Builder Kitchen" instead of describing its exact location all over again.
 
 So, in plain words, this whole line says: "Start a new image, based on Node.js version 22's slim version, and let's call this stage 'builder' so we can refer to it later."
@@ -78,6 +80,7 @@ So, in plain words, this whole line says: "Start a new image, based on Node.js v
 ### `WORKDIR /app`
 
 - `WORKDIR` stands for "working directory." It's like saying "from now on, every following command should happen inside this specific folder."
+
 - `/app` is simply the name and location of that folder. Docker will create this folder automatically if it doesn't already exist.
 
 Without this line, Docker commands would run from the very top-level root folder of the container, which would make the whole project messy and disorganized, kind of like dumping all your groceries loose on the kitchen floor instead of putting them on the counter.
@@ -85,7 +88,9 @@ Without this line, Docker commands would run from the very top-level root folder
 ### `COPY package*.json ./`
 
 - `COPY` is an instruction that copies files or folders from your computer (outside the container) into the image (inside the container).
+
 - `package*.json` uses a wildcard symbol, the asterisk (`*`). A wildcard means "match anything here." So `package*.json` matches any file that starts with the word "package" and ends with ".json" — in a typical Node.js project, this grabs exactly two files: `package.json` and `package-lock.json`. Think of the asterisk like a blank tile in a word game that can stand in for any missing letters.
+
 - `./` means "put it right here," referring to the current working directory we set up earlier, which is `/app`.
 
 Notice something important: at this point, Docker copies **only** these two small files, not your entire project yet. This is done on purpose, and here's why, explained with a simple example. Imagine tomorrow, you change just one tiny word inside one of your React components, but you don't add or remove any dependency, so your `package.json` file stays exactly the same. Because Docker remembers ("caches") the result of installing dependencies from last time, and because this particular file hasn't changed, Docker will skip reinstalling everything from scratch and instantly reuse the old result. This can save several minutes on every single build. If we had copied the entire project all at once instead, even a tiny one-word code change would force Docker to reinstall every single dependency all over again, since Docker would think "something changed here," even though the real change had nothing to do with dependencies.
@@ -93,7 +98,9 @@ Notice something important: at this point, Docker copies **only** these two smal
 ### `RUN npm install`
 
 - `RUN` is an instruction that tells Docker "actually execute this command inside the container, right now, while building the image." Whatever this command produces or changes becomes a permanent part of the image.
+
 - `npm` stands for "Node Package Manager." It is a tool that comes bundled with Node.js, and its whole job is to download and manage the external code libraries (called "packages" or "dependencies") that your project needs to work, such as React, Next.js, Tailwind CSS, and so on.
+
 - `install` is the specific action being requested from npm. When you say `npm install`, you're telling npm: "look inside my `package.json` file, see which packages are listed there, and download every one of them."
 
 After this line runs, a new folder called `node_modules` appears inside the container, filled with all of your project's downloaded dependencies.
@@ -107,7 +114,9 @@ In plain words, this line means: "Now copy absolutely everything else from my pr
 ### `RUN npm run build`
 
 - `RUN` again means "actually execute this command while building the image."
+
 - `npm run` is how you tell npm "please execute one of the custom scripts listed inside my `package.json` file's scripts section," rather than one of npm's built-in commands.
+
 - `build` is the specific name of the script being run. In a typical Next.js project, the "build" script internally runs the command `next build`, which compiles, optimizes, and prepares your entire application to run smoothly in production (rather than the slower, more relaxed mode used during development).
 
 After this step finishes, a brand-new folder called `.next` appears inside the container. This folder holds everything Next.js generated during the build process — but, as we'll see very soon, it holds a lot more than what's actually necessary to just run the finished app.
@@ -133,8 +142,11 @@ Exactly the same meaning as before: create and switch into an `/app` folder, but
 ### `COPY --from=builder /app/package*.json ./`
 
 - `COPY` again means "bring files into this image."
+
 - `--from=builder` is a special flag (an extra option you attach to a command using two dashes) that tells Docker "don't copy this from my own computer — instead, copy it from that other stage I labeled 'builder' earlier." This is the exact reason we gave that stage a nickname before.
+
 - `/app/package*.json` is the location, inside the builder stage, of the files being grabbed (again, matching `package.json` and `package-lock.json` using the same wildcard trick as before).
+
 - `./` again means "place it right here," in the runner's own `/app` folder.
 
 ### `COPY --from=builder /app/.next ./.next`
@@ -154,7 +166,9 @@ This copies the Next.js configuration file (something like `next.config.js` or `
 This line deserves a very careful explanation, because it's one of the biggest culprits behind the large image size.
 
 - `RUN` — execute this command while building the image, just like before.
+
 - `npm ci` — this is a specific npm command, different from `npm install`. The letters "ci" stand for "continuous integration." Unlike `npm install`, which can sometimes slightly adjust package versions to keep things compatible, `npm ci` strictly installs the **exact** versions listed in your lock file, no adjustments allowed. This makes it more predictable and reliable, which is especially valuable in automated build pipelines.
+
 - `--only=production` is a flag (an extra option) that tells npm "only install the dependencies that are actually needed to run the app in production, and skip the ones that are only useful during development," such as testing tools or code formatters.
 
 Here is the real problem with this line, though: dependencies were **already installed once**, back in the builder stage, using `npm install`. Now, this line installs dependencies **all over again**, from scratch, in the runner stage. Even though development-only dependencies are being skipped this time, the production dependencies alone for a typical Next.js project can still be quite large, easily hundreds of megabytes. Installing them a second time adds a huge amount of unnecessary size to the final image, for something that had technically already been done once before.
@@ -168,6 +182,7 @@ It's worth understanding clearly that this line by itself does not actually open
 ### `CMD ["npm", "start"]`
 
 - `CMD` is an instruction that defines the default command that should run automatically whenever a container is started from this image. Unlike `RUN`, which executes something once while the image is being *built*, `CMD` only defines what should happen later, when the image is actually *run* as a container.
+
 - The square brackets with comma-separated items in quotes, like `["npm", "start"]`, are what's called the "exec form" of writing a command in Docker. Instead of writing it as one long sentence like `npm start`, Docker prefers you break it into separate pieces: the program to run (`npm`) and its argument (`start`). This form runs slightly more efficiently and predictably than the plain sentence form.
 
 So when a container starts from this image, Docker essentially runs `npm start`. As we explained a moment ago, npm will look inside `package.json`, find the script named "start" (which normally points to `next start`), and that will finally boot up the Next.js production web server.

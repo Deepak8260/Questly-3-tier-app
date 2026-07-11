@@ -1,0 +1,170 @@
+pipeline {
+
+    agent {
+        label 'flask-builder'
+    }
+
+    environment {
+        IMAGE_NAME = "questly-frontend"
+        CONTAINER_NAME = "questly-frontend-container"
+        DOCKERHUB_USERNAME = "kumar3472"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Checkout Source Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Deepak8260/Questly-3-tier-app.git'
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh '''
+                    echo "Stopping old container (if exists)..."
+                    docker rm -f ${CONTAINER_NAME} || true
+
+                    echo "Stopping any container using port 3000..."
+                    CONTAINER=$(docker ps -q --filter publish=3000)
+
+                    if [ ! -z "$CONTAINER" ]; then
+                        docker rm -f $CONTAINER || true
+                    fi
+
+                    echo "Removing old images..."
+                    docker rmi -f ${IMAGE_NAME}:latest || true
+                    docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG} || true
+
+                    echo "Pruning dangling images..."
+                    docker image prune -f || true
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+
+                withCredentials([
+                    string(credentialsId: 'NEXT_PUBLIC_SUPABASE_URL', variable: 'NEXT_PUBLIC_SUPABASE_URL'),
+                    string(credentialsId: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', variable: 'NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+                    string(credentialsId: 'GOOGLE_API_KEY', variable: 'GOOGLE_API_KEY')
+                ]) {
+
+                    dir('frontend') {
+
+                        sh '''
+                            docker build \
+                            --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+                            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+                            --build-arg GOOGLE_API_KEY="$GOOGLE_API_KEY" \
+                            -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                            -f Dockerfile-new .
+                        '''
+
+                    }
+
+                }
+
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+
+                sh '''
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        -p 3000:3000 \
+                        ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
+
+            }
+        }
+
+        stage('Verify Application') {
+            steps {
+
+                sh '''
+                    echo "Waiting for application to start..."
+                    sleep 20
+
+                    curl -f http://localhost:3000
+                '''
+
+            }
+        }
+
+        stage('DockerHub Login') {
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
+
+                }
+
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+
+                sh '''
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
+
+                    docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+
+                    docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
+                '''
+
+            }
+        }
+
+    }
+
+    post {
+
+        success {
+
+            echo "========================================"
+            echo "Build Successful!"
+            echo "Application Verified Successfully."
+            echo "Docker Image:"
+            echo "${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest"
+            echo "========================================"
+
+        }
+
+        failure {
+
+            echo "========================================"
+            echo "Pipeline Failed!"
+            echo "Docker image was NOT pushed."
+            echo "========================================"
+
+        }
+
+        always {
+
+            sh '''
+                docker logout || true
+            '''
+
+        }
+
+    }
+
+}

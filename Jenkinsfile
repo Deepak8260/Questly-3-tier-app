@@ -1,0 +1,151 @@
+pipeline {
+
+    agent {
+        label 'flask-builder'
+    }
+
+    environment {
+        FRONTEND_IMAGE = "questly-frontend"
+        BACKEND_IMAGE  = "questly-backend"
+        FRONTEND_CONTAINER = "questly-frontend-container"
+        BACKEND_CONTAINER  = "questly-backend-container"
+        NETWORK_NAME = "qnet"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Checkout Source Code') {
+            steps {
+                git branch: 'feature',
+                    url: 'https://github.com/Deepak8260/Questly-3-tier-app.git'
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh '''
+                docker rm -f ${FRONTEND_CONTAINER} || true
+                docker rm -f ${BACKEND_CONTAINER} || true
+
+                docker rmi -f ${FRONTEND_IMAGE}:latest || true
+                docker rmi -f ${FRONTEND_IMAGE}:${IMAGE_TAG} || true
+                docker rmi -f ${BACKEND_IMAGE}:latest || true
+                docker rmi -f ${BACKEND_IMAGE}:${IMAGE_TAG} || true
+
+                docker image prune -af || true
+
+                docker network inspect ${NETWORK_NAME} >/dev/null 2>&1 || docker network create ${NETWORK_NAME}
+                '''
+            }
+        }
+
+        stage('Build Frontend Image') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'NEXT_PUBLIC_SUPABASE_URL', variable: 'NEXT_PUBLIC_SUPABASE_URL'),
+                    string(credentialsId: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', variable: 'NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+                    string(credentialsId: 'NEXT_PUBLIC_API_BASE_URL', variable: 'NEXT_PUBLIC_API_BASE_URL'),
+                    string(credentialsId: 'GEMINI_API_KEY', variable: 'GEMINI_API_KEY')
+                ]) {
+                    dir('frontend') {
+                        sh '''
+                        docker build \
+                        --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+                        --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+                        --build-arg NEXT_PUBLIC_API_BASE_URL="$NEXT_PUBLIC_API_BASE_URL" \
+                        --build-arg GEMINI_API_KEY="$GEMINI_API_KEY" \
+                        -t ${FRONTEND_IMAGE}:${IMAGE_TAG} \
+                        -f Dockerfile-new .
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Build Backend Image') {
+            steps {
+                dir('backend') {
+                    sh '''
+                    docker build -t ${BACKEND_IMAGE}:${IMAGE_TAG} -f Dockerfile-new .
+                    '''
+                }
+            }
+        }
+
+        stage('Run Backend Container') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'NEXT_PUBLIC_SUPABASE_URL', variable: 'SUPABASE_URL'),
+                    string(credentialsId: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', variable: 'SUPABASE_ANON_KEY'),
+                    string(credentialsId: 'SUPABASE_SERVICE_ROLE_KEY', variable: 'SUPABASE_SERVICE_ROLE_KEY'),
+                    string(credentialsId: 'GEMINI_API_KEY', variable: 'GEMINI_API_KEY')
+                ]) {
+                    sh '''
+                    docker run -d \
+                    --name ${BACKEND_CONTAINER} \
+                    --network ${NETWORK_NAME} \
+                    -p 3001:3001 \
+                    -e SUPABASE_URL="$SUPABASE_URL" \
+                    -e SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+                    -e SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+                    -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+                    ${BACKEND_IMAGE}:${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
+        stage('Run Frontend Container') {
+            steps {
+                sh '''
+                docker run -d \
+                --name ${FRONTEND_CONTAINER} \
+                --network ${NETWORK_NAME} \
+                -p 3000:3000 \
+                ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                '''
+            }
+        }
+
+        stage('Push Images') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+        
+                    docker tag ${FRONTEND_IMAGE}:${IMAGE_TAG} ${DOCKER_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG}
+                    docker tag ${FRONTEND_IMAGE}:${IMAGE_TAG} ${DOCKER_USER}/${FRONTEND_IMAGE}:latest
+        
+                    docker push ${DOCKER_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG}
+                    docker push ${DOCKER_USER}/${FRONTEND_IMAGE}:latest
+        
+                    docker tag ${BACKEND_IMAGE}:${IMAGE_TAG} ${DOCKER_USER}/${BACKEND_IMAGE}:${IMAGE_TAG}
+                    docker tag ${BACKEND_IMAGE}:${IMAGE_TAG} ${DOCKER_USER}/${BACKEND_IMAGE}:latest
+        
+                    docker push ${DOCKER_USER}/${BACKEND_IMAGE}:${IMAGE_TAG}
+                    docker push ${DOCKER_USER}/${BACKEND_IMAGE}:latest
+                    '''
+                }
+            }
+        }
+}
+    post {
+        success {
+            echo 'Build Successful!'
+        }
+        failure {
+            echo 'Pipeline Failed!'
+        }
+        always {
+            sh 'docker logout || true'
+        }
+    }
+    
+}

@@ -28,4 +28,4 @@ quiz_history.db
 generated/
 
 # Local dev
-instance/
+instance/ 

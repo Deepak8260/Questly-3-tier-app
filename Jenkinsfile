@@ -137,15 +137,310 @@ pipeline {
         }
 }
     post {
-        success {
-            echo 'Build Successful!'
-        }
-        failure {
-            echo 'Pipeline Failed!'
-        }
-        always {
-            sh 'docker logout || true'
-        }
+    success {
+        emailext(
+    to: 'kd.codegeek@gmail.com',
+    subject: "✅ Questly CI/CD | Build Success #${env.BUILD_NUMBER}",
+    mimeType: 'text/html',
+    body: """
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:30px;">
+<tr>
+<td align="center">
+
+<table width="700" cellpadding="0" cellspacing="0"
+style="background:#ffffff;border-radius:14px;overflow:hidden;
+box-shadow:0 10px 25px rgba(0,0,0,.12);">
+
+<tr>
+<td style="background:#111827;padding:28px;color:white;">
+<h1 style="margin:0;">🚀 Questly CI/CD Pipeline</h1>
+<p style="margin:8px 0 0;color:#d1d5db;">
+Production Deployment Report
+</p>
+</td>
+</tr>
+
+<tr>
+<td style="background:#16a34a;color:white;padding:18px;text-align:center;font-size:22px;font-weight:bold;">
+✅ BUILD SUCCESSFUL
+</td>
+</tr>
+
+<tr>
+<td style="padding:30px;">
+
+<h2 style="margin-top:0;color:#111827;">
+Deployment Summary
+</h2>
+
+<table width="100%" cellpadding="12" cellspacing="0"
+style="border-collapse:collapse;">
+
+<tr style="background:#f8fafc;">
+<td><b>Project</b></td>
+<td>Questly</td>
+</tr>
+
+<tr>
+<td><b>Job</b></td>
+<td>${env.JOB_NAME}</td>
+</tr>
+
+<tr style="background:#f8fafc;">
+<td><b>Build Number</b></td>
+<td>#${env.BUILD_NUMBER}</td>
+</tr>
+
+<tr>
+<td><b>Status</b></td>
+<td style="color:#16a34a;font-weight:bold;">
+SUCCESS
+</td>
+</tr>
+
+<tr style="background:#f8fafc;">
+<td><b>Build URL</b></td>
+<td>
+<a href="${env.BUILD_URL}">
+Open Jenkins Build
+</a>
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<table width="100%" cellpadding="14"
+style="background:#ecfdf5;border-left:6px solid #16a34a;
+border-radius:8px;">
+
+<tr>
+<td>
+
+<b>Deployment Completed Successfully</b>
+
+<ul style="margin-top:10px;">
+<li>✅ Source code checked out</li>
+<li>✅ Docker images built</li>
+<li>✅ Backend container deployed</li>
+<li>✅ Frontend container deployed</li>
+<li>✅ Docker Hub images pushed</li>
+</ul>
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div style="text-align:center;">
+
+<a href="${env.BUILD_URL}"
+style="
+background:#2563eb;
+color:white;
+padding:14px 28px;
+border-radius:8px;
+text-decoration:none;
+font-weight:bold;">
+
+View Build Details
+
+</a>
+
+</div>
+
+</td>
+</tr>
+
+<tr>
+
+<td style="background:#111827;color:#9ca3af;
+padding:18px;text-align:center;">
+
+Questly • Automated Jenkins CI/CD Pipeline
+
+</td>
+
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
+"""
+)
+
+        echo 'Build Successful!'
     }
+
+    failure {
+        emailext(
+    to: 'kd.codegeek@gmail.com',
+    subject: "❌ Questly CI/CD | Build Failed #${env.BUILD_NUMBER}",
+    mimeType: 'text/html',
+    body: """
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:30px;">
+<tr>
+<td align="center">
+
+<table width="700" cellpadding="0" cellspacing="0"
+style="background:#ffffff;border-radius:14px;overflow:hidden;
+box-shadow:0 10px 25px rgba(0,0,0,.12);">
+
+<tr>
+<td style="background:#111827;padding:28px;color:white;">
+<h1 style="margin:0;">🚀 Questly CI/CD Pipeline</h1>
+<p style="margin:8px 0 0;color:#d1d5db;">
+Production Deployment Report
+</p>
+</td>
+</tr>
+
+<tr>
+<td style="background:#dc2626;color:white;padding:18px;text-align:center;font-size:22px;font-weight:bold;">
+❌ BUILD FAILED
+</td>
+</tr>
+
+<tr>
+<td style="padding:30px;">
+
+<h2 style="margin-top:0;color:#111827;">
+Deployment Summary
+</h2>
+
+<table width="100%" cellpadding="12" cellspacing="0"
+style="border-collapse:collapse;">
+
+<tr style="background:#f8fafc;">
+<td><b>Project</b></td>
+<td>Questly</td>
+</tr>
+
+<tr>
+<td><b>Job</b></td>
+<td>${env.JOB_NAME}</td>
+</tr>
+
+<tr style="background:#f8fafc;">
+<td><b>Build Number</b></td>
+<td>#${env.BUILD_NUMBER}</td>
+</tr>
+
+<tr>
+<td><b>Status</b></td>
+<td style="color:#dc2626;font-weight:bold;">
+FAILED
+</td>
+</tr>
+
+<tr style="background:#f8fafc;">
+<td><b>Build URL</b></td>
+<td>
+<a href="${env.BUILD_URL}">
+Open Jenkins Build
+</a>
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<table width="100%" cellpadding="14"
+style="background:#fef2f2;border-left:6px solid #dc2626;
+border-radius:8px;">
+
+<tr>
+<td>
+
+<b>Deployment Failed</b>
+
+<ul style="margin-top:10px;">
+<li>❌ Pipeline execution terminated</li>
+<li>❌ Deployment was not completed</li>
+<li>❌ One or more stages encountered an error</li>
+<li>❌ Review Jenkins console logs for the root cause</li>
+</ul>
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div style="text-align:center;">
+
+<a href="${env.BUILD_URL}"
+style="
+background:#dc2626;
+color:white;
+padding:14px 28px;
+border-radius:8px;
+text-decoration:none;
+font-weight:bold;">
+
+View Error Logs
+
+</a>
+
+</div>
+
+</td>
+</tr>
+
+<tr>
+
+<td style="background:#111827;color:#9ca3af;
+padding:18px;text-align:center;">
+
+Questly • Automated Jenkins CI/CD Pipeline
+
+</td>
+
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
+"""
+)
+
+        echo 'Pipeline Failed!'
+    }
+
+    always {
+        sh 'docker logout || true'
+    }
+}
     
 }

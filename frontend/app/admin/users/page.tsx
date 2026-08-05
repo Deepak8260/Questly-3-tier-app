@@ -147,99 +147,99 @@ export default function AdminUsers() {
   const paged = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
 
   return (
-    <div className="animate-fade-in-up">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">User Management</h1>
-          <p className="text-sm text-[#64748B]">{users.length} users tracked</p>
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">User Management</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">{users.length} users tracked</p>
         </div>
-        <button onClick={load} className="flex items-center gap-2 text-sm text-[#94a3b8] bg-[#1E293B] border border-[#334155] px-4 py-2 rounded-xl hover:border-[#6366F1] transition-all">
-          <RefreshCw className="w-4 h-4" /> Refresh
+        <button onClick={load} title="Refresh" className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+          <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {/* Toast */}
       {msg && (
-        <div className={`flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl border mb-4 ${msg.ok ? "bg-[#0d2b20] border-[#10B981] text-[#10B981]" : "bg-[#1c0809] border-[#EF4444] text-[#EF4444]"}`}>
+        <div className={`flex items-center gap-2 text-sm px-4 py-2.5 border ${msg.ok ? "bg-[#E9F1E9] dark:bg-[#1A2A1D] border-[#2F6B3A] text-[#2F6B3A] dark:text-[#7EBA88]" : "bg-[#F5E7E4] dark:bg-[#2B1512] border-[#8C2E24] text-[#8C2E24] dark:text-[#D08A7E]"}`}>
           {msg.ok ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />} {msg.text}
         </div>
       )}
 
       {/* Filter bar */}
-      <div className="bg-[#0F172A] rounded-2xl border border-[#1E293B] px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#1E293B] border border-[#334155] rounded-xl px-3 py-2">
-          <Search className="w-3.5 h-3.5 text-[#475569]" />
+      <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] px-5 py-4 flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2">
+          <Search className="w-3.5 h-3.5 text-[#8C8B82]" />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search name or email…"
-            className="bg-transparent text-sm text-white placeholder:text-[#475569] outline-none w-full" />
+            className="bg-transparent text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none w-full" />
         </div>
-        <div className="relative flex items-center gap-1.5 bg-[#1E293B] border border-[#334155] rounded-xl px-3 py-2 text-xs text-[#94a3b8]">
-          <Filter className="w-3 h-3 text-[#475569]" />
-          <span className="text-[#475569] font-semibold">Role:</span>
+        <div className="relative flex items-center gap-1.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2 text-xs text-[#5B5A52] dark:text-[#ABA99C]">
+          <Filter className="w-3 h-3 text-[#8C8B82]" />
+          <span className="text-[#8C8B82] font-medium">Role:</span>
           <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
-            className="bg-transparent outline-none font-semibold text-white pr-4 appearance-none cursor-pointer">
+            className="bg-transparent outline-none font-medium text-[#1B1B18] dark:text-[#F2F1EA] pr-4 appearance-none cursor-pointer">
             <option value="all">All</option>
             <option value="user">User</option>
             <option value="super_admin">Admin</option>
           </select>
-          <ChevronDown className="w-3 h-3 text-[#475569] absolute right-2 pointer-events-none" />
+          <ChevronDown className="w-3 h-3 text-[#8C8B82] absolute right-2 pointer-events-none" />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-[#0F172A] rounded-2xl border border-[#1E293B] overflow-hidden">
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[#1E293B] text-[9px] font-black text-[#475569] uppercase tracking-widest">
+      <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest">
           <div>User</div><div>Role</div><div>Quizzes</div><div>Certs</div><div>Avg Score</div><div>Last Active</div><div>Actions</div>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-[#475569]">
+          <div className="flex items-center justify-center py-16 text-[#8C8B82]">
             <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading users…
           </div>
         ) : paged.length === 0 ? (
-          <div className="py-12 text-center text-sm text-[#475569]">
+          <div className="py-12 text-center text-sm text-[#8C8B82]">
             {users.length === 0
               ? "No users found — run a quiz attempt to see users here."
               : "No results match your search."}
           </div>
         ) : (
-          <div className="divide-y divide-[#1E293B]">
+          <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
             {paged.map(u => (
-              <div key={u.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3.5 items-center hover:bg-[#1E293B]/40 transition-colors">
+              <div key={u.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3.5 items-center hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
                 {/* User */}
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-white truncate">{u.full_name !== "—" ? u.full_name : <span className="text-[#475569] italic">No name</span>}</div>
-                  <div className="text-xs text-[#475569] truncate">{u.email}</div>
+                  <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{u.full_name !== "—" ? u.full_name : <span className="text-[#8C8B82] italic">No name</span>}</div>
+                  <div className="text-xs text-[#8C8B82] truncate">{u.email}</div>
                 </div>
                 {/* Role */}
                 <div>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${u.role === "super_admin" ? "bg-[#EF4444]/15 text-[#EF4444]" : "bg-[#1E293B] text-[#64748B]"}`}>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 border ${u.role === "super_admin" ? "bg-[#F5E7E4] dark:bg-[#2B1512] text-[#8C2E24] dark:text-[#D08A7E] border-[#E0B8AF] dark:border-[#4A2A24]" : "bg-[#FAFAF8] dark:bg-[#14140F] text-[#5B5A52] dark:text-[#ABA99C] border-[#DEDCD3] dark:border-[#35352C]"}`}>
                     {u.role === "super_admin" ? "Admin" : "User"}
                   </span>
                 </div>
                 {/* Stats */}
-                <div className="text-sm font-bold text-[#94a3b8]">{u.quizCount}</div>
-                <div className="text-sm font-bold text-[#F59E0B] flex items-center gap-1">
-                  {u.certCount > 0 && <Trophy className="w-3 h-3" />}{u.certCount}
+                <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{u.quizCount}</div>
+                <div className="text-sm font-medium text-[#93670F] dark:text-[#D4A94A] flex items-center gap-1">
+                  {u.certCount > 0 && <Trophy className="w-3.5 h-3.5" />}{u.certCount}
                 </div>
-                <div className={`text-sm font-bold ${u.avgScore >= 70 ? "text-[#10B981]" : u.avgScore > 0 ? "text-[#F59E0B]" : "text-[#475569]"}`}>
+                <div className={`text-sm font-medium ${u.avgScore >= 70 ? "text-[#2F6B3A] dark:text-[#7EBA88]" : u.avgScore > 0 ? "text-[#93670F] dark:text-[#D4A94A]" : "text-[#8C8B82]"}`}>
                   {u.avgScore > 0 ? `${u.avgScore}%` : "—"}
                 </div>
-                <div className="text-xs text-[#475569]">{relTime(u.lastActive)}</div>
+                <div className="text-xs text-[#8C8B82]">{relTime(u.lastActive)}</div>
                 {/* Actions */}
                 <div className="flex items-center gap-1">
                   <Link href={`/admin/users/${u.id}`} title="View full quiz history"
-                    className="p-1.5 rounded-lg text-[#475569] hover:text-[#6366F1] hover:bg-[#6366F1]/10 transition-colors">
-                    <Eye className="w-3.5 h-3.5" />
+                    className="p-1.5 text-[#5B5A52] dark:text-[#ABA99C] hover:text-[#6B2737] dark:hover:text-[#B5677A] transition-colors">
+                    <Eye className="w-4 h-4" />
                   </Link>
                   <button title={u.role === "super_admin" ? "Demote to user" : "Promote to admin"}
                     onClick={() => toggleRole(u)}
-                    className={`p-1.5 rounded-lg transition-colors ${u.role === "super_admin" ? "text-[#EF4444] hover:bg-[#EF4444]/10" : "text-[#6366F1] hover:bg-[#6366F1]/10"}`}>
-                    <Shield className="w-3.5 h-3.5" />
+                    className={`p-1.5 transition-colors ${u.role === "super_admin" ? "text-[#8C2E24] dark:text-[#D08A7E]" : "text-[#6B2737] dark:text-[#B5677A]"}`}>
+                    <Shield className="w-4 h-4" />
                   </button>
                   <button title="Delete user data" onClick={() => deleteUserData(u)}
-                    className="p-1.5 rounded-lg text-[#475569] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors">
-                    <Trash2 className="w-3.5 h-3.5" />
+                    className="p-1.5 text-[#8C8B82] hover:text-[#8C2E24] transition-colors">
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -248,15 +248,15 @@ export default function AdminUsers() {
         )}
 
         {pages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-[#1E293B] text-xs text-[#475569]">
+          <div className="flex items-center justify-between px-5 py-3 border-t border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-xs text-[#5B5A52] dark:text-[#ABA99C]">
             <span>Page {page} of {pages} · {filtered.length} users</span>
             <div className="flex gap-2">
               <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-                className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-[#1E293B] text-[#94a3b8] transition-colors">
+                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button disabled={page === pages} onClick={() => setPage(p => p + 1)}
-                className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-[#1E293B] text-[#94a3b8] transition-colors">
+                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                 <ChevronRight2 className="w-4 h-4" />
               </button>
             </div>

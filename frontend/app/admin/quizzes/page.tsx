@@ -78,83 +78,85 @@ export default function AdminQuizzes() {
   const passRate = filtered.length ? Math.round(filtered.filter(a=>a.passed).length/filtered.length*100) : 0;
 
   return (
-    <div className="animate-fade-in-up">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">Quiz Database</h1>
-          <p className="text-sm text-[#64748B]">
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Quiz Database</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
             {attempts.length} total attempts · Avg {avgScore}% · {passRate}% pass rate
           </p>
         </div>
-        <button onClick={load} className="flex items-center gap-2 text-sm text-[#94a3b8] bg-[#1E293B] border border-[#334155] px-4 py-2 rounded-xl hover:border-[#6366F1] transition-all">
-          <RefreshCw className="w-4 h-4" /> Refresh
+        <button onClick={load} title="Refresh" className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+          <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {/* Filter bar */}
-      <div className="bg-[#0F172A] rounded-2xl border border-[#1E293B] px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#1E293B] border border-[#334155] rounded-xl px-3 py-2">
-          <Search className="w-3.5 h-3.5 text-[#475569]" />
+      <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] px-5 py-4 flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2">
+          <Search className="w-3.5 h-3.5 text-[#8C8B82]" />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by topic…"
-            className="bg-transparent text-sm text-white placeholder:text-[#475569] outline-none w-full" />
+            className="bg-transparent text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none w-full" />
         </div>
 
         {[
           { label: "Difficulty", value: diffFilter, setter: setDiffFilter, opts: [["all","All Levels"],["easy","Easy"],["medium","Medium"],["hard","Hard"]] },
           { label: "Status",     value: statusFilter, setter: setStatusFilter, opts: [["all","All"],["passed","Passed"],["failed","Failed"],["certs","Certs Only"]] },
         ].map(f => (
-          <div key={f.label} className="relative flex items-center gap-1.5 bg-[#1E293B] border border-[#334155] rounded-xl px-3 py-2 text-xs">
-            <Filter className="w-3 h-3 text-[#475569]" />
-            <span className="text-[#475569] font-semibold">{f.label}:</span>
+          <div key={f.label} className="relative flex items-center gap-1.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2 text-xs text-[#5B5A52] dark:text-[#ABA99C]">
+            <Filter className="w-3 h-3 text-[#8C8B82]" />
+            <span className="text-[#8C8B82] font-medium">{f.label}:</span>
             <select value={f.value} onChange={e => { f.setter(e.target.value); setPage(1); }}
-              className="bg-transparent outline-none font-semibold text-white pr-4 appearance-none cursor-pointer">
+              className="bg-transparent outline-none font-medium text-[#1B1B18] dark:text-[#F2F1EA] pr-4 appearance-none cursor-pointer">
               {f.opts.map(([v,l]) => <option key={v} value={v}>{l}</option>)}
             </select>
-            <ChevronDown className="w-3 h-3 text-[#475569] absolute right-2 pointer-events-none" />
+            <ChevronDown className="w-3 h-3 text-[#8C8B82] absolute right-2 pointer-events-none" />
           </div>
         ))}
 
         {(search || diffFilter !== "all" || statusFilter !== "all") && (
           <button onClick={() => { setSearch(""); setDiffFilter("all"); setStatusFilter("all"); setPage(1); }}
-            className="text-xs text-[#6366F1] font-semibold ml-auto">Clear</button>
+            className="text-xs text-[#6B2737] dark:text-[#B5677A] hover:text-[#551F2C] font-medium ml-auto">Clear</button>
         )}
       </div>
 
       {/* Table */}
-      <div className="bg-[#0F172A] rounded-2xl border border-[#1E293B] overflow-hidden">
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3 border-b border-[#1E293B] text-[9px] font-black text-[#475569] uppercase tracking-widest">
+      <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3 border-b border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest">
           <div>Topic</div><div>Level</div><div>Score</div><div>Questions</div><div>Time</div><div>Date</div><div>Del</div>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-[#475569]">
+          <div className="flex items-center justify-center py-16 text-[#8C8B82]">
             <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading…
           </div>
         ) : paged.length === 0 ? (
-          <div className="py-12 text-center text-[#475569] text-sm">No results</div>
+          <div className="py-12 text-center text-[#8C8B82] text-sm">No results</div>
         ) : (
-          <div className="divide-y divide-[#1E293B]">
+          <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
             {paged.map(a => {
-              const col = DIFF_COLOR[a.difficulty?.toLowerCase()] ?? "#6366F1";
               return (
-                <div key={a.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3 items-center hover:bg-[#1E293B]/40 transition-colors">
+                <div key={a.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">{a.topic}</div>
-                    <div className="text-xs text-[#475569] font-mono">{a.user_id.slice(0,8)}…</div>
+                    <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{a.topic}</div>
+                    <div className="text-xs text-[#8C8B82] font-mono">User: {a.user_id.slice(0,8)}…</div>
                   </div>
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full capitalize inline-block w-fit"
-                    style={{ backgroundColor: col+"20", color: col }}>{a.difficulty}</span>
-                  <div className={`text-sm font-black flex items-center gap-1 ${a.passed ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                  <div>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] capitalize">
+                      {a.difficulty}
+                    </span>
+                  </div>
+                  <div className={`text-sm font-semibold flex items-center gap-1 ${a.passed ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                     {a.score_pct}%
-                    {a.certificate_earned && <Trophy className="w-3 h-3 text-[#F59E0B]" />}
+                    {a.certificate_earned && <Trophy className="w-3.5 h-3.5 text-[#93670F] dark:text-[#D4A94A]" />}
                   </div>
-                  <div className="text-sm text-[#94a3b8]">{a.correct_answers}/{a.total_questions}</div>
-                  <div className="text-xs text-[#64748B]">{fmtTime(a.time_taken_secs)}</div>
-                  <div className="text-xs text-[#475569]">{fmtDate(a.created_at)}</div>
-                  <button onClick={() => deleteAttempt(a.id)}
-                    className="p-1.5 rounded-lg text-[#475569] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors">
-                    <Trash2 className="w-3.5 h-3.5" />
+                  <div className="text-sm text-[#1B1B18] dark:text-[#F2F1EA]">{a.correct_answers}/{a.total_questions}</div>
+                  <div className="text-xs text-[#8C8B82]">{fmtTime(a.time_taken_secs)}</div>
+                  <div className="text-xs text-[#8C8B82]">{fmtDate(a.created_at)}</div>
+                  <button onClick={() => deleteAttempt(a.id)} title="Delete attempt"
+                    className="p-1.5 text-[#8C8B82] hover:text-[#8C2E24] transition-colors">
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               );
@@ -163,15 +165,15 @@ export default function AdminQuizzes() {
         )}
 
         {pages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-[#1E293B] text-xs text-[#475569]">
+          <div className="flex items-center justify-between px-5 py-3 border-t border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-xs text-[#5B5A52] dark:text-[#ABA99C]">
             <span>Page {page} of {pages} · {filtered.length} records</span>
             <div className="flex gap-2">
               <button disabled={page === 1} onClick={() => setPage(p => p-1)}
-                className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-[#1E293B] text-[#94a3b8] transition-colors">
+                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button disabled={page === pages} onClick={() => setPage(p => p+1)}
-                className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-[#1E293B] text-[#94a3b8] transition-colors">
+                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                 <ChevronRight2 className="w-4 h-4" />
               </button>
             </div>

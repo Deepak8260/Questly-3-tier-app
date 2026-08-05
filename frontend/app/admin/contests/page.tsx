@@ -201,73 +201,63 @@ export default function AdminContestsPage() {
             )}
 
             {/* ── Page Header ─────────────────────────────────────── */}
-            <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/25 flex-shrink-0">
-                        <Trophy className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Live Quiz Contests</h1>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Create and manage live competitive quiz contests</p>
-                    </div>
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Live Quiz Contests</h1>
+                    <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">Create and manage live competitive quiz contests</p>
                 </div>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm hover:shadow-md hover:shadow-indigo-600/20 hover:-translate-y-px active:translate-y-0"
-                >
-                    <Plus className="w-4 h-4" /> New Contest
-                </button>
+                <div className="flex items-center gap-2.5">
+                    <button onClick={() => { fetchContests(); fetchStatusCounts(); }} disabled={loading} title="Refresh"
+                        className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors disabled:opacity-50">
+                        <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                    </button>
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="flex items-center gap-1.5 text-sm font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] px-4 py-2.5 transition-colors"
+                    >
+                        <Plus className="w-4 h-4" /> New Contest
+                    </button>
+                </div>
             </div>
 
             {/* ── Search + Filter Row ─────────────────────────────── */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
                 {/* Search */}
-                <div className="relative w-72 flex-shrink-0">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500" />
+                <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2">
+                    <Search className="w-3.5 h-3.5 text-[#8C8B82]" />
                     <input
                         type="text"
                         value={search}
                         onChange={e => { setSearch(e.target.value); setPage(0); }}
                         placeholder="Search contests…"
-                        className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all"
+                        className="bg-transparent text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none w-full"
                     />
                 </div>
 
                 {/* Status filter */}
-                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2 py-1.5 flex-1">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-gray-400 dark:text-slate-500 mx-1 flex-shrink-0" />
+                <div className="flex items-center gap-1 flex-wrap">
                     {(["all", "draft", "published", "live", "ended", "cancelled"] as const).map(s => {
                         const active = filterStatus === s;
                         return (
                             <button key={s}
                                 onClick={() => { setFilterStatus(s); setPage(0); }}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                className={`px-3 py-1.5 text-xs font-medium border transition-colors ${
                                     active
-                                    ? "bg-indigo-600 text-white shadow-sm"
-                                    : "text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-white"
+                                    ? "bg-[#F3E7E9] dark:bg-[#2E1A20] text-[#6B2737] dark:text-[#B5677A] border-[#6B2737] dark:border-[#B5677A]"
+                                    : "bg-[#FAFAF8] dark:bg-[#14140F] text-[#5B5A52] dark:text-[#ABA99C] border-[#DEDCD3] dark:border-[#35352C] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
                                 }`}>
-                                {s !== "all" && (
-                                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? "bg-white/70" : statusDots[s]}`} />
-                                )}
                                 {STATUS_LABELS[s] ?? s}
                             </button>
                         );
                     })}
                 </div>
-
-                {/* Refresh */}
-                <button onClick={() => { fetchContests(); fetchStatusCounts(); }} disabled={loading}
-                    className="p-2.5 text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl hover:border-gray-300 dark:hover:border-slate-600 hover:text-gray-700 dark:hover:text-white transition-all disabled:opacity-40 group"
-                    title="Refresh">
-                    <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${loading ? "animate-spin" : "group-hover:rotate-180"}`} />
-                </button>
             </div>
 
             {/* ── Table ───────────────────────────────────────────── */}
-            <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
 
                 {/* Table header */}
-                <div className="grid grid-cols-[2.5fr_1.2fr_1.3fr_0.75fr_0.75fr_auto] gap-4 px-6 py-3 bg-gray-50 dark:bg-slate-900/80 border-b border-gray-100 dark:border-slate-800">
+                <div className="grid grid-cols-[2.5fr_1.2fr_1.3fr_0.75fr_0.75fr_auto] gap-4 px-6 py-3 bg-[#FAFAF8] dark:bg-[#14140F] border-b border-[#DEDCD3] dark:border-[#35352C]">
                     {[
                         { label: "Contest" },
                         { label: "Status" },
@@ -276,7 +266,7 @@ export default function AdminContestsPage() {
                         { label: "Level" },
                         { label: "Actions" },
                     ].map(({ label, icon }, i) => (
-                        <div key={i} className="flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                        <div key={i} className="flex items-center gap-1 text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest">
                             {icon}{label}
                         </div>
                     ))}
@@ -284,31 +274,27 @@ export default function AdminContestsPage() {
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center mb-3">
-                            <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
-                        </div>
-                        <p className="text-sm text-gray-400 dark:text-slate-500">Loading contests…</p>
+                        <Loader2 className="w-5 h-5 animate-spin text-[#6B2737] dark:text-[#B5677A] mb-3" />
+                        <p className="text-sm text-[#8C8B82]">Loading contests…</p>
                     </div>
                 ) : contests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-                        <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 flex items-center justify-center mb-4">
-                            <Trophy className="w-6 h-6 text-gray-300 dark:text-slate-600" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-700 dark:text-white mb-1">No contests found</p>
-                        <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">
+                        <Trophy className="w-10 h-10 text-[#8C8B82] mb-3" />
+                        <p className="text-sm font-semibold text-[#1B1B18] dark:text-[#F2F1EA] mb-1">No contests found</p>
+                        <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C] mb-4">
                             {filterStatus === "all"
                                 ? "Create your first contest to get started."
                                 : `No contests with status "${STATUS_LABELS[filterStatus] ?? filterStatus}".`}
                         </p>
                         {filterStatus !== "all" && (
                             <button onClick={() => setFilterStatus("all")}
-                                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                                className="text-xs font-semibold text-[#6B2737] dark:text-[#B5677A] hover:underline">
                                 ← Clear filter
                             </button>
                         )}
                     </div>
                 ) : (
-                    <div className="divide-y divide-gray-50 dark:divide-slate-800/60">
+                    <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
                         {contests.map((contest) => {
                             const canEdit = contest.status === "draft" || contest.status === "published";
                             const canDelete = contest.status === "draft";
@@ -316,18 +302,18 @@ export default function AdminContestsPage() {
 
                             return (
                                 <div key={contest.id}
-                                    className="grid grid-cols-[2.5fr_1.2fr_1.3fr_0.75fr_0.75fr_auto] gap-4 px-6 py-4 items-center group hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 transition-colors duration-100">
+                                    className="grid grid-cols-[2.5fr_1.2fr_1.3fr_0.75fr_0.75fr_auto] gap-4 px-6 py-4 items-center hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
 
                                     {/* Contest name */}
                                     <div className="min-w-0">
                                         <Link href={`/admin/contests/${contest.id}`}
-                                            className="text-sm font-semibold text-gray-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors line-clamp-1">
+                                            className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] hover:text-[#6B2737] dark:hover:text-[#B5677A] transition-colors line-clamp-1">
                                             {contest.title}
                                         </Link>
                                         <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="text-xs text-gray-400 dark:text-slate-500 capitalize">{contest.topic}</span>
+                                            <span className="text-xs text-[#8C8B82] capitalize">{contest.topic}</span>
                                             {isResultsLive && (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-400 ring-1 ring-violet-200 dark:ring-violet-800">
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 border border-[#DEDCD3] dark:border-[#35352C] bg-[#F5EEDD] dark:bg-[#2B2110] text-[#93670F] dark:text-[#D4A94A]">
                                                     🏆 Results Live
                                                 </span>
                                             )}
@@ -338,17 +324,17 @@ export default function AdminContestsPage() {
                                     <div><StatusBadge status={contest.status} /></div>
 
                                     {/* Start time */}
-                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
-                                        <Calendar className="w-3.5 h-3.5 text-gray-300 dark:text-slate-600 flex-shrink-0" />
+                                    <div className="flex items-center gap-1.5 text-xs text-[#8C8B82]">
+                                        <Calendar className="w-3.5 h-3.5 text-[#8C8B82] flex-shrink-0" />
                                         {formatDate(contest.start_time)}
                                     </div>
 
                                     {/* Participants */}
                                     <div className="flex items-center gap-1">
-                                        <Users className="w-3.5 h-3.5 text-gray-300 dark:text-slate-600" />
-                                        <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{contest.participant_count ?? 0}</span>
+                                        <Users className="w-3.5 h-3.5 text-[#8C8B82]" />
+                                        <span className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{contest.participant_count ?? 0}</span>
                                         {contest.max_participants && (
-                                            <span className="text-xs text-gray-400 dark:text-slate-500">/ {contest.max_participants}</span>
+                                            <span className="text-xs text-[#8C8B82]">/ {contest.max_participants}</span>
                                         )}
                                     </div>
 
@@ -356,43 +342,43 @@ export default function AdminContestsPage() {
                                     <div><DiffBadge diff={contest.difficulty} /></div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-0.5">
+                                    <div className="flex items-center gap-1">
                                         <Link href={`/admin/contests/${contest.id}`}
-                                            className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-all" title="View">
-                                            <Eye className="w-3.5 h-3.5" />
+                                            className="p-1.5 text-[#5B5A52] dark:text-[#ABA99C] hover:text-[#6B2737] dark:hover:text-[#B5677A] transition-colors" title="View">
+                                            <Eye className="w-4 h-4" />
                                         </Link>
                                         <button onClick={() => setParticipantsFor(contest)}
-                                            className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-all" title="Participants">
-                                            <Users className="w-3.5 h-3.5" />
+                                            className="p-1.5 text-[#5B5A52] dark:text-[#ABA99C] hover:text-[#6B2737] dark:hover:text-[#B5677A] transition-colors" title="Participants">
+                                            <Users className="w-4 h-4" />
                                         </button>
                                         {canEdit && (
                                             <button onClick={() => setEditingContest(contest)}
-                                                className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-all" title="Edit">
-                                                <Edit2 className="w-3.5 h-3.5" />
+                                                className="p-1.5 text-[#5B5A52] dark:text-[#ABA99C] hover:text-[#6B2737] dark:hover:text-[#B5677A] transition-colors" title="Edit">
+                                                <Edit2 className="w-4 h-4" />
                                             </button>
                                         )}
                                         {contest.status === "draft" && (
                                             <button onClick={() => handlePublish(contest)}
-                                                className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-all" title="Open for Enrollment">
-                                                <Play className="w-3.5 h-3.5" />
+                                                className="p-1.5 text-[#2F6B3A] dark:text-[#7EBA88] hover:text-[#255A2E] transition-colors" title="Open for Enrollment">
+                                                <Play className="w-4 h-4" />
                                             </button>
                                         )}
                                         {contest.status === "published" && (
                                             <button onClick={() => handleForceStart(contest)}
-                                                className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all" title="Force Start">
-                                                <Radio className="w-3.5 h-3.5" />
+                                                className="p-1.5 text-[#8C2E24] dark:text-[#D08A7E] transition-colors" title="Force Start">
+                                                <Radio className="w-4 h-4" />
                                             </button>
                                         )}
                                         {contest.status === "live" && (
                                             <button onClick={() => handleEnd(contest)}
-                                                className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-all" title="End Contest">
-                                                <Square className="w-3.5 h-3.5" />
+                                                className="p-1.5 text-[#93670F] dark:text-[#D4A94A] transition-colors" title="End Contest">
+                                                <Square className="w-4 h-4" />
                                             </button>
                                         )}
                                         {canDelete && (
                                             <button onClick={() => handleDelete(contest)}
-                                                className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all" title="Delete">
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                className="p-1.5 text-[#8C8B82] hover:text-[#8C2E24] transition-colors" title="Delete">
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         )}
                                     </div>
@@ -404,18 +390,17 @@ export default function AdminContestsPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/60">
-                        <span className="text-xs text-gray-400 dark:text-slate-500">
-                            Showing <span className="font-semibold text-gray-600 dark:text-slate-300">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)}</span> of <span className="font-semibold text-gray-600 dark:text-slate-300">{total}</span> contests
+                    <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-xs text-[#5B5A52] dark:text-[#ABA99C]">
+                        <span>
+                            Showing <span className="font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)}</span> of <span className="font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{total}</span> contests
                         </span>
-                        <div className="flex items-center gap-1.5">
-                            <button onClick={() => setPage((p: number) => p - 1)} disabled={page === 0}
-                                className="p-1.5 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all disabled:opacity-30 disabled:pointer-events-none">
+                        <div className="flex gap-2">
+                            <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
+                                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <span className="text-xs font-semibold text-gray-600 dark:text-slate-300 px-2">{page + 1} / {totalPages}</span>
-                            <button onClick={() => setPage((p: number) => p + 1)} disabled={page >= totalPages - 1}
-                                className="p-1.5 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all disabled:opacity-30 disabled:pointer-events-none">
+                            <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
+                                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>

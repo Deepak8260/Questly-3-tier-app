@@ -75,10 +75,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // ── Loading ──
   if (checking && !denied) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F4F0] dark:bg-[#14140F] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-[#6366F1] animate-spin mx-auto mb-3" />
-          <p className="text-[#94a3b8] text-sm">Verifying admin access…</p>
+          <Loader2 className="w-8 h-8 text-[#6B2737] dark:text-[#B5677A] animate-spin mx-auto mb-3" />
+          <p className="text-[#5B5A52] dark:text-[#ABA99C] text-sm font-medium">Verifying admin access…</p>
         </div>
       </div>
     );
@@ -87,102 +87,102 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // ── Access denied ──
   if (denied) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F4F0] dark:bg-[#14140F] flex items-center justify-center">
         <div className="text-center">
-          <AlertTriangle className="w-10 h-10 text-[#EF4444] mx-auto mb-3" />
-          <h2 className="text-white font-bold text-xl mb-2">Access Denied</h2>
-          <p className="text-[#94a3b8] text-sm">You don't have admin privileges.<br />Redirecting to dashboard…</p>
+          <AlertTriangle className="w-10 h-10 text-[#8C2E24] dark:text-[#D08A7E] mx-auto mb-3" />
+          <h2 className="font-heading text-[#1B1B18] dark:text-[#F2F1EA] font-semibold text-xl mb-2">Access Denied</h2>
+          <p className="text-[#5B5A52] dark:text-[#ABA99C] text-sm">You don't have admin privileges.<br />Redirecting to dashboard…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0B1120] overflow-x-hidden">
+    <div className="flex min-h-screen bg-[#F5F4F0] dark:bg-[#14140F]">
 
-      {/* ── SIDEBAR ─── always dark */}
-      <aside className="w-64 fixed left-0 top-0 h-full bg-[#0F172A] border-r border-[#1E293B] flex flex-col z-30">
+      {/* ── SIDEBAR ─── Matching Student Layout */}
+      <aside className="w-60 fixed left-0 top-0 h-full bg-white dark:bg-[#1C1C16] border-r border-[#DEDCD3] dark:border-[#35352C] flex flex-col z-30">
 
         {/* Logo + ADMIN badge */}
-        <div className="px-5 pt-5 pb-4 border-b border-[#1E293B]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+        <div className="px-5 pt-5 pb-4 border-b border-[#EAE8E1] dark:border-[#262620]">
+          <Link href="/" className="flex items-center gap-2.5 font-heading font-semibold text-[#1B1B18] dark:text-[#F2F1EA] text-base">
+            <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white font-semibold text-sm">
               Q
             </div>
-            <span className="text-white font-bold text-base">Questly</span>
-            <span className="ml-auto text-[9px] font-black bg-[#EF4444] text-white px-1.5 py-0.5 rounded-md tracking-wider">
+            <span>Questly</span>
+            <span className="ml-auto text-[9px] font-semibold bg-[#6B2737] text-white px-1.5 py-0.5 tracking-wider">
               ADMIN
             </span>
-          </div>
-          <div className="flex items-center gap-1.5 mt-2.5 text-xs text-[#64748B]">
-            <Shield className="w-3 h-3 text-[#6366F1]" />
+          </Link>
+          <div className="flex items-center gap-1.5 mt-2.5 text-xs text-[#8C8B82]">
+            <Shield className="w-3.5 h-3.5 text-[#6B2737] dark:text-[#B5677A]" />
             Super Admin Panel
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          <div className="text-[9px] font-black text-[#475569] tracking-widest uppercase px-3 mb-2">
+        <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+          <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-1">
             Control Center
           </div>
           {NAV.map((item) => {
             const active = path === item.href || (item.href !== "/admin" && path.startsWith(item.href));
             return (
               <Link key={item.href} href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${active
-                  ? "bg-[#6366F1] text-white shadow-lg shadow-[#6366F1]/20"
-                  : "text-[#94a3b8] hover:bg-[#1E293B] hover:text-white"
+                className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-colors group ${active
+                  ? "bg-[#F3E7E9] dark:bg-[#2E1A20] text-[#6B2737] dark:text-[#B5677A]"
+                  : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
                   }`}>
-                <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? "text-white" : "text-[#64748B] group-hover:text-[#94a3b8]"}`} />
+                <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#8C8B82] group-hover:text-[#5B5A52]"}`} />
                 {item.label}
-                {active && <ChevronRight className="w-3 h-3 ml-auto text-indigo-300" />}
+                {active && <ChevronRight className="w-3 h-3 ml-auto text-[#6B2737] dark:text-[#B5677A]" />}
               </Link>
             );
           })}
 
-          <div className="text-[9px] font-black text-[#475569] tracking-widest uppercase px-3 mb-2 mt-5">
+          <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-4">
             Quick Links
           </div>
-          <Link href="/dashboard" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-[#64748B] hover:bg-[#1E293B] hover:text-[#94a3b8] transition-all">
-            <Zap className="w-[18px] h-[18px]" /> User Dashboard
+          <Link href="/dashboard" className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] transition-colors group">
+            <Zap className="w-[18px] h-[18px] text-[#8C8B82] group-hover:text-[#5B5A52]" /> User Dashboard
           </Link>
         </nav>
 
         {/* Admin user at bottom */}
-        <div className="p-3 border-t border-[#1E293B]">
-          <div className="flex items-center gap-3 px-2 py-2 rounded-xl mb-1">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EF4444] to-[#DC2626] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+        <div className="p-3 border-t border-[#EAE8E1] dark:border-[#262620]">
+          <div className="flex items-center gap-3 p-2.5 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors cursor-pointer">
+            <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
               {adminUser?.name?.[0]?.toUpperCase() ?? "A"}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-white truncate">{adminUser?.name}</div>
-              <div className="text-[10px] text-[#EF4444] font-bold">Super Admin</div>
+              <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{adminUser?.name}</div>
+              <div className="text-xs text-[#8C2E24] dark:text-[#D08A7E] font-medium">Super Admin</div>
             </div>
           </div>
           <button onClick={signOut}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#64748B] hover:text-[#EF4444] hover:bg-[#1c0809] rounded-xl transition-all">
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8C8B82] hover:text-[#8C2E24] hover:bg-[#F5E7E4] dark:hover:bg-[#2B1512] transition-colors mt-1">
             <LogOut className="w-3.5 h-3.5" /> Sign out
           </button>
         </div>
       </aside>
 
       {/* ── MAIN ── */}
-      <main className="flex-1 ml-64 min-w-0 overflow-x-hidden">
+      <main className="flex-1 ml-60">
         {/* Topbar */}
-        <div className="sticky top-0 z-20 bg-[#0B1120]/90 backdrop-blur-md border-b border-[#1E293B] px-8 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-20 bg-[#F5F4F0]/95 dark:bg-[#14140F]/95 backdrop-blur-sm border-b border-[#DEDCD3] dark:border-[#35352C] px-8 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-white">{pageLabel}</h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <h2 className="font-heading text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{pageLabel}</h2>
+            <p className="text-xs text-[#8C8B82] mt-0.5">
               {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-[#1E293B] border border-[#334155] text-xs font-bold px-3 py-1.5 rounded-full text-[#94a3b8]">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-xs font-medium px-3 py-1.5 text-[#5B5A52] dark:text-[#ABA99C]">
+              <div className="w-2 h-2 rounded-full bg-[#2F6B3A] dark:bg-[#7EBA88] animate-pulse" />
               Live
             </div>
-            <div className="flex items-center gap-1.5 bg-[#EF4444]/10 border border-[#EF4444]/30 text-[#EF4444] text-xs font-bold px-3 py-1.5 rounded-full">
-              <Shield className="w-3 h-3" /> SUPER ADMIN
+            <div className="flex items-center gap-1.5 bg-[#F5E7E4] dark:bg-[#2B1512] border border-[#E0B8AF] dark:border-[#4A2A24] text-[#8C2E24] dark:text-[#D08A7E] text-xs font-medium px-3 py-1.5">
+              <Shield className="w-3.5 h-3.5" /> SUPER ADMIN
             </div>
           </div>
         </div>

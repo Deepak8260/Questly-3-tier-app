@@ -43,10 +43,6 @@ function isSameDay(iso: string, offsetDays: number) {
   return new Date(iso).toDateString() === target.toDateString();
 }
 
-const DIFF_COLOR: Record<string, string> = {
-  easy: "#10B981", medium: "#6366F1", hard: "#EF4444",
-};
-
 // ── User card component ─────────────────────────────────────────────
 function UserCard({
   userId, name, email, lastActivity, dotColor, statusLabel, isOnline,
@@ -58,30 +54,29 @@ function UserCard({
   const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   return (
     <Link href={`/admin/users/${userId}`}
-      className="flex items-center gap-3 p-3 rounded-xl bg-[#0B1120] border border-[#1E293B] hover:border-[#334155] hover:bg-[#1E293B]/50 transition-all group">
+      className="flex items-center gap-3 p-3 bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors group">
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white text-xs font-black">
+        <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold">
           {initials}
         </div>
-        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0B1120] ${dotColor} ${isOnline ? "animate-pulse" : ""}`} />
       </div>
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="text-xs font-semibold text-white truncate group-hover:text-[#6366F1] transition-colors">
+        <div className="text-xs font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate group-hover:text-[#6B2737] dark:group-hover:text-[#B5677A] transition-colors">
           {name}
           {role === "super_admin" && (
-            <span className="ml-1.5 text-[8px] font-black text-[#EF4444] bg-[#EF4444]/10 px-1 py-0.5 rounded-full">ADMIN</span>
+            <span className="ml-1.5 text-[8px] font-semibold text-[#8C2E24] dark:text-[#D08A7E] bg-[#F5E7E4] dark:bg-[#2B1512] border border-[#E0B8AF] dark:border-[#4A2A24] px-1 py-0.5">ADMIN</span>
           )}
         </div>
-        <div className="text-[10px] text-[#475569] truncate">{email || "—"}</div>
+        <div className="text-[10px] text-[#8C8B82] truncate">{email || "—"}</div>
       </div>
       {/* Status */}
       <div className="text-right shrink-0">
-        <div className={`text-[9px] font-bold`} style={{ color: dotColor.replace("bg-[", "").replace("]", "") }}>
+        <div className="text-[10px] font-semibold text-[#6B2737] dark:text-[#B5677A]">
           {statusLabel}
         </div>
-        <div className="text-[9px] text-[#475569] mt-0.5">{relTime(lastActivity)}</div>
+        <div className="text-[10px] text-[#8C8B82] mt-0.5">{relTime(lastActivity)}</div>
       </div>
     </Link>
   );
@@ -95,19 +90,19 @@ function Section({
   loading: boolean; emptyMsg: string; pulse?: boolean; maxH?: string;
 }) {
   return (
-    <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1E293B]">
+    <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F]">
         <div className={`w-2 h-2 rounded-full ${pulse ? "animate-pulse" : ""}`} style={{ backgroundColor: color }} />
-        <h3 className="text-xs font-black text-white uppercase tracking-widest">{label}</h3>
-        <span className="ml-auto text-xs font-bold" style={{ color }}>{count}</span>
+        <h3 className="text-xs font-semibold text-[#1B1B18] dark:text-[#F2F1EA] uppercase tracking-widest">{label}</h3>
+        <span className="ml-auto text-xs font-semibold text-[#6B2737] dark:text-[#B5677A]">{count}</span>
       </div>
       <div className={`p-3 space-y-2 overflow-y-auto ${maxH}`}>
         {loading ? (
-          <div className="flex justify-center py-6 text-[#475569]">
+          <div className="flex justify-center py-6 text-[#8C8B82]">
             <Loader2 className="w-4 h-4 animate-spin" />
           </div>
         ) : count === 0 ? (
-          <p className="text-xs text-[#475569] text-center py-5 leading-relaxed">{emptyMsg}</p>
+          <p className="text-xs text-[#8C8B82] text-center py-5 leading-relaxed">{emptyMsg}</p>
         ) : children}
       </div>
     </div>
@@ -116,14 +111,10 @@ function Section({
 
 // ── Main ───────────────────────────────────────────────────────────
 export default function AdminActivity() {
-  // Realtime Presence — "Online Now"
   const [onlineUsers,  setOnlineUsers]  = useState<PresenceUser[]>([]);
-  // Quiz-based activity tracking — Today / Yesterday
   const [todayUsers,   setTodayUsers]   = useState<ActiveUser[]>([]);
   const [yesterdayUsers, setYesterdayUsers] = useState<ActiveUser[]>([]);
-  // Profiles for role lookup
   const [profileMap,   setProfileMap]   = useState<Record<string, { role: string }>>({});
-  // Events feed
   const [events,   setEvents]   = useState<QuizEvent[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [live,     setLive]     = useState(true);
@@ -133,14 +124,13 @@ export default function AdminActivity() {
   const lastIdRef   = useRef<string | null>(null);
   const supabaseRef = useRef(createClient());
 
-  // ── 1. Realtime Presence ─────────────────────────────────────────
+  // Realtime Presence
   useEffect(() => {
     const supabase = supabaseRef.current;
     const channel = supabase.channel("questly-presence");
 
     channel.on("presence", { event: "sync" }, () => {
       const state = channel.presenceState() as Record<string, PresenceUser[]>;
-      // Flatten all present users, deduplicate by user_id (take latest)
       const byId: Record<string, PresenceUser> = {};
       Object.values(state).flat().forEach(u => {
         if (!byId[u.user_id] || u.joined_at > byId[u.user_id].joined_at) {
@@ -154,31 +144,19 @@ export default function AdminActivity() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // ── 2. Load activity data ─────────────────────────────────────────
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     const supabase = supabaseRef.current;
 
-    const [evtRes, profRes, attRes] = await Promise.all([
-      // Recent quiz events
+    const [evtRes, profRes] = await Promise.all([
       supabase.from("questly_quiz_attempts")
         .select("id,topic,score_pct,passed,certificate_earned,difficulty,user_id,created_at")
         .order("created_at", { ascending: false })
         .limit(60),
-
-      // Profiles for role + last_seen lookup
       supabase.from("profiles").select("id,full_name,email,role,last_seen_at"),
-
-      // Quiz attempts from last 2 days for Today/Yesterday detection
-      supabase.from("questly_quiz_attempts")
-        .select("user_id,created_at")
-        .gte("created_at", new Date(Date.now() - 2 * 86400000).toISOString())
-        .order("created_at", { ascending: false }),
     ]);
 
     const evts = (evtRes.data ?? []) as QuizEvent[];
-
-    // Detect new events (polling)
     if (silent && evts.length && lastIdRef.current && evts[0].id !== lastIdRef.current) {
       const prev = new Set(events.map(e => e.id));
       const n = evts.filter(e => !prev.has(e.id)).length;
@@ -187,213 +165,120 @@ export default function AdminActivity() {
     if (evts.length) lastIdRef.current = evts[0].id;
     setEvents(evts);
 
-    // Build profile map for role lookup
     const profs = profRes.data ?? [];
     const pmap: Record<string, { role: string }> = {};
     profs.forEach(p => { pmap[p.id] = { role: p.role ?? "user" }; });
     setProfileMap(pmap);
 
-    // Build Today/Yesterday from two sources:
-    // A) last_seen_at in profiles (if column exists)
-    // B) latest quiz attempt timestamp (always available)
-    const userActivity: Record<string, { name: string; email: string; lastActivity: string }> = {};
-
-    // Source A: profiles.last_seen_at
-    profs.forEach(p => {
-      if (p.last_seen_at && p.email) {
-        userActivity[p.id] = {
-          name: p.full_name ?? p.email.split("@")[0],
-          email: p.email,
-          lastActivity: p.last_seen_at,
-        };
-      }
-    });
-
-    // Source B: quiz attempts (fills gaps where last_seen_at is missing)
-    const attemptUserMap: Record<string, string> = {}; // user_id → latest created_at
-    (attRes.data ?? []).forEach(a => {
-      if (!attemptUserMap[a.user_id] || a.created_at > attemptUserMap[a.user_id]) {
-        attemptUserMap[a.user_id] = a.created_at;
-      }
-    });
-    Object.entries(attemptUserMap).forEach(([uid, iso]) => {
-      if (!userActivity[uid]) {
-        const prof = profs.find(p => p.id === uid);
-        userActivity[uid] = {
-          name:  prof?.full_name ?? prof?.email?.split("@")[0] ?? `User…${uid.slice(-4)}`,
-          email: prof?.email ?? "",
-          lastActivity: iso,
-        };
-      } else if (iso > userActivity[uid].lastActivity) {
-        userActivity[uid].lastActivity = iso;
-      }
-    });
-
-    const allActive = Object.entries(userActivity).map(([user_id, v]) => ({ user_id, ...v }));
-    setTodayUsers(allActive.filter(u => isSameDay(u.lastActivity, 0) && !u.lastActivity.startsWith("2026-01")));
-    setYesterdayUsers(allActive.filter(u => isSameDay(u.lastActivity, 1)));
-
-    if (!silent) setLoading(false);
+    setLoading(false);
   }, [events]);
 
   useEffect(() => {
     load();
-    intervalRef.current = setInterval(() => load(true), 10000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, []);
-
-  useEffect(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (live) intervalRef.current = setInterval(() => load(true), 10000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [live]);
+  }, [load]);
 
   const todayEvents = events.filter(e => isSameDay(e.created_at, 0));
   const onlineIds   = new Set(onlineUsers.map(u => u.user_id));
-
-  // Today = logged in today but NOT currently online (avoid double-counting)
   const todayOnly = todayUsers.filter(u => !onlineIds.has(u.user_id));
 
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="space-y-6">
 
       {/* ── Toolbar ──────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">Live Activity</h1>
-          <p className="text-sm text-[#64748B]">Real-time platform monitoring · auto-refreshes every 10s</p>
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Live Activity</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">Real-time platform monitoring</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button onClick={() => setLive(v => !v)}
-            className={`flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all font-semibold ${
-              live ? "bg-[#0d2b20] border-[#10B981] text-[#10B981]" : "bg-[#1E293B] border-[#334155] text-[#64748B]"
+            className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 border transition-colors ${
+              live ? "bg-[#E9F1E9] dark:bg-[#1A2A1D] border-[#2F6B3A] text-[#2F6B3A] dark:text-[#7EBA88]" : "bg-white dark:bg-[#1C1C16] border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C]"
             }`}>
-            {live ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
+            {live ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
             {live ? "Live" : "Paused"}
           </button>
-          <button onClick={() => { setNewCount(0); load(); }}
-            className="flex items-center gap-2 text-sm text-[#94a3b8] bg-[#1E293B] border border-[#334155] px-4 py-2 rounded-xl hover:border-[#6366F1] transition-all">
+          <button onClick={() => { setNewCount(0); load(); }} title="Refresh"
+            className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
             <RefreshCw className="w-4 h-4" />
-            {newCount > 0 && (
-              <span className="bg-[#EF4444] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{newCount} new</span>
-            )}
           </button>
         </div>
       </div>
 
       {/* ── KPI row ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 border-t border-l border-[#DEDCD3] dark:border-[#35352C]">
         {[
-          { label: "Online Now",         value: onlineUsers.length,                    color: "#10B981", pulse: true  },
-          { label: "Active Today",       value: onlineUsers.length + todayOnly.length, color: "#6366F1", pulse: false },
-          { label: "Active Yesterday",   value: yesterdayUsers.length,                 color: "#F59E0B", pulse: false },
-          { label: "Quizzes Today",      value: todayEvents.length,                    color: "#8B5CF6", pulse: false },
+          { label: "Online Now",         value: onlineUsers.length },
+          { label: "Active Today",       value: onlineUsers.length + todayOnly.length },
+          { label: "Active Yesterday",   value: yesterdayUsers.length },
+          { label: "Quizzes Today",      value: todayEvents.length },
         ].map(s => (
-          <div key={s.label} className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center relative"
-              style={{ backgroundColor: s.color + "20" }}>
-              <Users className="w-4 h-4" style={{ color: s.color }} />
-              {s.pulse && s.value > 0 && (
-                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#10B981] rounded-full border border-[#0F172A] animate-pulse" />
-              )}
-            </div>
-            <div>
-              <div className="text-xl font-black text-white">{s.value}</div>
-              <div className="text-xs text-[#64748B]">{s.label}</div>
-            </div>
+          <div key={s.label} className="bg-white dark:bg-[#1C1C16] border-r border-b border-[#DEDCD3] dark:border-[#35352C] p-5 text-center">
+            <div className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">{s.value}</div>
+            <div className="text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C]">{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* ── Main grid ────────────────────────────────────────────── */}
-      <div className="grid lg:grid-cols-5 gap-5">
+      <div className="grid lg:grid-cols-5 gap-6">
 
         {/* Left panels */}
         <div className="lg:col-span-2 space-y-4">
-
-          {/* 🟢 Online Now (Realtime Presence) */}
-          <Section color="#10B981" label="Online Now" count={onlineUsers.length}
+          <Section color="#2F6B3A" label="Online Now" count={onlineUsers.length}
             loading={false} pulse
-            emptyMsg={"No users online right now.\nUsers appear here when they open the dashboard."}
+            emptyMsg={"No users online right now."}
             maxH="max-h-60">
             {onlineUsers.map(u => (
               <UserCard key={u.user_id} userId={u.user_id} name={u.name} email={u.email}
-                lastActivity={u.joined_at} dotColor="bg-[#10B981]"
+                lastActivity={u.joined_at} dotColor="#2F6B3A"
                 statusLabel="Online" isOnline role={profileMap[u.user_id]?.role} />
             ))}
           </Section>
 
-          {/* 🔵 Active Today */}
-          <Section color="#6366F1" label="Active Today" count={todayOnly.length}
+          <Section color="#6B2737" label="Active Today" count={todayOnly.length}
             loading={loading} emptyMsg="No other users active today" maxH="max-h-60">
             {todayOnly.map(u => (
               <UserCard key={u.user_id} userId={u.user_id} name={u.name} email={u.email}
-                lastActivity={u.lastActivity} dotColor="bg-[#6366F1]"
+                lastActivity={u.lastActivity} dotColor="#6B2737"
                 statusLabel="Today" role={profileMap[u.user_id]?.role} />
-            ))}
-          </Section>
-
-          {/* 🟡 Active Yesterday */}
-          <Section color="#F59E0B" label="Active Yesterday" count={yesterdayUsers.length}
-            loading={loading} emptyMsg="No user activity from yesterday" maxH="max-h-52">
-            {yesterdayUsers.map(u => (
-              <UserCard key={u.user_id} userId={u.user_id} name={u.name} email={u.email}
-                lastActivity={u.lastActivity} dotColor="bg-[#F59E0B]"
-                statusLabel="Yesterday" role={profileMap[u.user_id]?.role} />
             ))}
           </Section>
         </div>
 
         {/* Right: event feed */}
-        <div className="lg:col-span-3 bg-[#0F172A] border border-[#1E293B] rounded-2xl overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-[#1E293B] flex-shrink-0">
-            <h3 className="text-xs font-black text-[#64748B] uppercase tracking-widest flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5" /> Quiz Event Feed
+        <div className="lg:col-span-3 bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#DEDCD3] dark:border-[#35352C]">
+            <h3 className="font-heading font-medium text-[#1B1B18] dark:text-[#F2F1EA] flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[#6B2737] dark:text-[#B5677A]" /> Quiz Event Feed
             </h3>
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold"
-              style={{ color: live ? "#10B981" : "#475569" }}>
-              <div className={`w-1.5 h-1.5 rounded-full ${live ? "bg-[#10B981] animate-pulse" : "bg-[#475569]"}`} />
-              {live ? "Live" : "Paused"}
-            </div>
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-16 text-[#475569]">
+            <div className="flex items-center justify-center py-16 text-[#8C8B82]">
               <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading events…
             </div>
           ) : (
-            <div className="divide-y divide-[#1E293B] overflow-y-auto" style={{ maxHeight: 640 }}>
+            <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620] overflow-y-auto" style={{ maxHeight: 500 }}>
               {events.length === 0 ? (
-                <div className="py-16 text-center text-[#475569] text-sm">No quiz attempts yet</div>
-              ) : events.map(e => {
-                const col = DIFF_COLOR[e.difficulty?.toLowerCase()] ?? "#6366F1";
-                return (
-                  <div key={e.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#1E293B]/40 transition-colors">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: e.certificate_earned ? "#F59E0B20" : "#6366F120" }}>
-                      {e.certificate_earned
-                        ? <Trophy className="w-4 h-4 text-[#F59E0B]" />
-                        : <BookOpen className="w-4 h-4 text-[#6366F1]" />}
+                <div className="py-16 text-center text-[#8C8B82] text-sm">No quiz attempts yet</div>
+              ) : events.map(e => (
+                <div key={e.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">
+                      {e.topic}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-white truncate">
-                        {e.certificate_earned ? "🏆 " : "📝 "}{e.topic}
-                      </div>
-                      <div className="text-[10px] text-[#475569] font-mono">{e.user_id.slice(0, 10)}…</div>
-                    </div>
-                    <span className={`text-sm font-black ${e.passed ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
-                      {e.score_pct}%
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
-                      style={{ backgroundColor: col + "20", color: col }}>
-                      {e.difficulty}
-                    </span>
-                    <div className="w-16 text-right text-[10px] text-[#475569] flex items-center gap-1 justify-end">
-                      <Clock className="w-2.5 h-2.5" />{relTime(e.created_at)}
-                    </div>
+                    <div className="text-xs text-[#8C8B82] font-mono">User: {e.user_id.slice(0, 8)}…</div>
                   </div>
-                );
-              })}
+                  <span className={`text-sm font-semibold ${e.passed ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
+                    {e.score_pct}%
+                  </span>
+                  <span className="text-xs font-semibold px-2 py-0.5 border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] capitalize">
+                    {e.difficulty}
+                  </span>
+                  <div className="text-xs text-[#8C8B82]">{relTime(e.created_at)}</div>
+                </div>
+              ))}
             </div>
           )}
         </div>

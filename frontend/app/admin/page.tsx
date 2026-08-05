@@ -29,26 +29,25 @@ interface RecentAttempt {
   user_id: string;
 }
 
-function StatCard({ icon, label, value, sub, color, trend }: {
+function StatCard({ icon, label, value, sub, trend }: {
   icon: React.ReactNode; label: string; value: string | number;
-  sub?: string; color: string; trend?: "up" | "down" | "neutral";
+  sub?: string; trend?: "up" | "down" | "neutral";
 }) {
   return (
-    <div className="bg-[#0F172A] rounded-2xl border border-[#1E293B] p-5 hover:border-[#334155] transition-all">
+    <div className="bg-white dark:bg-[#1C1C16] border-r border-b border-[#DEDCD3] dark:border-[#35352C] p-5">
       <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: `${color}20` }}>
-          <span style={{ color }}>{icon}</span>
+        <div className="text-[#6B2737] dark:text-[#B5677A]">
+          {icon}
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 text-xs font-semibold ${trend === "up" ? "text-[#10B981]" : trend === "down" ? "text-[#EF4444]" : "text-[#64748B]"}`}>
-            {trend === "up" ? <TrendingUp className="w-3 h-3" /> : trend === "down" ? <TrendingDown className="w-3 h-3" /> : null}
-          </div>
+          <span className={`text-xs font-medium flex items-center gap-0.5 ${trend === "up" ? "text-[#2F6B3A] dark:text-[#7EBA88]" : trend === "down" ? "text-[#8C2E24] dark:text-[#D08A7E]" : "text-[#8C8B82]"}`}>
+            {trend === "up" ? <TrendingUp className="w-3.5 h-3.5" /> : trend === "down" ? <TrendingDown className="w-3.5 h-3.5" /> : null}
+          </span>
         )}
       </div>
-      <div className="text-2xl font-black text-white mb-0.5">{value}</div>
-      <div className="text-xs font-semibold text-[#64748B]">{label}</div>
-      {sub && <div className="text-[10px] text-[#475569] mt-1">{sub}</div>}
+      <div className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">{value}</div>
+      <div className="text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C]">{label}</div>
+      {sub && <div className="text-xs text-[#8C8B82] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -65,7 +64,6 @@ export default function AdminOverview() {
   const [stats,   setStats]   = useState<Stats | null>(null);
   const [recent,  setRecent]  = useState<RecentAttempt[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userCount, setUserCount] = useState(0);
 
   const load = async () => {
     setLoading(true);
@@ -98,7 +96,6 @@ export default function AdminOverview() {
       todayAttempts,
       thisWeekAttempts: weekAttempts,
     });
-    setUserCount(profilesRes.count ?? 0);
     setRecent(recentRes.data ?? []);
     setLoading(false);
   };
@@ -106,69 +103,65 @@ export default function AdminOverview() {
   useEffect(() => { load(); }, []);
 
   const CARDS = stats ? [
-    { icon: <Users className="w-5 h-5" />,    label: "Total Users",         value: stats.totalUsers,       color: "#6366F1", trend: "up" as const,      sub: "Registered accounts" },
-    { icon: <BookOpen className="w-5 h-5" />, label: "Total Quizzes Taken", value: stats.totalAttempts,    color: "#8B5CF6", trend: "up" as const,      sub: "All time" },
-    { icon: <Trophy className="w-5 h-5" />,   label: "Certificates Issued",  value: stats.totalCerts,       color: "#F59E0B", trend: "neutral" as const, sub: "Score ≥ 70%" },
-    { icon: <Target className="w-5 h-5" />,   label: "Avg Score",            value: `${stats.avgScore}%`,   color: "#10B981", trend: stats.avgScore >= 70 ? "up" as const : "down" as const, sub: `${stats.passRate}% pass rate` },
-    { icon: <Activity className="w-5 h-5" />, label: "Today's Attempts",     value: stats.todayAttempts,    color: "#EF4444", trend: "neutral" as const, sub: "Since midnight" },
-    { icon: <Clock className="w-5 h-5" />,    label: "This Week",            value: stats.thisWeekAttempts, color: "#06B6D4", trend: "up" as const,      sub: "Last 7 days" },
-    { icon: <BookOpen className="w-5 h-5" />, label: "Unique Topics",         value: stats.topicsCount,      color: "#F97316", trend: "neutral" as const, sub: "Distinct subjects studied" },
-    { icon: <TrendingUp className="w-5 h-5" />,label: "Pass Rate",            value: `${stats.passRate}%`,   color: "#A855F7", trend: stats.passRate >= 60 ? "up" as const : "down" as const, sub: "Platform-wide" },
+    { icon: <Users className="w-5 h-5" />,    label: "Total Users",         value: stats.totalUsers,       trend: "up" as const,      sub: "Registered accounts" },
+    { icon: <BookOpen className="w-5 h-5" />, label: "Total Quizzes Taken", value: stats.totalAttempts,    trend: "up" as const,      sub: "All time" },
+    { icon: <Trophy className="w-5 h-5" />,   label: "Certificates Issued",  value: stats.totalCerts,       trend: "neutral" as const, sub: "Score ≥ 70%" },
+    { icon: <Target className="w-5 h-5" />,   label: "Avg Score",            value: `${stats.avgScore}%`,   trend: stats.avgScore >= 70 ? "up" as const : "down" as const, sub: `${stats.passRate}% pass rate` },
+    { icon: <Activity className="w-5 h-5" />, label: "Today's Attempts",     value: stats.todayAttempts,    trend: "neutral" as const, sub: "Since midnight" },
+    { icon: <Clock className="w-5 h-5" />,    label: "This Week",            value: stats.thisWeekAttempts, trend: "up" as const,      sub: "Last 7 days" },
+    { icon: <BookOpen className="w-5 h-5" />, label: "Unique Topics",         value: stats.topicsCount,      trend: "neutral" as const, sub: "Distinct subjects studied" },
+    { icon: <TrendingUp className="w-5 h-5" />,label: "Pass Rate",            value: `${stats.passRate}%`,   trend: stats.passRate >= 60 ? "up" as const : "down" as const, sub: "Platform-wide" },
   ] : [];
 
-  const DIFF_COLOR: Record<string, string> = { easy:"#10B981", medium:"#6366F1", hard:"#EF4444" };
-
   return (
-    <div className="animate-fade-in-up">
-      <div className="flex items-center justify-between mb-7">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">System Overview</h1>
-          <p className="text-sm text-[#64748B]">Real-time platform metrics and activity</p>
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">System Overview</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">Real-time platform metrics and activity</p>
         </div>
-        <button onClick={load} disabled={loading}
-          className="flex items-center gap-2 text-sm text-[#94a3b8] bg-[#1E293B] border border-[#334155] px-4 py-2 rounded-xl hover:border-[#6366F1] transition-all disabled:opacity-50">
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+        <button onClick={load} disabled={loading} title="Refresh"
+          className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors disabled:opacity-50">
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-24 text-[#64748B]">
+        <div className="flex items-center justify-center py-24 text-[#8C8B82]">
           <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading platform data…
         </div>
       ) : (
         <>
           {/* Stat grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 border-t border-l border-[#DEDCD3] dark:border-[#35352C]">
             {CARDS.map(c => <StatCard key={c.label} {...c} />)}
           </div>
 
           {/* Recent activity */}
-          <div className="bg-[#0F172A] rounded-2xl border border-[#1E293B] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E293B]">
-              <h2 className="text-sm font-black text-[#64748B] uppercase tracking-widest">
-                Recent Quiz Attempts
-              </h2>
-              <Link href="/admin/quizzes" className="text-xs text-[#6366F1] hover:text-[#4F46E5] font-semibold">
+          <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#DEDCD3] dark:border-[#35352C]">
+              <h3 className="font-heading font-medium text-[#1B1B18] dark:text-[#F2F1EA]">
+                Recent quiz attempts
+              </h3>
+              <Link href="/admin/quizzes" className="text-xs text-[#6B2737] dark:text-[#B5677A] font-medium hover:text-[#551F2C] flex items-center gap-0.5">
                 View all →
               </Link>
             </div>
-            <div className="divide-y divide-[#1E293B]">
+            <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
               {recent.map(a => (
-                <div key={a.id} className="flex items-center px-6 py-3 gap-4 hover:bg-[#1E293B]/50 transition-colors">
+                <div key={a.id} className="px-6 py-4 flex items-center gap-4 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">{a.topic}</div>
-                    <div className="text-xs text-[#475569] mt-0.5 font-mono">{a.user_id.slice(0, 8)}…</div>
+                    <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{a.topic}</div>
+                    <div className="text-xs text-[#8C8B82] mt-0.5 font-mono">User: {a.user_id.slice(0, 8)}…</div>
                   </div>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full capitalize"
-                    style={{ backgroundColor: (DIFF_COLOR[a.difficulty?.toLowerCase()] ?? "#6366F1") + "20",
-                             color: DIFF_COLOR[a.difficulty?.toLowerCase()] ?? "#6366F1" }}>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] capitalize">
                     {a.difficulty}
                   </span>
-                  <div className={`w-14 text-right text-sm font-black ${a.passed ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                  <div className={`w-14 text-right text-sm font-semibold ${a.passed ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                     {a.score_pct}%
                   </div>
-                  {a.certificate_earned && <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />}
-                  <div className="w-20 text-right text-xs text-[#475569]">{relTime(a.created_at)}</div>
+                  {a.certificate_earned && <Trophy className="w-4 h-4 text-[#93670F] dark:text-[#D4A94A]" />}
+                  <div className="w-20 text-right text-xs text-[#8C8B82]">{relTime(a.created_at)}</div>
                 </div>
               ))}
             </div>

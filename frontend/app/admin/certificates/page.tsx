@@ -110,34 +110,32 @@ export default function AdminCertificates() {
     .slice(0, 5);
 
   return (
-    <div className="animate-fade-in-up">
+    <div className="space-y-6">
 
       {/* ── Header ───────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">Certificate Management</h1>
-          <p className="text-sm text-[#64748B]">
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Certificate Management</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
             {certs.length} certificates issued across {uniqueUsers} user{uniqueUsers !== 1 ? "s" : ""}
           </p>
         </div>
-        <button onClick={load}
-          className="flex items-center gap-2 text-sm text-[#94a3b8] bg-[#1E293B] border border-[#334155] px-4 py-2 rounded-xl hover:border-[#6366F1] transition-all">
-          <RefreshCw className="w-4 h-4" /> Refresh
+        <button onClick={load} title="Refresh" className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+          <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {/* ── Stats row ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 border-t border-l border-[#DEDCD3] dark:border-[#35352C]">
         {[
-          { label: "Total Issued",    value: certs.length,                        color: "#F59E0B" },
-          { label: "Unique Earners",  value: uniqueUsers,                         color: "#6366F1" },
-          { label: "Avg Score",       value: `${avgScore}%`,                      color: "#10B981" },
-          { label: "Topics Covered",  value: Object.keys(topicCounts).length,     color: "#8B5CF6" },
+          { label: "Total Issued",    value: certs.length },
+          { label: "Unique Earners",  value: uniqueUsers },
+          { label: "Avg Score",       value: `${avgScore}%` },
+          { label: "Topics Covered",  value: Object.keys(topicCounts).length },
         ].map(s => (
-          <div key={s.label}
-            className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-4 text-center">
-            <div className="text-2xl font-black mb-0.5" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-xs text-[#64748B]">{s.label}</div>
+          <div key={s.label} className="bg-white dark:bg-[#1C1C16] border-r border-b border-[#DEDCD3] dark:border-[#35352C] p-5 text-center">
+            <div className="font-heading text-3xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">{s.value}</div>
+            <div className="text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C]">{s.label}</div>
           </div>
         ))}
       </div>
@@ -146,45 +144,43 @@ export default function AdminCertificates() {
       <div className="grid lg:grid-cols-4 gap-6">
 
         {/* Sidebar: top topics */}
-        <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-5 h-fit">
-          <h3 className="text-xs font-black text-[#64748B] uppercase tracking-widest mb-4 flex items-center gap-2">
-            <Award className="w-3.5 h-3.5" /> Top Certified Topics
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5 h-fit">
+          <h3 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Award className="w-4 h-4 text-[#6B2737] dark:text-[#B5677A]" /> Top Certified Topics
           </h3>
           <div className="space-y-3">
             {topTopics.map(([topic, count], i) => (
-              <div key={topic} className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-[#1E293B] flex items-center justify-center text-[9px] font-black text-[#64748B]">
-                  {i + 1}
-                </div>
+              <div key={topic} className="flex items-center gap-2 text-xs">
+                <span className="w-4 h-4 text-center font-medium text-[#8C8B82]">{i + 1}.</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-white truncate">{topic}</div>
-                  <div className="text-[10px] text-[#475569]">{count} cert{count !== 1 ? "s" : ""}</div>
+                  <div className="font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{topic}</div>
+                  <div className="text-[#8C8B82]">{count} cert{count !== 1 ? "s" : ""}</div>
                 </div>
-                <Trophy className="w-3.5 h-3.5 text-[#F59E0B] flex-shrink-0" />
+                <Trophy className="w-4 h-4 text-[#93670F] dark:text-[#D4A94A] flex-shrink-0" />
               </div>
             ))}
             {topTopics.length === 0 && (
-              <p className="text-xs text-[#475569] italic">No certificates yet</p>
+              <p className="text-xs text-[#8C8B82] italic">No certificates yet</p>
             )}
           </div>
         </div>
 
         {/* Main table */}
-        <div className="lg:col-span-3 bg-[#0F172A] border border-[#1E293B] rounded-2xl overflow-hidden">
+        <div className="lg:col-span-3 bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
 
           {/* Search bar */}
-          <div className="px-5 py-3 border-b border-[#1E293B] flex items-center gap-2">
-            <Search className="w-3.5 h-3.5 text-[#475569] flex-shrink-0" />
+          <div className="px-5 py-3 border-b border-[#DEDCD3] dark:border-[#35352C] flex items-center gap-2">
+            <Search className="w-3.5 h-3.5 text-[#8C8B82] flex-shrink-0" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by user name, email, or topic…"
-              className="w-full bg-transparent text-sm text-white placeholder:text-[#475569] outline-none"
+              className="w-full bg-transparent text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none"
             />
           </div>
 
           {/* Table header */}
-          <div className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3 border-b border-[#1E293B] text-[9px] font-black text-[#475569] uppercase tracking-widest">
+          <div className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3 border-b border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest">
             <div>User</div>
             <div>Topic / Cert ID</div>
             <div>Level</div>
@@ -194,55 +190,53 @@ export default function AdminCertificates() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12 text-[#475569]">
+            <div className="flex items-center justify-center py-12 text-[#8C8B82]">
               <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading certificates…
             </div>
           ) : filtered.length === 0 ? (
-            <div className="py-12 text-center text-[#475569] text-sm">
+            <div className="py-12 text-center text-[#8C8B82] text-sm">
               {certs.length === 0 ? "No certificates have been issued yet." : "No results match your search."}
             </div>
           ) : (
-            <div className="divide-y divide-[#1E293B] max-h-[620px] overflow-y-auto">
+            <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620] max-h-[620px] overflow-y-auto">
               {filtered.map(c => {
-                const col = DIFF_COLOR[c.difficulty?.toLowerCase()] ?? "#6366F1";
                 const certId = makeCertId(c.id, c.created_at);
                 return (
                   <div key={c.id}
-                    className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center hover:bg-[#1E293B]/40 transition-colors">
+                    className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
 
                     {/* User */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <User className="w-3 h-3 text-[#64748B] flex-shrink-0" />
-                        <span className="text-xs font-semibold text-white truncate">{c.userName}</span>
+                        <User className="w-3 h-3 text-[#8C8B82] flex-shrink-0" />
+                        <span className="text-xs font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{c.userName}</span>
                       </div>
-                      <div className="text-[10px] text-[#475569] truncate">{c.userEmail}</div>
+                      <div className="text-[10px] text-[#8C8B82] truncate">{c.userEmail}</div>
                     </div>
 
                     {/* Topic + cert ID */}
                     <div className="min-w-0">
-                      <div className="text-[9px] font-mono text-[#6366F1] mb-0.5">{certId}</div>
-                      <div className="text-xs font-semibold text-white truncate">{c.topic}</div>
+                      <div className="text-[10px] font-mono text-[#6B2737] dark:text-[#B5677A] mb-0.5">{certId}</div>
+                      <div className="text-xs font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{c.topic}</div>
                     </div>
 
                     {/* Difficulty */}
-                    <span
-                      className="text-[10px] font-black px-2 py-0.5 rounded-full capitalize inline-block w-fit"
-                      style={{ backgroundColor: col + "20", color: col }}
-                    >
-                      {c.difficulty}
-                    </span>
+                    <div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] capitalize">
+                        {c.difficulty}
+                      </span>
+                    </div>
 
                     {/* Score */}
-                    <div className="text-sm font-black text-[#10B981]">
+                    <div className="text-sm font-semibold text-[#2F6B3A] dark:text-[#7EBA88]">
                       {c.score_pct}%
-                      <div className="text-[10px] font-normal text-[#475569]">
+                      <div className="text-[10px] font-normal text-[#8C8B82]">
                         {c.correct_answers}/{c.total_questions} correct
                       </div>
                     </div>
 
                     {/* Date */}
-                    <div className="text-xs text-[#475569]">
+                    <div className="text-xs text-[#8C8B82]">
                       {new Date(c.created_at).toLocaleDateString("en-US", {
                         month: "short", day: "numeric", year: "numeric",
                       })}
@@ -250,31 +244,26 @@ export default function AdminCertificates() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1">
-                      {/* ── VIEW & DOWNLOAD ── */}
                       <button
                         onClick={() => setActive(c)}
                         title="View & Download Certificate"
-                        className="p-1.5 rounded-lg text-[#F59E0B] hover:bg-[#F59E0B]/10 transition-colors"
+                        className="p-1.5 text-[#93670F] dark:text-[#D4A94A] transition-colors"
                       >
-                        <Download className="w-3.5 h-3.5" />
+                        <Download className="w-4 h-4" />
                       </button>
-
-                      {/* View user profile */}
                       <Link
                         href={`/admin/users/${c.user_id}`}
-                        title="View user's quiz history"
-                        className="p-1.5 rounded-lg text-[#475569] hover:text-[#6366F1] hover:bg-[#6366F1]/10 transition-colors"
+                        title="View user profile"
+                        className="p-1.5 text-[#5B5A52] dark:text-[#ABA99C] hover:text-[#6B2737] dark:hover:text-[#B5677A] transition-colors"
                       >
-                        <Eye className="w-3.5 h-3.5" />
+                        <Eye className="w-4 h-4" />
                       </Link>
-
-                      {/* Revoke */}
                       <button
                         onClick={() => revoke(c.id)}
                         title="Revoke certificate"
-                        className="p-1.5 rounded-lg text-[#475569] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
+                        className="p-1.5 text-[#8C8B82] hover:text-[#8C2E24] transition-colors"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

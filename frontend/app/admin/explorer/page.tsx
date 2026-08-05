@@ -43,12 +43,12 @@ const PAGE_SIZE = 15;
 
 function Cell({ col, val }: { col: string; val: unknown }) {
   if (val === null || val === undefined)
-    return <span className="text-[#334155] italic text-[10px]">—</span>;
+    return <span className="text-[#8C8B82] italic text-xs">—</span>;
 
   if (typeof val === "boolean")
     return (
-      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-        val ? "bg-[#10B981]/15 text-[#10B981]" : "bg-[#EF4444]/15 text-[#EF4444]"
+      <span className={`text-[10px] font-semibold px-2 py-0.5 border ${
+        val ? "bg-[#E9F1E9] dark:bg-[#1A2A1D] border-[#2F6B3A] text-[#2F6B3A] dark:text-[#7EBA88]" : "bg-[#F5E7E4] dark:bg-[#2B1512] border-[#8C2E24] text-[#8C2E24] dark:text-[#D08A7E]"
       }`}>
         {val ? "true" : "false"}
       </span>
@@ -56,63 +56,50 @@ function Cell({ col, val }: { col: string; val: unknown }) {
 
   const str = String(val);
 
-  // Format dates nicely
   if (col === "created_at") {
     try {
       return (
-        <span className="text-[10px] text-[#64748B]">
+        <span className="text-xs text-[#8C8B82]">
           {new Date(str).toLocaleDateString("en-US", {
             month: "short", day: "numeric", year: "numeric",
-            hour: "2-digit", minute: "2-digit",
           })}
         </span>
       );
     } catch { /* fall through */ }
   }
 
-  // Score — colour coded
   if (col === "score_pct") {
     const n = Number(val);
     return (
-      <span className={`text-xs font-bold ${n >= 70 ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+      <span className={`text-sm font-semibold ${n >= 70 ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
         {n}%
       </span>
     );
   }
 
-  // Role
   if (col === "role")
     return (
-      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+      <span className={`text-[10px] font-semibold px-2 py-0.5 border ${
         str === "super_admin"
-          ? "bg-[#EF4444]/15 text-[#EF4444]"
-          : "bg-[#1E293B] text-[#64748B]"
+          ? "bg-[#F5E7E4] dark:bg-[#2B1512] text-[#8C2E24] dark:text-[#D08A7E] border-[#E0B8AF] dark:border-[#4A2A24]"
+          : "bg-[#FAFAF8] dark:bg-[#14140F] text-[#5B5A52] dark:text-[#ABA99C] border-[#DEDCD3] dark:border-[#35352C]"
       }`}>
         {str === "super_admin" ? "Admin" : str}
       </span>
     );
 
-  // Difficulty
   if (col === "difficulty") {
-    const colors: Record<string,string> = {
-      easy: "text-[#10B981]", medium: "text-[#6366F1]", hard: "text-[#EF4444]"
-    };
     return (
-      <span className={`text-xs font-semibold capitalize ${colors[str] ?? "text-[#94a3b8]"}`}>
+      <span className="text-[10px] font-semibold px-2 py-0.5 border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] capitalize">
         {str}
       </span>
     );
   }
 
-  // IDs — truncate
   if (col === "id" || col === "user_id")
-    return <span className="font-mono text-[10px] text-[#64748B]">{str.slice(0, 13)}…</span>;
+    return <span className="font-mono text-xs text-[#8C8B82]">{str.slice(0, 12)}…</span>;
 
-  // Long strings
-  if (str.length > 40)
-    return <span className="text-xs text-[#94a3b8] truncate block">{str.slice(0, 38)}…</span>;
-
-  return <span className="text-xs text-[#94a3b8]">{str}</span>;
+  return <span className="text-xs text-[#1B1B18] dark:text-[#F2F1EA] truncate block">{str}</span>;
 }
 
 export default function AdminExplorer() {
@@ -158,95 +145,93 @@ export default function AdminExplorer() {
   const pages = Math.max(1, Math.ceil(count / PAGE_SIZE));
 
   return (
-    <div className="animate-fade-in-up">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">Database Explorer</h1>
-          <p className="text-sm text-[#64748B]">View and manage Supabase tables</p>
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Database Explorer</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">View and manage Supabase tables</p>
         </div>
-        <button onClick={load}
-          className="flex items-center gap-2 text-sm text-[#94a3b8] bg-[#1E293B] border border-[#334155] px-4 py-2 rounded-xl hover:border-[#6366F1] transition-all">
-          <RefreshCw className="w-4 h-4" /> Refresh
+        <button onClick={load} title="Refresh" className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+          <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {/* Table selector */}
-      <div className="grid grid-cols-2 gap-4 mb-5">
+      <div className="grid grid-cols-2 gap-4">
         {TABLES.map(t => (
           <button key={t.name}
             onClick={() => { setActiveTable(t.name); setPage(1); setSearch(""); }}
-            className={`flex items-start gap-3 p-4 rounded-2xl border transition-all text-left ${
+            className={`flex items-start gap-3 p-4 border transition-colors text-left ${
               activeTable === t.name
-                ? "bg-[#6366F1]/10 border-[#6366F1] text-white"
-                : "bg-[#0F172A] border-[#1E293B] text-[#64748B] hover:border-[#334155]"
+                ? "bg-[#F3E7E9] dark:bg-[#2E1A20] border-[#6B2737] dark:border-[#B5677A] text-[#6B2737] dark:text-[#B5677A]"
+                : "bg-white dark:bg-[#1C1C16] border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
             }`}>
-            <Database className="w-5 h-5 mt-0.5 flex-shrink-0"
-              style={{ color: activeTable === t.name ? "#6366F1" : undefined }} />
+            <Database className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6B2737] dark:text-[#B5677A]" />
             <div className="min-w-0">
-              <div className="font-bold text-sm">{t.label}</div>
-              <div className="text-xs mt-0.5 opacity-70">{t.desc}</div>
-              <div className="text-[9px] mt-1 font-mono opacity-50 truncate">{t.name}</div>
+              <div className="font-medium text-sm text-[#1B1B18] dark:text-[#F2F1EA]">{t.label}</div>
+              <div className="text-xs text-[#8C8B82] mt-0.5">{t.desc}</div>
+              <div className="text-[10px] mt-1 font-mono text-[#8C8B82] truncate">{t.name}</div>
             </div>
           </button>
         ))}
       </div>
 
       {/* Search */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center gap-2 flex-1 min-w-0 bg-[#0F172A] border border-[#1E293B] rounded-xl px-3 py-2">
-          <Search className="w-3.5 h-3.5 text-[#475569] flex-shrink-0" />
+      <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] px-5 py-4 flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-0 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2">
+          <Search className="w-3.5 h-3.5 text-[#8C8B82] flex-shrink-0" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder={`Search in ${info.label}…`}
-            className="bg-transparent text-sm text-white placeholder:text-[#475569] outline-none w-full" />
+            className="bg-transparent text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none w-full" />
         </div>
-        <span className="text-xs text-[#475569] whitespace-nowrap">{count} total rows</span>
+        <span className="text-xs text-[#8C8B82] whitespace-nowrap">{count} total rows</span>
       </div>
 
-      {/* Table — contained, horizontally scrolls only inside this box */}
-      <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl overflow-hidden">
+      {/* Table */}
+      <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
         <div className="overflow-x-auto w-full">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#1E293B]">
+              <tr className="border-b border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F]">
                 {info.cols.map(col => (
                   <th key={col.key}
-                    className={`${col.width} px-4 py-3 text-[9px] font-black text-[#475569] uppercase tracking-widest whitespace-nowrap`}>
+                    className={`${col.width} px-4 py-3 text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest whitespace-nowrap`}>
                     {col.label}
                   </th>
                 ))}
-                <th className="w-10 px-3 py-3 text-[9px] font-black text-[#475569] uppercase tracking-widest">Del</th>
+                <th className="w-10 px-3 py-3 text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest">Del</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1E293B]">
+            <tbody className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
               {loading ? (
                 <tr>
-                  <td colSpan={info.cols.length + 1} className="py-16 text-center text-[#475569]">
+                  <td colSpan={info.cols.length + 1} className="py-16 text-center text-[#8C8B82]">
                     <Loader2 className="w-5 h-5 animate-spin inline mr-2" />Loading…
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={info.cols.length + 1} className="py-12 text-center text-[#475569] text-sm">
+                  <td colSpan={info.cols.length + 1} className="py-12 text-center text-[#8C8B82] text-sm">
                     No rows found
                   </td>
                 </tr>
               ) : (
                 filtered.map((row, ri) => (
-                  <tr key={ri} className="hover:bg-[#1E293B]/40 transition-colors">
+                  <tr key={ri} className="hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
                     {info.cols.map(col => (
                       <td key={col.key}
-                        className={`${col.width} px-4 py-2.5 max-w-0`}>
+                        className={`${col.width} px-4 py-3 max-w-0`}>
                         <div className="truncate">
                           <Cell col={col.key} val={row[col.key]} />
                         </div>
                       </td>
                     ))}
-                    <td className="w-10 px-3 py-2.5">
+                    <td className="w-10 px-3 py-3">
                       <button
                         onClick={() => deleteRow(String(row.id))}
                         title="Delete row"
-                        className="p-1 rounded text-[#475569] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
+                        className="p-1 text-[#8C8B82] hover:text-[#8C2E24] transition-colors">
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -258,15 +243,15 @@ export default function AdminExplorer() {
 
         {/* Pagination */}
         {pages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-[#1E293B] text-xs text-[#475569]">
+          <div className="flex items-center justify-between px-5 py-3 border-t border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-xs text-[#5B5A52] dark:text-[#ABA99C]">
             <span>Page {page} of {pages} · {count} total rows</span>
             <div className="flex gap-2">
               <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-                className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-[#1E293B] text-[#94a3b8] transition-colors">
+                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button disabled={page === pages} onClick={() => setPage(p => p + 1)}
-                className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-[#1E293B] text-[#94a3b8] transition-colors">
+                className="p-1.5 border border-[#DEDCD3] dark:border-[#35352C] disabled:opacity-30 hover:bg-white dark:hover:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] transition-colors">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

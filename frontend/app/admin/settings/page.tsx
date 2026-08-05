@@ -47,33 +47,26 @@ const SETTING_GROUPS: { section: string; icon: React.ReactNode; items: SettingDe
   },
 ];
 
-// All keys flattened
-const ALL_KEYS = SETTING_GROUPS.flatMap(g => g.items.map(i => i.key));
-
 type SettingsMap = Record<string, string>;
 
 // ── Admin profile card ────────────────────────────────────────────
 function AdminProfile({ name, email }: { name: string; email: string }) {
   const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "SA";
   return (
-    <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-5 flex items-center gap-4 mb-7">
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#EF4444] to-[#DC2626] flex items-center justify-center text-white text-xl font-black flex-shrink-0">
+    <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5 flex items-center gap-4 mb-6">
+      <div className="w-12 h-12 bg-[#6B2737] flex items-center justify-center text-white text-lg font-semibold flex-shrink-0">
         {initials}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-white font-bold text-base truncate">{name}</p>
-          <span className="flex items-center gap-1 text-[9px] font-black bg-[#EF4444]/10 border border-[#EF4444]/30 text-[#EF4444] px-2 py-0.5 rounded-full whitespace-nowrap">
-            <Shield className="w-2.5 h-2.5" /> SUPER ADMIN
+          <p className="text-[#1B1B18] dark:text-[#F2F1EA] font-medium text-base truncate">{name}</p>
+          <span className="text-[10px] font-semibold text-[#8C2E24] dark:text-[#D08A7E] bg-[#F5E7E4] dark:bg-[#2B1512] border border-[#E0B8AF] dark:border-[#4A2A24] px-2 py-0.5 whitespace-nowrap">
+            SUPER ADMIN
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-[#64748B]">
+        <div className="flex items-center gap-1.5 text-xs text-[#8C8B82]">
           <Mail className="w-3 h-3" /> {email}
         </div>
-      </div>
-      <div className="text-[10px] text-[#334155] text-right hidden sm:block">
-        <div className="flex items-center gap-1 text-[#475569]"><Database className="w-3 h-3" /> Settings persisted in Supabase</div>
-        <div className="mt-0.5 text-[#334155]">admin_settings table</div>
       </div>
     </div>
   );
@@ -89,129 +82,91 @@ function SettingRow({
   dirty: boolean;
 }) {
   return (
-    <div className={`flex items-center justify-between py-3.5 border-b border-[#1E293B] last:border-b-0 transition-colors ${dirty ? "bg-[#6366F1]/5" : ""}`}>
+    <div className="flex items-center justify-between py-3.5 border-b border-[#EAE8E1] dark:border-[#262620] last:border-b-0">
       <div className="flex-1 min-w-0 mr-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-white">{item.label}</span>
-          {dirty && <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] flex-shrink-0" title="Unsaved change" />}
+          <span className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{item.label}</span>
+          {dirty && <span className="w-1.5 h-1.5 rounded-full bg-[#6B2737] dark:bg-[#B5677A] flex-shrink-0" title="Unsaved change" />}
         </div>
-        <div className="text-xs text-[#475569] mt-0.5">{item.desc}</div>
-        <div className="text-[9px] font-mono text-[#334155] mt-0.5">{item.key}</div>
+        <div className="text-xs text-[#8C8B82] mt-0.5">{item.desc}</div>
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {item.unit && (
-          <span className="text-[10px] text-[#475569] font-mono">{item.unit}</span>
-        )}
+      <div className="flex items-center gap-2 shrink-0">
         <input
-          type={item.type === "number" ? "number" : "text"}
+          type={item.type}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-44 px-3 py-2 bg-[#1E293B] border border-[#334155] rounded-xl text-sm text-white text-right outline-none
-                     focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]/30 transition-colors font-mono"
+          className="w-28 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-1.5 text-sm text-[#1B1B18] dark:text-[#F2F1EA] outline-none font-medium"
         />
+        {item.unit && <span className="text-xs text-[#8C8B82] w-8">{item.unit}</span>}
       </div>
     </div>
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────
 export default function AdminSettings() {
+  const [admin, setAdmin] = useState<{ name: string; email: string } | null>(null);
   const [values, setValues] = useState<SettingsMap>({});
-  const [saved, setSaved] = useState<SettingsMap>({});   // last-saved snapshot
+  const [saved, setSaved] = useState<SettingsMap>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
-  const [admin, setAdmin] = useState<{ name: string; email: string } | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = (type: "success" | "error", msg: string) => {
     setToast({ type, msg });
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 4000);
   };
 
-  // ── Load from Supabase ──────────────────────────────────────────
   const load = async () => {
     setLoading(true);
     const supabase = createClient();
-
-    // Load admin identity
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, email")
-        .eq("id", user.id)
-        .single();
-      const name =
-        profile?.full_name ||
-        (user.user_metadata?.full_name as string) ||
-        user.email?.split("@")[0] ||
-        "Admin";
-      setAdmin({ name, email: user.email ?? profile?.email ?? "" });
+      const { data: prof } = await supabase.from("profiles").select("full_name, email").eq("id", user.id).maybeSingle();
+      setAdmin({
+        name: prof?.full_name || user.email?.split("@")[0] || "Admin User",
+        email: prof?.email || user.email || "",
+      });
     }
 
-    // Load settings (key-value rows)
-    const { data, error } = await supabase
-      .from("admin_settings")
-      .select("key, value")
-      .in("key", ALL_KEYS);
+    const { data } = await supabase.from("admin_settings").select("key, value");
+    const dbMap: SettingsMap = {};
+    (data ?? []).forEach((row: { key: string; value: string }) => { dbMap[row.key] = row.value; });
 
-    if (error) {
-      showToast("error", `Failed to load settings: ${error.message}`);
-      // Fall back to defaults so the page is still usable
-      const defaults: SettingsMap = {};
-      SETTING_GROUPS.forEach(g => g.items.forEach(i => { defaults[i.key] = String(i.defaultVal); }));
-      setValues(defaults);
-      setSaved(defaults);
-    } else {
-      // Merge DB values with defaults for any missing keys
-      const dbMap: SettingsMap = {};
-      (data ?? []).forEach(row => { dbMap[row.key] = row.value; });
-      const merged: SettingsMap = {};
-      SETTING_GROUPS.forEach(g =>
-        g.items.forEach(i => { merged[i.key] = dbMap[i.key] ?? String(i.defaultVal); })
-      );
-      setValues(merged);
-      setSaved(merged);
-    }
+    const merged: SettingsMap = {};
+    SETTING_GROUPS.forEach(g => g.items.forEach(i => {
+      merged[i.key] = dbMap[i.key] !== undefined ? dbMap[i.key] : String(i.defaultVal);
+    }));
+
+    setValues(merged);
+    setSaved({ ...merged });
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
-  // ── Save to Supabase ────────────────────────────────────────────
   const handleSave = async () => {
     setSaving(true);
     const supabase = createClient();
-
     const rows = Object.entries(values).map(([key, value]) => ({
-      key,
-      value,
-      updated_at: new Date().toISOString(),
+      key, value, updated_at: new Date().toISOString(),
     }));
 
-    const { error } = await supabase
-      .from("admin_settings")
-      .upsert(rows, { onConflict: "key" });
-
+    const { error } = await supabase.from("admin_settings").upsert(rows, { onConflict: "key" });
     if (error) {
-      showToast("error", `Save failed: ${error.message}`);
+      showToast("error", `Failed to save: ${error.message}`);
     } else {
       setSaved({ ...values });
-      showToast("success", "All settings saved to database successfully!");
+      showToast("success", "All settings saved successfully!");
     }
     setSaving(false);
   };
 
-  // ── Reset to defaults ───────────────────────────────────────────
   const handleReset = async () => {
-    if (!confirm("Reset all settings to factory defaults and save to database?")) return;
+    if (!confirm("Reset all settings to factory defaults?")) return;
     const defaults: SettingsMap = {};
     SETTING_GROUPS.forEach(g => g.items.forEach(i => { defaults[i.key] = String(i.defaultVal); }));
     setValues(defaults);
 
-    // Also persist resets to DB immediately
     setSaving(true);
     const supabase = createClient();
     const rows = Object.entries(defaults).map(([key, value]) => ({
@@ -222,52 +177,52 @@ export default function AdminSettings() {
       showToast("error", `Reset failed: ${error.message}`);
     } else {
       setSaved({ ...defaults });
-      showToast("success", "Settings reset to defaults and saved.");
+      showToast("success", "Settings reset to defaults.");
     }
     setSaving(false);
   };
 
-  // Compute dirty keys (changed but not yet saved)
   const dirtyKeys = new Set(
     Object.keys(values).filter(k => values[k] !== saved[k])
   );
   const hasDirty = dirtyKeys.size > 0;
 
   return (
-    <div className="animate-fade-in-up max-w-2xl">
+    <div className="space-y-6 max-w-3xl">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">System Settings</h1>
-          <p className="text-sm text-[#64748B]">
-            Platform-wide configuration — changes are persisted in Supabase
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">System Settings</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
+            Platform-wide configuration
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={load}
             disabled={loading || saving}
-            className="flex items-center gap-1.5 text-sm text-[#64748B] border border-[#334155] bg-[#1E293B] px-3.5 py-2 rounded-xl hover:border-[#6366F1] hover:text-[#94a3b8] transition-all disabled:opacity-40"
             title="Reload from database"
+            className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <button
             onClick={handleReset}
             disabled={saving || loading}
-            className="flex items-center gap-1.5 text-sm text-[#64748B] border border-[#334155] bg-[#1E293B] px-4 py-2 rounded-xl hover:border-[#EF4444] hover:text-[#EF4444] transition-all disabled:opacity-40"
+            className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#8C2E24] dark:text-[#D08A7E] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors disabled:opacity-50"
+            title="Reset to defaults"
           >
-            <RotateCcw className="w-3.5 h-3.5" /> Reset
+            <RotateCcw className="w-4 h-4" />
           </button>
           <button
             onClick={handleSave}
             disabled={saving || loading || !hasDirty}
-            className="flex items-center gap-1.5 text-sm text-white bg-[#6366F1] hover:bg-[#4F46E5] px-5 py-2 rounded-xl transition-all font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 text-sm font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] px-4 py-2.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {saving
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving…</>
-              : <><Save className="w-3.5 h-3.5" /> Save All{hasDirty ? ` (${dirtyKeys.size})` : ""}</>
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+              : <><Save className="w-4 h-4" /> Save All{hasDirty ? ` (${dirtyKeys.size})` : ""}</>
             }
           </button>
         </div>
@@ -278,9 +233,9 @@ export default function AdminSettings() {
 
       {/* ── Toast ── */}
       {toast && (
-        <div className={`flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl border mb-5 ${toast.type === "success"
-            ? "bg-[#0d2b20] border-[#10B981] text-[#10B981]"
-            : "bg-[#1c0809] border-[#EF4444] text-[#EF4444]"
+        <div className={`flex items-center gap-2 text-sm px-4 py-2.5 border ${toast.type === "success"
+            ? "bg-[#E9F1E9] dark:bg-[#1A2A1D] border-[#2F6B3A] text-[#2F6B3A] dark:text-[#7EBA88]"
+            : "bg-[#F5E7E4] dark:bg-[#2B1512] border-[#8C8B82] text-[#8C2E24] dark:text-[#D08A7E]"
           }`}>
           {toast.type === "success"
             ? <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -291,28 +246,19 @@ export default function AdminSettings() {
 
       {/* ── Loading skeleton ── */}
       {loading ? (
-        <div className="flex items-center justify-center py-24 text-[#64748B]">
-          <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading settings from database…
+        <div className="flex items-center justify-center py-24 text-[#8C8B82]">
+          <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading settings…
         </div>
       ) : (
         <div className="space-y-5">
-
-          {/* Unsaved changes banner */}
-          {hasDirty && (
-            <div className="flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/10 text-[#a5b4fc]">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              You have {dirtyKeys.size} unsaved change{dirtyKeys.size > 1 ? "s" : ""}. Click <strong className="mx-1">Save All</strong> to persist to database.
-            </div>
-          )}
-
           {/* Setting groups */}
           {SETTING_GROUPS.map(group => (
-            <div key={group.section} className="bg-[#0F172A] border border-[#1E293B] rounded-2xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#1E293B] flex items-center gap-3 bg-[#0B1120]">
-                <div className="w-8 h-8 rounded-xl bg-[#6366F1]/10 flex items-center justify-center text-[#6366F1]">
+            <div key={group.section} className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-[#DEDCD3] dark:border-[#35352C] flex items-center gap-2.5 bg-[#FAFAF8] dark:bg-[#14140F]">
+                <div className="text-[#6B2737] dark:text-[#B5677A]">
                   {group.icon}
                 </div>
-                <h2 className="text-sm font-black text-[#94a3b8] uppercase tracking-wider">{group.section}</h2>
+                <h2 className="text-xs font-semibold text-[#1B1B18] dark:text-[#F2F1EA] uppercase tracking-widest">{group.section}</h2>
               </div>
               <div className="px-5">
                 {group.items.map(item => (
@@ -327,30 +273,6 @@ export default function AdminSettings() {
               </div>
             </div>
           ))}
-
-          {/* Info card */}
-          <div className="flex items-start gap-3 bg-[#1E293B] border border-[#334155] rounded-2xl p-4">
-            <Database className="w-4 h-4 text-[#6366F1] flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-semibold text-[#94a3b8] mb-1">Supabase-Persisted Settings</p>
-              <p className="text-xs text-[#475569] leading-relaxed">
-                Values are stored in the <code className="text-[#6366F1]">admin_settings</code> table
-                using an upsert on the <code className="text-[#6366F1]">key</code> column.
-                Run the SQL migration below if the table does not yet exist.
-              </p>
-              <pre className="mt-2 text-[10px] text-[#475569] bg-[#0F172A] px-3 py-2 rounded-lg overflow-x-auto font-mono leading-relaxed">{`create table if not exists admin_settings (
-  key        text primary key,
-  value      text not null,
-  updated_at timestamptz default now()
-);
-alter table admin_settings enable row level security;
-create policy "Super admins can manage settings"
-  on admin_settings for all
-  using  (exists (select 1 from profiles where id = auth.uid() and role = 'super_admin'))
-  with check (exists (select 1 from profiles where id = auth.uid() and role = 'super_admin'));`}</pre>
-            </div>
-          </div>
-
         </div>
       )}
     </div>

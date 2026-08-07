@@ -464,14 +464,9 @@ export default function BattlesPage() {
                 </div>
             )}
 
-            {/* Header */}
-            <div className="flex items-center justify-between mb-7">
-                <div>
-                    <h1 className="font-heading text-2xl font-medium text-[#1B1B18] mb-1 flex items-center gap-2.5">
-                        <Swords className="w-5 h-5 text-[#6B2737]" /> 1v1 battle mode
-                    </h1>
-                    <p className="text-sm text-[#5B5A52]">Challenge friends or get matched for a head-to-head quiz duel.</p>
-                </div>
+            {/* Header info */}
+            <div className="flex items-center justify-between mb-6">
+                <p className="text-sm text-[#5B5A52]">Challenge friends or get matched for a head-to-head quiz duel.</p>
                 <div className="flex items-center gap-2">
                     <Link href="/dashboard/battles/leaderboard"
                         className="flex items-center gap-1.5 px-3 py-2.5 border border-[#DEDCD3] bg-white text-[#5B5A52] text-sm font-medium hover:bg-[#FAFAF8] transition-colors">

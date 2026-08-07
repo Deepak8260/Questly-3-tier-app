@@ -251,20 +251,12 @@ export default function QuizzesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">My quizzes</h1>
-          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
-            {quizzes.length} quizzes taken · {passed} passed · {avgScore}% avg
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={load} title="Refresh" className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
-            <RefreshCw className="w-4 h-4" />
-          </button>
-          <Link href="/dashboard/generate" className="flex items-center gap-1.5 text-sm font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] px-4 py-2.5 transition-colors">
-            <Zap className="w-3.5 h-3.5" /> New quiz
-          </Link>
-        </div>
+        <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
+          {quizzes.length} quizzes taken · {passed} passed · {avgScore}% avg
+        </p>
+        <button onClick={load} title="Refresh" className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="grid grid-cols-4 border-t border-l border-[#DEDCD3] dark:border-[#35352C] mb-6">

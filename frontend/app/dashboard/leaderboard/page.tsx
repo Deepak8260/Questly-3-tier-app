@@ -433,15 +433,10 @@ export default function LeaderboardPage() {
         <div className="animate-fade-in-up max-w-4xl mx-auto">
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-7">
-                <div>
-                    <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1 flex items-center gap-2.5">
-                        <Trophy className="w-6 h-6 text-[#93670F] dark:text-[#D4A94A]" /> Leaderboard
-                    </h1>
-                    <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
-                        All published contest results · Click any contest to view rankings and review your answers.
-                    </p>
-                </div>
+            <div className="flex items-center justify-between mb-6">
+                <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
+                    All published contest results · Click any contest to view rankings and review your answers.
+                </p>
                 {myWeeklyRank > 0 && (
                     <div className="bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-4 py-2 text-sm text-[#5B5A52] dark:text-[#ABA99C]">
                         Weekly rank: <strong className="text-[#6B2737] dark:text-[#B5677A]">#{myWeeklyRank}</strong>

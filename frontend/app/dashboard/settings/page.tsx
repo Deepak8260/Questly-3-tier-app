@@ -500,10 +500,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Settings</h1>
-        <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">Manage your account and preferences</p>
-      </div>
+      <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">Manage your account and preferences</p>
 
       <div className="space-y-6">
         {/* ── Profile ── */}

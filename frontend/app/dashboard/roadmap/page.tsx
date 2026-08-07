@@ -33,7 +33,6 @@ export default function RoadmapPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Study Roadmap</h1>
         <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">AI generates a personalized week-by-week plan for your learning goal.</p>
       </div>
 

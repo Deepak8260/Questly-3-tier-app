@@ -429,16 +429,11 @@ export default function ContestsPage() {
                 </div>
             )}
 
-            {/* Page header */}
-            <div className="flex items-center justify-between mb-7">
-                <div>
-                    <h1 className="font-heading text-2xl font-medium text-[#1B1B18] mb-1 flex items-center gap-2.5">
-                        <Swords className="w-5 h-5 text-[#6B2737]" /> Live contests
-                    </h1>
-                    <p className="text-sm text-[#5B5A52]">
-                        Compete against other learners in real-time timed quizzes. Top scorers win.
-                    </p>
-                </div>
+            {/* Page header info */}
+            <div className="flex items-center justify-between mb-6">
+                <p className="text-sm text-[#5B5A52]">
+                    Compete against other learners in real-time timed quizzes. Top scorers win.
+                </p>
                 <div className="flex items-center gap-2">
                     {(["all", "upcoming", "live"] as const).map(f => (
                         <button key={f} onClick={() => setFilter(f)}

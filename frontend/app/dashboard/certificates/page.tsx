@@ -106,14 +106,11 @@ export default function CertificatesPage() {
   return (
     <div className="space-y-6">
 
-      {/* ── Header ─────────────────────────────────────────────── */}
+      {/* ── Sub-header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Certificates</h1>
-          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
-            {loading ? "Loading…" : `${earned.length} earned · Score 70%+ on any quiz to earn one.`}
-          </p>
-        </div>
+        <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
+          {loading ? "Loading…" : `${earned.length} earned · Score 70%+ on any quiz to earn one.`}
+        </p>
         <div className="flex items-center gap-2">
           <button onClick={load} title="Refresh"
             className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
@@ -124,10 +121,6 @@ export default function CertificatesPage() {
               <Trophy className="w-3.5 h-3.5" /> {earned.length} Earned
             </div>
           )}
-          <Link href="/dashboard/generate"
-            className="flex items-center gap-1.5 text-xs font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] px-4 py-2 transition-colors">
-            <Zap className="w-3.5 h-3.5" /> New Quiz
-          </Link>
         </div>
       </div>
 

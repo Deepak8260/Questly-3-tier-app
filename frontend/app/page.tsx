@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   BookOpen, Trophy, BarChart3, Brain, ArrowRight,
-  Check, Users, ChevronRight, LayoutDashboard
+  Check, Users, ChevronRight, LayoutDashboard, Zap, Swords
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase";
@@ -100,91 +100,76 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ───────────────────────────────────────────────── */}
-      <section className="border-b border-[#DEDCD3] dark:border-[#35352C]">
-        <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-16 items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#6B2737] dark:text-[#B5677A] mb-5">
-              AI-generated learning
-            </p>
-            <h1 className="font-heading text-4xl md:text-5xl font-medium tracking-tight text-[#1B1B18] dark:text-[#F2F1EA] leading-[1.15] mb-6">
-              Learn faster with quizzes built for exactly what you're studying
-            </h1>
-            <p className="text-lg text-[#5B5A52] dark:text-[#ABA99C] mb-9 leading-relaxed max-w-lg">
-              Generate a quiz on any topic in seconds. Track your progress,
-              read AI explanations for what you missed, and earn a certificate
-              once you know the material.
-            </p>
+      <section className="relative overflow-hidden border-b border-[#DEDCD3] dark:border-[#35352C] py-20 md:py-28">
+        {/* Subtle background grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#DEDCD3_1px,transparent_1px),linear-gradient(to_bottom,#DEDCD3_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#35352C_1px,transparent_1px),linear-gradient(to_bottom,#35352C_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_20%,#000_70%,transparent_100%)] opacity-35 pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-10">
-              <Link
-                href="/signup"
-                className="inline-flex items-center justify-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white font-medium px-6 py-3 transition-colors text-sm"
-              >
-                Start learning free
-              </Link>
-              <Link
-                href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 border border-[#DEDCD3] dark:border-[#35352C] hover:border-[#ABA99C] text-[#1B1B18] dark:text-[#F2F1EA] font-medium px-6 py-3 transition-colors text-sm"
-              >
-                See how it works
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+        {/* Soft background glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#6B2737]/10 dark:bg-[#B5677A]/10 blur-3xl rounded-full pointer-events-none" />
 
-            <div className="flex items-center gap-6 text-sm text-[#5B5A52] dark:text-[#ABA99C] border-t border-[#DEDCD3] dark:border-[#35352C] pt-6">
-              <div>
-                <span className="font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">10,000+</span> learners
-              </div>
-              <div className="w-px h-4 bg-[#DEDCD3] dark:bg-[#35352C]" />
-              <div>
-                <span className="font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">500,000+</span> quizzes generated
-              </div>
-            </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          {/* Animated Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#F3E7E9] dark:bg-[#2E1A20] border border-[#6B2737]/20 text-[#6B2737] dark:text-[#B5677A] text-xs font-semibold rounded-full mb-8 shadow-sm hover:scale-105 transition-transform cursor-default">
+            <Zap className="w-3.5 h-3.5 text-[#6B2737] dark:text-[#B5677A] animate-pulse" />
+            <span>AI-Powered Learning Engine</span>
+            <span className="w-1 h-1 rounded-full bg-[#6B2737] dark:bg-[#B5677A] opacity-60" />
+            <span className="text-[11px] font-normal opacity-90">v2.0</span>
           </div>
 
-          {/* Demo card */}
-          <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C]">
-            <div className="border-b border-[#DEDCD3] dark:border-[#35352C] px-5 py-3 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#5B5A52] dark:text-[#ABA99C]">Quiz preview</span>
-              <span className="text-xs text-[#8C8B82]">Question 1 of 10</span>
+          {/* Centered Clean Headline */}
+          <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight text-[#1B1B18] dark:text-[#F2F1EA] leading-[1.12] mb-6 max-w-3xl mx-auto">
+            Master Anything with <span className="text-[#6B2737] dark:text-[#B5677A]">Instant AI</span> Quizzes
+          </h1>
+
+          {/* Concise Subtitle */}
+          <p className="text-base sm:text-lg text-[#5B5A52] dark:text-[#ABA99C] mb-10 max-w-xl mx-auto leading-relaxed">
+            Generate custom practice tests in seconds, battle peers head-to-head in real-time, get instant explanations, and earn verified certificates.
+          </p>
+
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-12">
+            <Link
+              href="/signup"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white font-medium px-7 py-3.5 transition-all text-sm shadow-md hover:shadow-lg"
+            >
+              Start learning free
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="#how-it-works"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] text-[#1B1B18] dark:text-[#F2F1EA] font-medium px-7 py-3.5 transition-colors text-sm"
+            >
+              See how it works
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Quick topic tags */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-16 text-xs">
+            <span className="text-[#8C8B82] font-medium mr-1">Popular topics:</span>
+            {["Python", "React", "Machine Learning", "SQL", "Data Structures"].map((topic) => (
+              <span
+                key={topic}
+                className="px-3 py-1 bg-white/80 dark:bg-[#1C1C16]/80 backdrop-blur-sm border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] font-medium hover:border-[#6B2737] dark:hover:border-[#B5677A] transition-colors cursor-default"
+              >
+                {topic}
+              </span>
+            ))}
+          </div>
+
+          {/* Minimalist Floating Feature Bar */}
+          <div className="max-w-2xl mx-auto bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-4 shadow-sm grid grid-cols-3 divide-x divide-[#DEDCD3] dark:divide-[#35352C] text-center">
+            <div className="px-2">
+              <div className="text-base sm:text-lg font-bold text-[#1B1B18] dark:text-[#F2F1EA] font-heading">10,000+</div>
+              <div className="text-xs text-[#8C8B82] mt-0.5">Active Learners</div>
             </div>
-            <div className="p-5">
-              <label className="text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C] block mb-2">
-                Topic
-              </label>
-              <div className="flex gap-2 mb-5">
-                <div className="flex-1 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-3 py-2 text-sm text-[#1B1B18] dark:text-[#F2F1EA]">
-                  Python programming for beginners
-                </div>
-                <button className="bg-[#6B2737] text-white text-sm font-medium px-4 py-2 hover:bg-[#551F2C] transition-colors">
-                  Generate
-                </button>
-              </div>
-
-              <div className="border border-[#DEDCD3] dark:border-[#35352C] p-4">
-                <p className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-3">
-                  Which keyword is used to define a function in Python?
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {["function", "def", "fn", "define"].map((opt, i) => (
-                    <div
-                      key={i}
-                      className={`text-xs px-3 py-2 border font-medium ${
-                        i === 1
-                          ? "bg-[#F3E7E9] dark:bg-[#2E1A20] border-[#6B2737] text-[#6B2737] dark:text-[#B5677A]"
-                          : "bg-white dark:bg-[#1C1C16] border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C]"
-                      }`}
-                    >
-                      <span className="font-semibold mr-1.5">{["A", "B", "C", "D"][i]}.</span> {opt}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between text-xs text-[#8C8B82]">
-                <span className="flex items-center gap-1.5"><Brain className="w-3.5 h-3.5" /> AI explanation included</span>
-                <span className="flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5" /> Certificate on completion</span>
-              </div>
+            <div className="px-2">
+              <div className="text-base sm:text-lg font-bold text-[#1B1B18] dark:text-[#F2F1EA] font-heading">500k+</div>
+              <div className="text-xs text-[#8C8B82] mt-0.5">Quizzes Generated</div>
+            </div>
+            <div className="px-2">
+              <div className="text-base sm:text-lg font-bold text-[#1B1B18] dark:text-[#F2F1EA] font-heading">98%</div>
+              <div className="text-xs text-[#8C8B82] mt-0.5">Pass Rate</div>
             </div>
           </div>
         </div>

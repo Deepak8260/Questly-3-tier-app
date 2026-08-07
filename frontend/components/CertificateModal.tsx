@@ -18,13 +18,13 @@ interface CertificateModalProps {
 export default function CertificateModal(props: CertificateModalProps) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
-  
+
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
     setTimeout(() => setVisible(true), 10);
-    return () => { 
-      document.body.style.overflow = ""; 
+    return () => {
+      document.body.style.overflow = "";
     };
   }, []);
 
@@ -59,7 +59,7 @@ function ModalContent({
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: Georgia, serif;
-      background: #fff;
+      background: #F5F4F0;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       width: 297mm; height: 210mm;
@@ -67,8 +67,8 @@ function ModalContent({
     }
     .cert {
       width: 270mm; height: 190mm;
-      border: 10px solid #6B2737; border-radius: 12px;
-      background: linear-gradient(135deg,#EEF2FF 0%,#fff 55%,#F5F3FF 100%);
+      border: 8px solid #6B2737;
+      background: linear-gradient(135deg,#F3E7E9 0%,#ffffff 55%,#FAFAF8 100%);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       text-align: center; padding: 40px 80px; position: relative;
@@ -76,20 +76,20 @@ function ModalContent({
     .ring { position:absolute; border-radius:50%; border:3px solid #6B2737; opacity:.1; }
     .badge  { font-size:64px; margin-bottom:10px; }
     .issuer { font-size:9px; color:#6B2737; font-weight:900; letter-spacing:5px; text-transform:uppercase; margin-bottom:14px; }
-    .title  { font-size:34px; font-weight:bold; color:#111827; }
+    .title  { font-size:34px; font-weight:bold; color:#1B1B18; }
     .bar    { width:72px; height:3px; background:#6B2737; margin:12px auto; border-radius:2px; }
-    .sub    { font-size:13px; color:#6B7280; margin-bottom:6px; }
-    .name   { font-size:32px; color:#6B2737; font-style:italic; margin-bottom:10px; }
-    .body   { font-size:14px; color:#374151; margin-bottom:4px; }
-    .topic  { font-size:20px; font-weight:bold; color:#111827; margin:4px 0 18px; }
+    .sub    { font-size:13px; color:#5B5A52; margin-bottom:6px; }
+    .name   { font-size:32px; color:#6B2737; font-style:italic; margin-bottom:10px; font-weight:bold; }
+    .body   { font-size:14px; color:#5B5A52; margin-bottom:4px; }
+    .topic  { font-size:20px; font-weight:bold; color:#1B1B18; margin:4px 0 18px; }
     .row    { display:flex; align-items:center; gap:24px; margin-bottom:22px; }
-    .score  { font-size:52px; font-weight:900; color:#059669; line-height:1; }
-    .sep    { width:1px; height:50px; background:#E5E7EB; }
+    .score  { font-size:52px; font-weight:900; color:#2F6B3A; line-height:1; }
+    .sep    { width:1px; height:50px; background:#DEDCD3; }
     .mc     { text-align:left; }
-    .ml     { font-size:10px; color:#9CA3AF; }
-    .mv     { font-size:14px; font-weight:700; color:#374151; }
-    .footer { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; width:100%; padding-top:14px; border-top:1px solid #E5E7EB; font-size:11px; color:#6B7280; text-align:center; }
-    .cid    { font-family:monospace; font-size:9px; color:#C4C9D4; margin-top:10px; }
+    .ml     { font-size:10px; color:#8C8B82; }
+    .mv     { font-size:14px; font-weight:700; color:#1B1B18; }
+    .footer { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; width:100%; padding-top:14px; border-top:1px solid #DEDCD3; font-size:11px; color:#5B5A52; text-align:center; }
+    .cid    { font-family:monospace; font-size:9px; color:#8C8B82; margin-top:10px; }
     @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
   </style>
 </head>
@@ -125,7 +125,7 @@ function ModalContent({
 </body>
 </html>`);
     win.document.close();
-    setTimeout(() => { win.print(); win.close(); }, 700);
+    setTimeout(() => { win.focus(); win.print(); win.close(); }, 400);
   };
 
   return (
@@ -133,124 +133,130 @@ function ModalContent({
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
         display: "flex", alignItems: "center", justifyContent: "center",
-        backgroundColor: visible ? "rgba(0,0,0,0.70)" : "rgba(0,0,0,0)",
+        backgroundColor: visible ? "rgba(28,28,22,0.85)" : "rgba(0,0,0,0)",
         backdropFilter: "blur(4px)",
-        padding: "24px",
+        padding: "16px",
+        overflowY: "auto",
         transition: "background-color 300ms ease-out",
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        width: "100%", maxWidth: 760,
+        width: "100%", maxWidth: 640,
+        maxHeight: "92vh",
         display: "flex", flexDirection: "column",
-        borderRadius: 16, overflow: "hidden",
-        boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
+        border: "1px solid #DEDCD3",
+        borderRadius: 12,
+        boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
         backgroundColor: "#ffffff",
         transform: visible ? "scale(1) translateY(0)" : "scale(0.95) translateY(20px)",
         opacity: visible ? 1 : 0,
         transition: "opacity 300ms ease-out, transform 300ms ease-out",
+        overflowY: "auto",
       }}>
 
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "12px 20px",
-          borderBottom: "1px solid #F3F4F6",
-          backgroundColor: "#ffffff",
+          padding: "10px 16px",
+          borderBottom: "1px solid #DEDCD3",
+          backgroundColor: "#FAFAF8",
+          position: "sticky", top: 0, zIndex: 10,
         }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#1B1B18" }}>
             Certificate Preview
           </span>
           <button onClick={onClose} style={{
-            width: 30, height: 30, borderRadius: 8, border: "none",
+            width: 28, height: 28, border: "none",
             background: "transparent", cursor: "pointer", display: "flex",
-            alignItems: "center", justifyContent: "center", color: "#9CA3AF",
+            alignItems: "center", justifyContent: "center", color: "#8C8B82",
           }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#F3F4F6")}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#EAE8E1")}
           onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
           >
             <X size={16} />
           </button>
         </div>
 
-        <div style={{ padding: "20px 20px 0" }}>
+        <div style={{ padding: "14px 14px 0", backgroundColor: "#FAFAF8" }}>
           <div style={{
-            border: "7px solid #6B2737", borderRadius: 12,
-            background: "linear-gradient(135deg,#EEF2FF 0%,#ffffff 55%,#F5F3FF 100%)",
-            padding: "28px 48px 24px",
+            border: "5px solid #6B2737",
+            background: "linear-gradient(135deg,#F3E7E9 0%,#ffffff 55%,#FAFAF8 100%)",
+            padding: "18px 24px 16px",
             textAlign: "center", position: "relative", overflow: "hidden",
           }}>
-            <div style={{ position:"absolute", top:-20, left:-20, width:90, height:90,
-              border:"3px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
-            <div style={{ position:"absolute", bottom:-20, right:-20, width:75, height:75,
-              border:"3px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
-            <div style={{ fontSize:36, marginBottom:6 }}>🏆</div>
+            <div style={{ position:"absolute", top:-20, left:-20, width:80, height:80,
+              border:"2px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
+            <div style={{ position:"absolute", bottom:-20, right:-20, width:65, height:65,
+              border:"2px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
+            <div style={{ fontSize:28, marginBottom:4 }}>🏆</div>
             <div style={{ fontSize:8, fontWeight:900, color:"#6B2737",
-              letterSpacing:"4px", textTransform:"uppercase", marginBottom:10 }}>
+              letterSpacing:"3px", textTransform:"uppercase", marginBottom:6 }}>
               Questly · AI-Powered Learning Platform
             </div>
-            <div style={{ fontSize:22, fontWeight:900, color:"#1B1B18", marginBottom:0 }}>
+            <div style={{ fontSize:18, fontWeight:900, color:"#1B1B18", marginBottom:0 }}>
               Certificate of Achievement
             </div>
-            <div style={{ width:60, height:3, background:"#6B2737",
-              margin:"10px auto", borderRadius:2 }} />
-            <div style={{ fontSize:12, color:"#6B7280", marginBottom:5 }}>This certifies that</div>
-            <div style={{ fontSize:20, fontWeight:700, color:"#6B2737",
-              fontStyle:"italic", marginBottom:8 }}>
+            <div style={{ width:48, height:2, background:"#6B2737",
+              margin:"6px auto 8px", borderRadius:1 }} />
+            <div style={{ fontSize:11, color:"#5B5A52", marginBottom:3 }}>This certifies that</div>
+            <div style={{ fontSize:18, fontWeight:700, color:"#6B2737",
+              fontStyle:"italic", marginBottom:6 }}>
               {userName}
             </div>
-            <div style={{ fontSize:12, color:"#374151", marginBottom:3 }}>
+            <div style={{ fontSize:11, color:"#5B5A52", marginBottom:2 }}>
               has successfully completed the quiz on
             </div>
-            <div style={{ fontSize:16, fontWeight:900, color:"#111827", marginBottom:14 }}>
+            <div style={{ fontSize:15, fontWeight:900, color:"#1B1B18", marginBottom:10 }}>
               {topic}
             </div>
             <div style={{ display:"flex", alignItems:"center",
-              justifyContent:"center", gap:20, marginBottom:16 }}>
-              <div style={{ fontSize:42, fontWeight:900, color:"#059669", lineHeight:1 }}>
+              justifyContent:"center", gap:16, marginBottom:12 }}>
+              <div style={{ fontSize:34, fontWeight:900, color:"#2F6B3A", lineHeight:1 }}>
                 {scorePct}%
               </div>
-              <div style={{ width:1, height:44, background:"#E5E7EB" }} />
+              <div style={{ width:1, height:36, background:"#DEDCD3" }} />
               <div style={{ textAlign:"left" }}>
-                <div style={{ fontSize:10, color:"#9CA3AF" }}>Questions</div>
-                <div style={{ fontSize:13, fontWeight:700, color:"#374151" }}>
+                <div style={{ fontSize:9, color:"#8C8B82" }}>Questions</div>
+                <div style={{ fontSize:12, fontWeight:700, color:"#1B1B18" }}>
                   {correctAnswers}/{totalQuestions} correct
                 </div>
-                <div style={{ fontSize:10, color:"#9CA3AF", marginTop:5 }}>Difficulty</div>
-                <div style={{ fontSize:13, fontWeight:700, color:"#374151" }}>{diffLabel}</div>
+                <div style={{ fontSize:9, color:"#8C8B82", marginTop:3 }}>Difficulty</div>
+                <div style={{ fontSize:12, fontWeight:700, color:"#1B1B18" }}>{diffLabel}</div>
               </div>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8,
-              borderTop:"1px solid #E5E7EB", paddingTop:12,
-              fontSize:9, color:"#9CA3AF", textAlign:"center" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6,
+              borderTop:"1px solid #DEDCD3", paddingTop:8,
+              fontSize:9, color:"#8C8B82", textAlign:"center" }}>
               <div>📅 {formattedDate}</div>
               <div>✅ Passing: ≥ 70%</div>
               <div>🎓 Verified by Questly</div>
             </div>
-            <div style={{ fontFamily:"monospace", fontSize:8, color:"#D1D5DB", marginTop:8 }}>
+            <div style={{ fontFamily:"monospace", fontSize:8, color:"#8C8B82", marginTop:6 }}>
               {certId}
             </div>
           </div>
         </div>
 
-        <div style={{ display:"flex", gap:12, padding:"16px 20px",
-          borderTop:"1px solid #F3F4F6", backgroundColor:"#F9FAFB", marginTop:20 }}>
+        <div style={{ display:"flex", gap:10, padding:"12px 14px",
+          borderTop:"1px solid #DEDCD3", backgroundColor:"#FAFAF8",
+          position: "sticky", bottom: 0, zIndex: 10 }}>
           <button onClick={handleDownload} style={{
             flex:1, display:"flex", alignItems:"center", justifyContent:"center",
-            gap:8, backgroundColor:"#6B2737", color:"#fff", border:"none",
-            borderRadius:12, padding:"10px 0", fontSize:14, fontWeight:600,
+            gap:6, backgroundColor:"#6B2737", color:"#fff", border:"none",
+            borderRadius:8, padding:"8px 0", fontSize:13, fontWeight:600,
             cursor:"pointer",
           }}
           onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#551F2C")}
           onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#6B2737")}
           >
-            <Download size={16} /> Download Certificate (PDF)
+            <Download size={15} /> Download Certificate (PDF)
           </button>
           <button onClick={onClose} style={{
-            padding:"10px 24px", background:"#fff", border:"1px solid #E5E7EB",
-            borderRadius:12, fontSize:14, fontWeight:600, color:"#374151",
+            padding:"8px 20px", background:"#fff", border:"1px solid #DEDCD3",
+            borderRadius:8, fontSize:13, fontWeight:600, color:"#5B5A52",
             cursor:"pointer",
           }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#F9FAFB")}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#FAFAF8")}
           onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#fff")}
           >
             Close

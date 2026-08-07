@@ -123,13 +123,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo */}
         <div className="px-5 pt-5 pb-4 border-b border-[#EAE8E1] dark:border-[#262620]">
           <Link href="/" className="flex items-center gap-2.5 font-heading font-semibold text-[#1B1B18] dark:text-[#F2F1EA] text-base">
-            <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white font-semibold text-sm">Q</div>
+            <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white font-semibold text-sm rounded-lg">Q</div>
             Questly
           </Link>
         </div>
 
         {/* Streak widget */}
-        <div className="mx-3 mt-3 mb-1 px-3 py-2.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] border-l-2 border-l-[#93670F]">
+        <div className="mx-3 mt-3 mb-1 px-3 py-2.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] border-l-2 border-l-[#93670F] rounded-lg">
           <div className="flex items-center gap-2">
             <Flame className="w-3.5 h-3.5 text-[#93670F]" />
             <span className="text-xs font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">7-day streak</span>
@@ -150,7 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-colors group ${active
+                className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors group ${active
                   ? "bg-[#F3E7E9] dark:bg-[#2E1A20] text-[#6B2737] dark:text-[#B5677A]"
                   : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
                   }`}
@@ -163,7 +163,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </span>
                 )}
                 {navItem.badge && !active && !showPendingBadge && (
-                  <span className="ml-1 text-[9px] font-semibold border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] px-1.5 py-0.5 tracking-wider">
+                  <span className="ml-1 text-[9px] font-semibold border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] px-1.5 py-0.5 tracking-wider rounded-md">
                     {navItem.badge}
                   </span>
                 )}
@@ -173,7 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
 
           <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-4">Account</div>
-          <Link href="/dashboard/settings" className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] transition-colors group">
+          <Link href="/dashboard/settings" className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] rounded-lg transition-colors group">
             <Settings className="w-[18px] h-[18px] text-[#8C8B82] group-hover:text-[#5B5A52]" />
             Settings
           </Link>
@@ -181,8 +181,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* User profile at bottom */}
         <div className="p-3 border-t border-[#EAE8E1] dark:border-[#262620]">
-          <div className="flex items-center gap-3 p-2.5 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors cursor-pointer">
-            <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+          <div className="flex items-center gap-3 p-2.5 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] rounded-lg transition-colors cursor-pointer">
+            <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 rounded-lg">
               {user?.initials ?? "?"}
             </div>
             <div className="flex-1 min-w-0">
@@ -192,7 +192,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8C8B82] hover:text-[#8C2E24] hover:bg-[#F5E7E4] dark:hover:bg-[#2B1512] transition-colors mt-1"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8C8B82] hover:text-[#8C2E24] hover:bg-[#F5E7E4] dark:hover:bg-[#2B1512] rounded-lg transition-colors mt-1"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign out
@@ -214,7 +214,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <ThemeToggle variant="icon" />
             <Link
               href="/dashboard/generate"
-              className="inline-flex items-center gap-1.5 bg-[#6B2737] hover:bg-[#551F2C] text-white text-sm font-medium px-4 py-2 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-[#6B2737] hover:bg-[#551F2C] text-white text-sm font-medium px-4 py-2 transition-colors rounded-lg"
             >
               <Zap className="w-3.5 h-3.5" />
               New quiz

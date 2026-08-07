@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import {
   LayoutDashboard, Zap, BookOpen, Map, Trophy, BarChart3,
-  Users, Settings, LogOut, ChevronRight, Flame, Swords
+  Users, Settings, LogOut, ChevronRight, Flame, Swords, Menu, X
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -26,6 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [user, setUser] = useState<{ name: string; email: string; initials: string } | null>(null);
   const [pendingBattlesCount, setPendingBattlesCount] = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const loadPendingBattles = useCallback(async () => {
     const supabase = createClient();
@@ -100,27 +101,73 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+    router.push("/");
   };
 
   const pageTitle =
-    path === "/dashboard" ? "Dashboard" :
-      path.includes("generate") ? "Generate quiz" :
-        path.includes("quizzes") ? "My quizzes" :
-          path.includes("battles") ? "Battle mode" :
-            path.includes("contests") ? "Live contests" :
-              path.includes("roadmap") ? "Study roadmap" :
-                path.includes("certificates") ? "Certificates" :
+    path === "/dashboard" ? "Overview" :
+      path.includes("quizzes") ? "My Quizzes" :
+        path.includes("generate") ? "AI Generator" :
+          path.includes("battles") ? "1v1 Battles" :
+            path.includes("contests") ? "Contests" :
+              path.includes("certificates") ? "Certificates" :
+                path.includes("roadmap") ? "Learning Roadmap" :
                   path.includes("analytics") ? "Analytics" :
                     path.includes("leaderboard") ? "Leaderboard" :
                       path.includes("settings") ? "Settings" : "";
 
+  const renderNavItems = () => (
+    <>
+      <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-1">Main</div>
+      {NAV.map((item) => {
+        const active = path === item.href || (item.href !== "/dashboard" && path.startsWith(item.href));
+        const navItem = item as typeof item & { badge?: string };
+        const isBattleMode = item.href === "/dashboard/battles";
+        const showPendingBadge = isBattleMode && pendingBattlesCount > 0;
+        
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => setMobileOpen(false)}
+            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors group ${active
+              ? "bg-[#F3E7E9] dark:bg-[#2E1A20] text-[#6B2737] dark:text-[#B5677A]"
+              : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
+              }`}
+          >
+            <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#8C8B82] group-hover:text-[#5B5A52]"}`} />
+            {item.label}
+            {showPendingBadge && (
+              <span className="ml-1 text-[9px] font-semibold bg-[#6B2737] text-white px-1.5 py-0.5 rounded-full">
+                {pendingBattlesCount}
+              </span>
+            )}
+            {navItem.badge && !active && !showPendingBadge && (
+              <span className="ml-1 text-[9px] font-semibold border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] px-1.5 py-0.5 tracking-wider rounded-md">
+                {navItem.badge}
+              </span>
+            )}
+            {active && <ChevronRight className="w-3 h-3 ml-auto text-[#6B2737] dark:text-[#B5677A]" />}
+          </Link>
+        );
+      })}
+
+      <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-4">Account</div>
+      <Link
+        href="/dashboard/settings"
+        onClick={() => setMobileOpen(false)}
+        className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] rounded-lg transition-colors group"
+      >
+        <Settings className="w-[18px] h-[18px] text-[#8C8B82] group-hover:text-[#5B5A52]" />
+        Settings
+      </Link>
+    </>
+  );
+
   return (
     <div className="flex min-h-screen bg-[#F5F4F0] dark:bg-[#14140F]">
-      {/* ── Sidebar ─────────────────────────────────────────────── */}
-      <aside className="w-60 fixed left-0 top-0 h-full bg-white dark:bg-[#1C1C16] border-r border-[#DEDCD3] dark:border-[#35352C] flex flex-col z-30">
-        {/* Logo */}
+      {/* ── Desktop Sidebar ─────────────────────────────────────── */}
+      <aside className="hidden lg:flex w-60 fixed left-0 top-0 h-full bg-white dark:bg-[#1C1C16] border-r border-[#DEDCD3] dark:border-[#35352C] flex-col z-30">
         <div className="px-5 pt-5 pb-4 border-b border-[#EAE8E1] dark:border-[#262620]">
           <Link href="/" className="flex items-center gap-2.5 font-heading font-semibold text-[#1B1B18] dark:text-[#F2F1EA] text-base">
             <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white font-semibold text-sm rounded-lg">Q</div>
@@ -128,7 +175,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
 
-        {/* Streak widget */}
         <div className="mx-3 mt-3 mb-1 px-3 py-2.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] border-l-2 border-l-[#93670F] rounded-lg">
           <div className="flex items-center gap-2">
             <Flame className="w-3.5 h-3.5 text-[#93670F]" />
@@ -137,49 +183,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="text-xs text-[#5B5A52] dark:text-[#ABA99C] mt-0.5">Keep it going.</div>
         </div>
 
-        {/* Nav links */}
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
-          <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-1">Main</div>
-          {NAV.map((item) => {
-            const active = path === item.href || (item.href !== "/dashboard" && path.startsWith(item.href));
-            const navItem = item as typeof item & { badge?: string };
-            const isBattleMode = item.href === "/dashboard/battles";
-            const showPendingBadge = isBattleMode && pendingBattlesCount > 0;
-            
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors group ${active
-                  ? "bg-[#F3E7E9] dark:bg-[#2E1A20] text-[#6B2737] dark:text-[#B5677A]"
-                  : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
-                  }`}
-              >
-                <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#8C8B82] group-hover:text-[#5B5A52]"}`} />
-                {item.label}
-                {showPendingBadge && (
-                  <span className="ml-1 text-[9px] font-semibold bg-[#6B2737] text-white px-1.5 py-0.5 rounded-full">
-                    {pendingBattlesCount}
-                  </span>
-                )}
-                {navItem.badge && !active && !showPendingBadge && (
-                  <span className="ml-1 text-[9px] font-semibold border border-[#DEDCD3] dark:border-[#35352C] text-[#5B5A52] dark:text-[#ABA99C] px-1.5 py-0.5 tracking-wider rounded-md">
-                    {navItem.badge}
-                  </span>
-                )}
-                {active && <ChevronRight className="w-3 h-3 ml-auto text-[#6B2737] dark:text-[#B5677A]" />}
-              </Link>
-            );
-          })}
-
-          <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-4">Account</div>
-          <Link href="/dashboard/settings" className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] rounded-lg transition-colors group">
-            <Settings className="w-[18px] h-[18px] text-[#8C8B82] group-hover:text-[#5B5A52]" />
-            Settings
-          </Link>
+          {renderNavItems()}
         </nav>
 
-        {/* User profile at bottom */}
         <div className="p-3 border-t border-[#EAE8E1] dark:border-[#262620]">
           <div className="flex items-center gap-3 p-2.5 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] rounded-lg transition-colors cursor-pointer">
             <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 rounded-lg">
@@ -200,24 +207,74 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
+      {/* ── Mobile Sidebar Drawer ───────────────────────────────── */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-64 max-w-[85vw] bg-white dark:bg-[#1C1C16] h-full flex flex-col z-10 shadow-2xl border-r border-[#DEDCD3] dark:border-[#35352C]">
+            <div className="px-5 py-4 border-b border-[#EAE8E1] dark:border-[#262620] flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-2.5 font-heading font-semibold text-[#1B1B18] dark:text-[#F2F1EA] text-base">
+                <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white font-semibold text-sm rounded-lg">Q</div>
+                Questly
+              </Link>
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+              {renderNavItems()}
+            </nav>
+
+            <div className="p-3 border-t border-[#EAE8E1] dark:border-[#262620]">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg">
+                <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 rounded-lg">
+                  {user?.initials ?? "?"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{user?.name ?? "Loading..."}</div>
+                  <div className="text-xs text-[#8C8B82] truncate">{user?.email ?? ""}</div>
+                </div>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8C8B82] hover:text-[#8C2E24] hover:bg-[#F5E7E4] dark:hover:bg-[#2B1512] rounded-lg transition-colors mt-1"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign out
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* ── Main content ─────────────────────────────────────────── */}
-      <main className="flex-1 ml-60">
+      <main className="flex-1 lg:ml-60 min-w-0">
         {/* Top bar */}
-        <div className="sticky top-0 z-20 bg-[#F5F4F0]/95 dark:bg-[#14140F]/95 backdrop-blur-sm border-b border-[#DEDCD3] dark:border-[#35352C] px-8 py-4 flex items-center justify-between">
-          <div>
-            <h2 className="font-heading text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{pageTitle}</h2>
-            <p className="text-xs text-[#8C8B82] mt-0.5">
-              {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-            </p>
+        <div className="sticky top-0 z-20 bg-[#F5F4F0]/95 dark:bg-[#14140F]/95 backdrop-blur-sm border-b border-[#DEDCD3] dark:border-[#35352C] px-4 sm:px-8 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden p-2 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#1B1B18] dark:text-[#F2F1EA] rounded-lg hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <h2 className="font-heading text-base sm:text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{pageTitle}</h2>
+              <p className="text-[11px] sm:text-xs text-[#8C8B82] mt-0.5 hidden sm:block">
+                {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2.5">
             <ThemeToggle variant="icon" />
             <Link
               href="/dashboard/generate"
-              className="inline-flex items-center gap-1.5 bg-[#6B2737] hover:bg-[#551F2C] text-white text-sm font-medium px-4 py-2 transition-colors rounded-lg"
+              className="inline-flex items-center gap-1.5 bg-[#6B2737] hover:bg-[#551F2C] text-white text-xs sm:text-sm font-medium px-3.5 sm:px-4 py-2 transition-colors rounded-lg shadow-sm"
             >
               <Zap className="w-3.5 h-3.5" />
-              New quiz
+              <span>New quiz</span>
             </Link>
           </div>
         </div>

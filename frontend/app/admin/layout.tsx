@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Users, BookOpen, BarChart3, Trophy,
   Activity, Database, Settings, LogOut, Shield, Zap,
-  ChevronRight, AlertTriangle, Loader2, Swords
+  ChevronRight, AlertTriangle, Loader2, Swords, Menu, X
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
@@ -27,6 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [adminUser, setAdminUser] = useState<{ name: string; email: string } | null>(null);
   const [checking, setChecking] = useState(true);
   const [denied, setDenied] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const checkRole = async () => {
@@ -43,7 +44,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       const isAdmin =
         profile?.role === "super_admin" ||
-        // Fallback: allow this email even before SQL is run
         user.email === "kd.codegeek@gmail.com";
 
       if (!isAdmin) {
@@ -63,7 +63,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkRole();
   }, [router]);
 
-
   const signOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -71,6 +70,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   const pageLabel = NAV.find(n => path === n.href || (n.href !== "/admin" && path.startsWith(n.href)))?.label ?? "Admin";
+
+  const renderNavItems = () => (
+    <>
+      <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-1">
+        Control Center
+      </div>
+      {NAV.map((item) => {
+        const active = path === item.href || (item.href !== "/admin" && path.startsWith(item.href));
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => setMobileOpen(false)}
+            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors group ${active
+              ? "bg-[#F3E7E9] dark:bg-[#2E1A20] text-[#6B2737] dark:text-[#B5677A]"
+              : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
+              }`}
+          >
+            <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#8C8B82] group-hover:text-[#5B5A52]"}`} />
+            {item.label}
+            {active && <ChevronRight className="w-3 h-3 ml-auto text-[#6B2737] dark:text-[#B5677A]" />}
+          </Link>
+        );
+      })}
+
+      <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-4">
+        Quick Links
+      </div>
+      <Link
+        href="/dashboard"
+        onClick={() => setMobileOpen(false)}
+        className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] rounded-lg transition-colors group"
+      >
+        <Zap className="w-[18px] h-[18px] text-[#8C8B82] group-hover:text-[#5B5A52]" /> User Dashboard
+      </Link>
+    </>
+  );
 
   // ── Loading ──
   if (checking && !denied) {
@@ -87,7 +123,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // ── Access denied ──
   if (denied) {
     return (
-      <div className="min-h-screen bg-[#F5F4F0] dark:bg-[#14140F] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F4F0] dark:bg-[#14140F] flex items-center justify-center p-4">
         <div className="text-center">
           <AlertTriangle className="w-10 h-10 text-[#8C2E24] dark:text-[#D08A7E] mx-auto mb-3" />
           <h2 className="font-heading text-[#1B1B18] dark:text-[#F2F1EA] font-semibold text-xl mb-2">Access Denied</h2>
@@ -99,11 +135,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-screen bg-[#F5F4F0] dark:bg-[#14140F]">
-
-      {/* ── SIDEBAR ─── Matching Student Layout */}
-      <aside className="w-60 fixed left-0 top-0 h-full bg-white dark:bg-[#1C1C16] border-r border-[#DEDCD3] dark:border-[#35352C] flex flex-col z-30">
-
-        {/* Logo + ADMIN badge */}
+      {/* ── DESKTOP SIDEBAR ── */}
+      <aside className="hidden lg:flex w-60 fixed left-0 top-0 h-full bg-white dark:bg-[#1C1C16] border-r border-[#DEDCD3] dark:border-[#35352C] flex-col z-30">
         <div className="px-5 pt-5 pb-4 border-b border-[#EAE8E1] dark:border-[#262620]">
           <Link href="/" className="flex items-center gap-2.5 font-heading font-semibold text-[#1B1B18] dark:text-[#F2F1EA] text-base">
             <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white font-semibold text-sm rounded-lg">
@@ -120,35 +153,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
-          <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-1">
-            Control Center
-          </div>
-          {NAV.map((item) => {
-            const active = path === item.href || (item.href !== "/admin" && path.startsWith(item.href));
-            return (
-              <Link key={item.href} href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors group ${active
-                  ? "bg-[#F3E7E9] dark:bg-[#2E1A20] text-[#6B2737] dark:text-[#B5677A]"
-                  : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA]"
-                  }`}>
-                <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#8C8B82] group-hover:text-[#5B5A52]"}`} />
-                {item.label}
-                {active && <ChevronRight className="w-3 h-3 ml-auto text-[#6B2737] dark:text-[#B5677A]" />}
-              </Link>
-            );
-          })}
-
-          <div className="text-[10px] font-semibold text-[#8C8B82] tracking-widest uppercase px-3 mb-2 mt-4">
-            Quick Links
-          </div>
-          <Link href="/dashboard" className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] hover:text-[#1B1B18] dark:hover:text-[#F2F1EA] rounded-lg transition-colors group">
-            <Zap className="w-[18px] h-[18px] text-[#8C8B82] group-hover:text-[#5B5A52]" /> User Dashboard
-          </Link>
+          {renderNavItems()}
         </nav>
 
-        {/* Admin user at bottom */}
         <div className="p-3 border-t border-[#EAE8E1] dark:border-[#262620]">
           <div className="flex items-center gap-3 p-2.5 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] rounded-lg transition-colors cursor-pointer">
             <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 rounded-lg">
@@ -166,27 +174,77 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
+      {/* ── MOBILE DRAWER ── */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-64 max-w-[85vw] bg-white dark:bg-[#1C1C16] h-full flex flex-col z-10 shadow-2xl border-r border-[#DEDCD3] dark:border-[#35352C]">
+            <div className="px-5 py-4 border-b border-[#EAE8E1] dark:border-[#262620] flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-2.5 font-heading font-semibold text-[#1B1B18] dark:text-[#F2F1EA] text-base">
+                <div className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white font-semibold text-sm rounded-lg">Q</div>
+                <span>Questly</span>
+                <span className="text-[9px] font-semibold bg-[#6B2737] text-white px-1.5 py-0.5 tracking-wider rounded-md">ADMIN</span>
+              </Link>
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+              {renderNavItems()}
+            </nav>
+
+            <div className="p-3 border-t border-[#EAE8E1] dark:border-[#262620]">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg">
+                <div className="w-8 h-8 bg-[#6B2737] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 rounded-lg">
+                  {adminUser?.name?.[0]?.toUpperCase() ?? "A"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{adminUser?.name}</div>
+                  <div className="text-xs text-[#8C2E24] dark:text-[#D08A7E] font-medium">Super Admin</div>
+                </div>
+              </div>
+              <button onClick={signOut}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8C8B82] hover:text-[#8C2E24] hover:bg-[#F5E7E4] dark:hover:bg-[#2B1512] rounded-lg transition-colors mt-1">
+                <LogOut className="w-3.5 h-3.5" /> Sign out
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* ── MAIN ── */}
-      <main className="flex-1 ml-60">
+      <main className="flex-1 lg:ml-60 min-w-0">
         {/* Topbar */}
-        <div className="sticky top-0 z-20 bg-[#F5F4F0]/95 dark:bg-[#14140F]/95 backdrop-blur-sm border-b border-[#DEDCD3] dark:border-[#35352C] px-8 py-4 flex items-center justify-between">
-          <div>
-            <h2 className="font-heading text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{pageLabel}</h2>
-            <p className="text-xs text-[#8C8B82] mt-0.5">
-              {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-            </p>
+        <div className="sticky top-0 z-20 bg-[#F5F4F0]/95 dark:bg-[#14140F]/95 backdrop-blur-sm border-b border-[#DEDCD3] dark:border-[#35352C] px-4 sm:px-8 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden p-2 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#1B1B18] dark:text-[#F2F1EA] rounded-lg hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <h2 className="font-heading text-base sm:text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{pageLabel}</h2>
+              <p className="text-[11px] sm:text-xs text-[#8C8B82] mt-0.5 hidden sm:block">
+                {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-1.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-xs font-medium px-3 py-1.5 text-[#5B5A52] dark:text-[#ABA99C] rounded-full">
+            <div className="flex items-center gap-1.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-xs font-medium px-2.5 sm:px-3 py-1.5 text-[#5B5A52] dark:text-[#ABA99C] rounded-full">
               <div className="w-2 h-2 rounded-full bg-[#2F6B3A] dark:bg-[#7EBA88] animate-pulse" />
-              Live
+              <span>Live</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-[#F5E7E4] dark:bg-[#2B1512] border border-[#E0B8AF] dark:border-[#4A2A24] text-[#8C2E24] dark:text-[#D08A7E] text-xs font-medium px-3 py-1.5 rounded-full">
-              <Shield className="w-3.5 h-3.5" /> SUPER ADMIN
+            <div className="flex items-center gap-1.5 bg-[#F5E7E4] dark:bg-[#2B1512] border border-[#E0B8AF] dark:border-[#4A2A24] text-[#8C2E24] dark:text-[#D08A7E] text-[11px] sm:text-xs font-medium px-2.5 sm:px-3 py-1.5 rounded-full">
+              <Shield className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">SUPER ADMIN</span>
+              <span className="sm:hidden">ADMIN</span>
             </div>
           </div>
         </div>
-        <div className="p-8">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">{children}</div>
       </main>
     </div>
   );

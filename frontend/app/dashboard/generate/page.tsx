@@ -207,18 +207,18 @@ export default function GenerateQuizPage() {
         <button
           type="submit"
           disabled={loading || !form.topic.trim()}
-          className="w-full bg-[#6B2737] hover:bg-[#551F2C] disabled:opacity-50 disabled:pointer-events-none text-white font-medium py-4 flex items-center justify-center gap-2.5 transition-colors text-base"
+          className="w-full bg-[#6B2737] hover:bg-[#551F2C] text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all text-base shadow-md disabled:bg-[#35352C] dark:disabled:bg-[#262620] disabled:text-[#8C8B82] dark:disabled:text-[#66655C] disabled:cursor-not-allowed border border-[#6B2737] disabled:border-[#DEDCD3] dark:disabled:border-[#35352C]"
         >
           {loading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Generating your quiz...
+              <Loader2 className="w-5 h-5 animate-spin text-white" />
+              <span className="text-white font-semibold">Generating your quiz...</span>
             </>
           ) : (
             <>
-              <Zap className="w-5 h-5" />
-              Generate quiz
-              <ChevronRight className="w-4 h-4" />
+              <Zap className="w-5 h-5 flex-shrink-0" />
+              <span>{form.topic.trim() ? "Generate quiz" : "Enter topic above to generate"}</span>
+              <ChevronRight className="w-4 h-4 flex-shrink-0" />
             </>
           )}
         </button>

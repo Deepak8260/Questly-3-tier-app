@@ -126,11 +126,11 @@ export default function DashboardPage() {
         </p>
         <Link
           href="/dashboard/generate"
-          className="inline-flex items-center gap-2 bg-white text-[#1B1B18] font-medium text-sm px-5 py-2.5 hover:bg-[#EDECE6] transition-colors"
+          className="inline-flex items-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors shadow-sm"
         >
-          <Zap className="w-4 h-4" />
-          {quizTotal === 0 ? "Generate first quiz" : "Generate quiz"}
-          <ArrowRight className="w-3.5 h-3.5" />
+          <Zap className="w-4 h-4 text-white" />
+          <span className="text-white font-semibold">{quizTotal === 0 ? "Generate first quiz" : "Generate quiz"}</span>
+          <ArrowRight className="w-4 h-4 text-white" />
         </Link>
       </div>
 

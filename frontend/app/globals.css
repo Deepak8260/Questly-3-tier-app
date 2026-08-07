@@ -305,6 +305,27 @@ body {
   100% { background-position: -200% 0; }
 }
 
+/* ── Container-aware proportional scaling & responsive helpers ──── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.responsive-container {
+  width: 100%;
+  max-width: 80rem; /* 1280px */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 4vw, 2rem);
+  padding-right: clamp(1rem, 4vw, 2rem);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── Quiz option micro-interaction ───────────────────────────── */
 .quiz-option { transition: all 0.15s ease; }
 .quiz-option:hover { transform: translateX(3px); }

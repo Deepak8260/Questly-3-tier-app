@@ -58,69 +58,114 @@ function ModalContent({
     @page { size: A4 landscape; margin: 0; }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: Georgia, serif;
-      background: #F5F4F0;
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #14140F;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       width: 297mm; height: 210mm;
       display: flex; align-items: center; justify-content: center;
+      color: #F2F1EA;
     }
-    .cert {
-      width: 270mm; height: 190mm;
-      border: 8px solid #6B2737;
-      background: linear-gradient(135deg,#F3E7E9 0%,#ffffff 55%,#FAFAF8 100%);
+    .cert-card {
+      width: 275mm; height: 190mm;
+      background: #1C1C16;
+      border: 2px solid #6B2737;
+      padding: 40px 52px;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; padding: 40px 80px; position: relative;
+      align-items: center; justify-content: space-between;
+      text-align: center; position: relative;
     }
-    .ring { position:absolute; border-radius:50%; border:3px solid #6B2737; opacity:.1; }
-    .badge  { font-size:64px; margin-bottom:10px; }
-    .issuer { font-size:9px; color:#6B2737; font-weight:900; letter-spacing:5px; text-transform:uppercase; margin-bottom:14px; }
-    .title  { font-size:34px; font-weight:bold; color:#1B1B18; }
-    .bar    { width:72px; height:3px; background:#6B2737; margin:12px auto; border-radius:2px; }
-    .sub    { font-size:13px; color:#5B5A52; margin-bottom:6px; }
-    .name   { font-size:32px; color:#6B2737; font-style:italic; margin-bottom:10px; font-weight:bold; }
-    .body   { font-size:14px; color:#5B5A52; margin-bottom:4px; }
-    .topic  { font-size:20px; font-weight:bold; color:#1B1B18; margin:4px 0 18px; }
-    .row    { display:flex; align-items:center; gap:24px; margin-bottom:22px; }
-    .score  { font-size:52px; font-weight:900; color:#2F6B3A; line-height:1; }
-    .sep    { width:1px; height:50px; background:#DEDCD3; }
-    .mc     { text-align:left; }
-    .ml     { font-size:10px; color:#8C8B82; }
-    .mv     { font-size:14px; font-weight:700; color:#1B1B18; }
-    .footer { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; width:100%; padding-top:14px; border-top:1px solid #DEDCD3; font-size:11px; color:#5B5A52; text-align:center; }
-    .cid    { font-family:monospace; font-size:9px; color:#8C8B82; margin-top:10px; }
+    .header-sub {
+      font-size: 10px; font-weight: 700; color: #B5677A;
+      letter-spacing: 4px; text-transform: uppercase; margin-bottom: 2px;
+    }
+    .title {
+      font-size: 32px; font-weight: 700; color: #F2F1EA;
+      letter-spacing: 2px; text-transform: uppercase; margin: 8px 0 12px;
+      font-family: Georgia, serif;
+    }
+    .divider {
+      width: 80px; height: 2px; background: #6B2737; margin: 0 auto 16px;
+    }
+    .sub-text {
+      font-size: 13px; color: #ABA99C; font-style: italic; margin-bottom: 6px;
+    }
+    .name {
+      font-size: 34px; font-weight: 700; color: #F2F1EA;
+      font-family: Georgia, serif; margin-bottom: 12px;
+      border-bottom: 1px solid #35352C; display: inline-block; padding: 0 32px 6px;
+    }
+    .topic-desc {
+      font-size: 13px; color: #ABA99C; margin-bottom: 4px;
+    }
+    .topic-name {
+      font-size: 22px; font-weight: 700; color: #B5677A; margin-bottom: 20px;
+    }
+
+    .stats-bar {
+      display: flex; align-items: center; gap: 24px;
+      background: #262620; border: 1px solid #35352C;
+      padding: 12px 28px; border-radius: 8px; margin-bottom: 20px;
+    }
+    .score-val {
+      font-size: 36px; font-weight: 800; color: #7EBA88; line-height: 1;
+    }
+    .sep { width: 1px; height: 36px; background: #35352C; }
+    .meta { text-align: left; font-size: 11px; color: #ABA99C; line-height: 1.5; }
+    .meta strong { color: #F2F1EA; }
+
+    .footer-bar {
+      width: 100%; display: flex; align-items: flex-end; justify-content: space-between;
+      padding-top: 16px; border-top: 1px solid #262620;
+    }
+    .sig-box { text-align: center; width: 180px; }
+    .sig-text {
+      font-family: Georgia, serif; font-style: italic;
+      font-size: 16px; color: #B5677A; border-bottom: 1px solid #35352C;
+      padding-bottom: 4px; margin-bottom: 4px;
+    }
+    .sig-lbl { font-size: 9px; font-weight: 600; color: #8C8B82; text-transform: uppercase; letter-spacing: 1px; }
+
+    .cert-meta { font-family: monospace; font-size: 9px; color: #8C8B82; text-align: right; line-height: 1.6; }
     @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
   </style>
 </head>
 <body>
-  <div class="cert">
-    <div class="ring" style="top:-24px;left:-24px;width:130px;height:130px"></div>
-    <div class="ring" style="bottom:-24px;right:-24px;width:110px;height:110px"></div>
-    <div class="badge">🏆</div>
-    <div class="issuer">Questly · AI-Powered Learning Platform</div>
-    <div class="title">Certificate of Achievement</div>
-    <div class="bar"></div>
-    <div class="sub">This certifies that</div>
-    <div class="name">${userName}</div>
-    <div class="body">has successfully completed the quiz on</div>
-    <div class="topic">${topic}</div>
-    <div class="row">
-      <div class="score">${scorePct}%</div>
+  <div class="cert-card">
+    <div>
+      <div class="header-sub">Questly Learning Platform</div>
+      <div class="title">Certificate of Achievement</div>
+      <div class="divider"></div>
+    </div>
+
+    <div>
+      <div class="sub-text">This certifies that</div>
+      <div class="name">${userName}</div>
+      <div class="topic-desc">has successfully completed the assessment in</div>
+      <div class="topic-name">${topic}</div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="score-val">${scorePct}%</div>
       <div class="sep"></div>
-      <div class="mc">
-        <div class="ml">Questions</div>
-        <div class="mv">${correctAnswers} / ${totalQuestions} correct</div>
-        <div class="ml" style="margin-top:6px">Difficulty</div>
-        <div class="mv">${diffLabel}</div>
+      <div class="meta">
+        <div>Accuracy: <strong>${correctAnswers}/${totalQuestions} Correct</strong></div>
+        <div>Difficulty: <strong>${diffLabel}</strong></div>
+        <div>Status: <strong style="color:#7EBA88">Passed (≥70%)</strong></div>
       </div>
     </div>
-    <div class="footer">
-      <div>📅 Issued: ${formattedDate}</div>
-      <div>✅ Passing criteria: ≥ 70%</div>
-      <div>🎓 Verified by Questly</div>
+
+    <div class="footer-bar">
+      <div class="sig-box">
+        <div class="sig-text">Questly Assessment Board</div>
+        <div class="sig-lbl">Authorized Signature</div>
+      </div>
+
+      <div class="cert-meta">
+        <div>Issued: ${formattedDate}</div>
+        <div>Credential ID: ${certId}</div>
+      </div>
     </div>
-    <div class="cid">${certId}</div>
   </div>
 </body>
 </html>`);
@@ -133,131 +178,159 @@ function ModalContent({
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
         display: "flex", alignItems: "center", justifyContent: "center",
-        backgroundColor: visible ? "rgba(28,28,22,0.85)" : "rgba(0,0,0,0)",
+        backgroundColor: visible ? "rgba(18,18,14,0.85)" : "rgba(0,0,0,0)",
         backdropFilter: "blur(4px)",
-        padding: "16px",
+        padding: "20px",
         overflowY: "auto",
         transition: "background-color 300ms ease-out",
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        width: "100%", maxWidth: 640,
+        width: "100%", maxWidth: 680,
         maxHeight: "92vh",
         display: "flex", flexDirection: "column",
-        border: "1px solid #DEDCD3",
+        border: "1px solid #35352C",
         borderRadius: 12,
-        boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
-        backgroundColor: "#ffffff",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
+        backgroundColor: "#1C1C16",
+        color: "#F2F1EA",
         transform: visible ? "scale(1) translateY(0)" : "scale(0.95) translateY(20px)",
-        opacity: visible ? 1 : 0,
-        transition: "opacity 300ms ease-out, transform 300ms ease-out",
         overflowY: "auto",
       }}>
 
+        {/* Modal Top Bar */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "10px 16px",
-          borderBottom: "1px solid #DEDCD3",
-          backgroundColor: "#FAFAF8",
+          padding: "14px 20px",
+          borderBottom: "1px solid #262620",
+          backgroundColor: "#14140F",
           position: "sticky", top: 0, zIndex: 10,
         }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#1B1B18" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#F2F1EA" }}>
             Certificate Preview
           </span>
           <button onClick={onClose} style={{
             width: 28, height: 28, border: "none",
+            borderRadius: 6,
             background: "transparent", cursor: "pointer", display: "flex",
-            alignItems: "center", justifyContent: "center", color: "#8C8B82",
+            alignItems: "center", justifyContent: "center", color: "#ABA99C",
           }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#EAE8E1")}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#262620")}
           onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
-        <div style={{ padding: "14px 14px 0", backgroundColor: "#FAFAF8" }}>
+        {/* Certificate Preview Card */}
+        <div style={{ padding: "20px", backgroundColor: "#14140F" }}>
           <div style={{
-            border: "5px solid #6B2737",
-            background: "linear-gradient(135deg,#F3E7E9 0%,#ffffff 55%,#FAFAF8 100%)",
-            padding: "18px 24px 16px",
-            textAlign: "center", position: "relative", overflow: "hidden",
+            backgroundColor: "#1C1C16",
+            border: "2px solid #6B2737",
+            borderRadius: 8,
+            padding: "28px 32px 24px",
+            textAlign: "center",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between",
           }}>
-            <div style={{ position:"absolute", top:-20, left:-20, width:80, height:80,
-              border:"2px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
-            <div style={{ position:"absolute", bottom:-20, right:-20, width:65, height:65,
-              border:"2px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
-            <div style={{ fontSize:28, marginBottom:4 }}>🏆</div>
-            <div style={{ fontSize:8, fontWeight:900, color:"#6B2737",
-              letterSpacing:"3px", textTransform:"uppercase", marginBottom:6 }}>
-              Questly · AI-Powered Learning Platform
+
+            {/* Header */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#B5677A", letterSpacing: "3px", textTransform: "uppercase", marginBottom: 4 }}>
+                QUESTLY LEARNING PLATFORM
+              </div>
+              <div style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 700, color: "#F2F1EA", letterSpacing: "1px", textTransform: "uppercase" }}>
+                Certificate of Achievement
+              </div>
+              <div style={{ width: 60, height: 2, backgroundColor: "#6B2737", margin: "8px auto 0", borderRadius: 1 }} />
             </div>
-            <div style={{ fontSize:18, fontWeight:900, color:"#1B1B18", marginBottom:0 }}>
-              Certificate of Achievement
+
+            {/* Recipient info */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 12, color: "#ABA99C", fontStyle: "italic", marginBottom: 4 }}>
+                This certifies that
+              </div>
+              <div style={{
+                fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 700, color: "#F2F1EA",
+                margin: "4px 0 10px", borderBottom: "1px solid #35352C", display: "inline-block", padding: "0 24px 4px"
+              }}>
+                {userName}
+              </div>
+              <div style={{ fontSize: 12, color: "#ABA99C", marginBottom: 2 }}>
+                has successfully completed the assessment in
+              </div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: "#B5677A" }}>
+                {topic}
+              </div>
             </div>
-            <div style={{ width:48, height:2, background:"#6B2737",
-              margin:"6px auto 8px", borderRadius:1 }} />
-            <div style={{ fontSize:11, color:"#5B5A52", marginBottom:3 }}>This certifies that</div>
-            <div style={{ fontSize:18, fontWeight:700, color:"#6B2737",
-              fontStyle:"italic", marginBottom:6 }}>
-              {userName}
-            </div>
-            <div style={{ fontSize:11, color:"#5B5A52", marginBottom:2 }}>
-              has successfully completed the quiz on
-            </div>
-            <div style={{ fontSize:15, fontWeight:900, color:"#1B1B18", marginBottom:10 }}>
-              {topic}
-            </div>
-            <div style={{ display:"flex", alignItems:"center",
-              justifyContent:"center", gap:16, marginBottom:12 }}>
-              <div style={{ fontSize:34, fontWeight:900, color:"#2F6B3A", lineHeight:1 }}>
+
+            {/* Stats Row */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 20,
+              backgroundColor: "#262620", border: "1px solid #35352C",
+              padding: "10px 24px", borderRadius: 8, marginBottom: 20
+            }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: "#7EBA88", lineHeight: 1 }}>
                 {scorePct}%
               </div>
-              <div style={{ width:1, height:36, background:"#DEDCD3" }} />
-              <div style={{ textAlign:"left" }}>
-                <div style={{ fontSize:9, color:"#8C8B82" }}>Questions</div>
-                <div style={{ fontSize:12, fontWeight:700, color:"#1B1B18" }}>
-                  {correctAnswers}/{totalQuestions} correct
-                </div>
-                <div style={{ fontSize:9, color:"#8C8B82", marginTop:3 }}>Difficulty</div>
-                <div style={{ fontSize:12, fontWeight:700, color:"#1B1B18" }}>{diffLabel}</div>
+              <div style={{ width: 1, height: 32, backgroundColor: "#35352C" }} />
+              <div style={{ textAlign: "left", fontSize: 11, color: "#ABA99C", lineHeight: 1.4 }}>
+                <div>Accuracy: <strong style={{ color: "#F2F1EA" }}>{correctAnswers}/{totalQuestions} Correct</strong></div>
+                <div>Difficulty: <strong style={{ color: "#F2F1EA" }}>{diffLabel}</strong></div>
+                <div>Status: <strong style={{ color: "#7EBA88" }}>Passed (≥70%)</strong></div>
               </div>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6,
-              borderTop:"1px solid #DEDCD3", paddingTop:8,
-              fontSize:9, color:"#8C8B82", textAlign:"center" }}>
-              <div>📅 {formattedDate}</div>
-              <div>✅ Passing: ≥ 70%</div>
-              <div>🎓 Verified by Questly</div>
-            </div>
-            <div style={{ fontFamily:"monospace", fontSize:8, color:"#8C8B82", marginTop:6 }}>
-              {certId}
+
+            {/* Footer Row */}
+            <div style={{
+              display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+              width: "100%", paddingTop: 14, borderTop: "1px solid #262620"
+            }}>
+              <div style={{ textAlign: "center", width: 160 }}>
+                <div style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 14, color: "#B5677A", borderBottom: "1px solid #35352C",
+                  paddingBottom: 2, marginBottom: 2
+                }}>
+                  Questly Assessment Board
+                </div>
+                <div style={{ fontSize: 8, fontWeight: 600, color: "#8C8B82", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  Authorized Signature
+                </div>
+              </div>
+
+              <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 9, color: "#8C8B82", lineHeight: 1.5 }}>
+                <div>Issued: {formattedDate}</div>
+                <div>ID: {certId}</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style={{ display:"flex", gap:10, padding:"12px 14px",
-          borderTop:"1px solid #DEDCD3", backgroundColor:"#FAFAF8",
-          position: "sticky", bottom: 0, zIndex: 10 }}>
+        {/* Modal Action Buttons */}
+        <div style={{
+          display: "flex", gap: 10, padding: "14px 20px",
+          borderTop: "1px solid #262620", backgroundColor: "#14140F",
+          position: "sticky", bottom: 0, zIndex: 10
+        }}>
           <button onClick={handleDownload} style={{
-            flex:1, display:"flex", alignItems:"center", justifyContent:"center",
-            gap:6, backgroundColor:"#6B2737", color:"#fff", border:"none",
-            borderRadius:8, padding:"8px 0", fontSize:13, fontWeight:600,
-            cursor:"pointer",
+            flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 8, backgroundColor: "#6B2737", color: "#fff", border: "none",
+            borderRadius: 8, padding: "11px 0", fontSize: 13, fontWeight: 600,
+            cursor: "pointer", boxShadow: "0 2px 6px rgba(0,0,0,0.3)"
           }}
           onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#551F2C")}
           onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#6B2737")}
           >
-            <Download size={15} /> Download Certificate (PDF)
+            <Download size={16} /> Download Official Certificate (PDF)
           </button>
           <button onClick={onClose} style={{
-            padding:"8px 20px", background:"#fff", border:"1px solid #DEDCD3",
-            borderRadius:8, fontSize:13, fontWeight:600, color:"#5B5A52",
-            cursor:"pointer",
+            padding: "11px 24px", background: "#262620", border: "1px solid #35352C",
+            borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#F2F1EA",
+            cursor: "pointer",
           }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#FAFAF8")}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#fff")}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#35352C")}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#262620")}
           >
             Close
           </button>

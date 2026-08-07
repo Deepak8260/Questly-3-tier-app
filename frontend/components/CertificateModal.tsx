@@ -67,19 +67,19 @@ function ModalContent({
     }
     .cert {
       width: 270mm; height: 190mm;
-      border: 10px solid #6366F1; border-radius: 12px;
+      border: 10px solid #6B2737; border-radius: 12px;
       background: linear-gradient(135deg,#EEF2FF 0%,#fff 55%,#F5F3FF 100%);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       text-align: center; padding: 40px 80px; position: relative;
     }
-    .ring { position:absolute; border-radius:50%; border:3px solid #6366F1; opacity:.1; }
+    .ring { position:absolute; border-radius:50%; border:3px solid #6B2737; opacity:.1; }
     .badge  { font-size:64px; margin-bottom:10px; }
-    .issuer { font-size:9px; color:#6366F1; font-weight:900; letter-spacing:5px; text-transform:uppercase; margin-bottom:14px; }
+    .issuer { font-size:9px; color:#6B2737; font-weight:900; letter-spacing:5px; text-transform:uppercase; margin-bottom:14px; }
     .title  { font-size:34px; font-weight:bold; color:#111827; }
-    .bar    { width:72px; height:3px; background:#6366F1; margin:12px auto; border-radius:2px; }
+    .bar    { width:72px; height:3px; background:#6B2737; margin:12px auto; border-radius:2px; }
     .sub    { font-size:13px; color:#6B7280; margin-bottom:6px; }
-    .name   { font-size:32px; color:#6366F1; font-style:italic; margin-bottom:10px; }
+    .name   { font-size:32px; color:#6B2737; font-style:italic; margin-bottom:10px; }
     .body   { font-size:14px; color:#374151; margin-bottom:4px; }
     .topic  { font-size:20px; font-weight:bold; color:#111827; margin:4px 0 18px; }
     .row    { display:flex; align-items:center; gap:24px; margin-bottom:22px; }
@@ -174,27 +174,27 @@ function ModalContent({
 
         <div style={{ padding: "20px 20px 0" }}>
           <div style={{
-            border: "7px solid #6366F1", borderRadius: 12,
+            border: "7px solid #6B2737", borderRadius: 12,
             background: "linear-gradient(135deg,#EEF2FF 0%,#ffffff 55%,#F5F3FF 100%)",
             padding: "28px 48px 24px",
             textAlign: "center", position: "relative", overflow: "hidden",
           }}>
             <div style={{ position:"absolute", top:-20, left:-20, width:90, height:90,
-              border:"3px solid #6366F1", borderRadius:"50%", opacity:0.1 }} />
+              border:"3px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
             <div style={{ position:"absolute", bottom:-20, right:-20, width:75, height:75,
-              border:"3px solid #6366F1", borderRadius:"50%", opacity:0.1 }} />
+              border:"3px solid #6B2737", borderRadius:"50%", opacity:0.1 }} />
             <div style={{ fontSize:36, marginBottom:6 }}>🏆</div>
-            <div style={{ fontSize:8, fontWeight:900, color:"#6366F1",
+            <div style={{ fontSize:8, fontWeight:900, color:"#6B2737",
               letterSpacing:"4px", textTransform:"uppercase", marginBottom:10 }}>
               Questly · AI-Powered Learning Platform
             </div>
-            <div style={{ fontSize:22, fontWeight:900, color:"#111827", marginBottom:0 }}>
+            <div style={{ fontSize:22, fontWeight:900, color:"#1B1B18", marginBottom:0 }}>
               Certificate of Achievement
             </div>
-            <div style={{ width:60, height:3, background:"#6366F1",
+            <div style={{ width:60, height:3, background:"#6B2737",
               margin:"10px auto", borderRadius:2 }} />
             <div style={{ fontSize:12, color:"#6B7280", marginBottom:5 }}>This certifies that</div>
-            <div style={{ fontSize:20, fontWeight:700, color:"#6366F1",
+            <div style={{ fontSize:20, fontWeight:700, color:"#6B2737",
               fontStyle:"italic", marginBottom:8 }}>
               {userName}
             </div>
@@ -236,12 +236,12 @@ function ModalContent({
           borderTop:"1px solid #F3F4F6", backgroundColor:"#F9FAFB", marginTop:20 }}>
           <button onClick={handleDownload} style={{
             flex:1, display:"flex", alignItems:"center", justifyContent:"center",
-            gap:8, backgroundColor:"#6366F1", color:"#fff", border:"none",
+            gap:8, backgroundColor:"#6B2737", color:"#fff", border:"none",
             borderRadius:12, padding:"10px 0", fontSize:14, fontWeight:600,
             cursor:"pointer",
           }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#4F46E5")}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#6366F1")}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#551F2C")}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#6B2737")}
           >
             <Download size={16} /> Download Certificate (PDF)
           </button>

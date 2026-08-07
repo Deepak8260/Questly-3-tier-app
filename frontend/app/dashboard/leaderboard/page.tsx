@@ -93,23 +93,23 @@ function MyAnswersPanel({
     return (
         <div className="px-6 py-4">
             {/* Score summary */}
-            <div className="flex items-center gap-4 mb-5 bg-[#F9FAFB] rounded-xl p-4">
-                <div className="text-center px-4 border-r border-[#E5E7EB]">
-                    <div className="text-2xl font-black text-[#6366F1]">{correctCount}/{questions.length}</div>
-                    <div className="text-xs text-[#9CA3AF] mt-0.5">Correct</div>
+            <div className="flex items-center gap-4 mb-5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] p-4">
+                <div className="text-center px-4 border-r border-[#DEDCD3] dark:border-[#35352C]">
+                    <div className="font-heading text-2xl font-medium text-[#6B2737] dark:text-[#B5677A]">{correctCount}/{questions.length}</div>
+                    <div className="text-xs text-[#8C8B82] mt-0.5">Correct</div>
                 </div>
-                <div className="text-center px-4 border-r border-[#E5E7EB]">
-                    <div className="text-2xl font-black text-[#10B981]">{Number(myResult.accuracy).toFixed(0)}%</div>
-                    <div className="text-xs text-[#9CA3AF] mt-0.5">Accuracy</div>
+                <div className="text-center px-4 border-r border-[#DEDCD3] dark:border-[#35352C]">
+                    <div className="font-heading text-2xl font-medium text-[#2F6B3A] dark:text-[#7EBA88]">{Number(myResult.accuracy).toFixed(0)}%</div>
+                    <div className="text-xs text-[#8C8B82] mt-0.5">Accuracy</div>
                 </div>
                 <div className="text-center px-4">
-                    <div className="text-2xl font-black text-[#F59E0B]">{formatTime(myResult.time_taken_seconds)}</div>
-                    <div className="text-xs text-[#9CA3AF] mt-0.5">Time Taken</div>
+                    <div className="font-heading text-2xl font-medium text-[#93670F] dark:text-[#D4A94A]">{formatTime(myResult.time_taken_seconds)}</div>
+                    <div className="text-xs text-[#8C8B82] mt-0.5">Time Taken</div>
                 </div>
                 {/* Result bar */}
                 <div className="flex-1 hidden sm:flex gap-1 items-center">
                     {answers.map((a, i) => (
-                        <div key={i} className={`flex-1 h-3 rounded-full ${a.is_correct ? "bg-[#10B981]" : "bg-[#EF4444]"}`} title={`Q${i + 1}: ${a.is_correct ? "Correct" : "Wrong"}`} />
+                        <div key={i} className={`flex-1 h-2.5 ${a.is_correct ? "bg-[#2F6B3A]" : "bg-[#8C2E24]"}`} title={`Q${i + 1}: ${a.is_correct ? "Correct" : "Wrong"}`} />
                     ))}
                 </div>
             </div>
@@ -123,67 +123,67 @@ function MyAnswersPanel({
                     const isOpen = expandedQ === qi;
 
                     return (
-                        <div key={q.id} className={`rounded-xl border overflow-hidden transition-all ${isCorrect ? "border-[#6EE7B7] bg-[#F0FDF4]" : skipped ? "border-[#E5E7EB] bg-[#FAFAFA]" : "border-[#FECACA] bg-[#FFF5F5]"}`}>
+                        <div key={q.id} className={`border overflow-hidden transition-all ${isCorrect ? "border-[#2F6B3A] bg-[#E9F1E9] dark:bg-[#1A2A1D]" : skipped ? "border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F]" : "border-[#8C2E24] bg-[#F5E7E4] dark:bg-[#2C1816]"}`}>
                             {/* Question row */}
                             <button
                                 onClick={() => setExpandedQ(isOpen ? null : qi)}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-left hover:opacity-80 transition-opacity">
                                 {/* Status icon */}
-                                <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${isCorrect ? "bg-[#10B981] text-white" : skipped ? "bg-[#9CA3AF] text-white" : "bg-[#EF4444] text-white"}`}>
-                                    {isCorrect ? <CheckCircle className="w-3.5 h-3.5" /> : skipped ? <span className="text-[10px] font-black">—</span> : <XCircle className="w-3.5 h-3.5" />}
+                                <div className={`flex-shrink-0 w-5 h-5 flex items-center justify-center text-white ${isCorrect ? "bg-[#2F6B3A]" : skipped ? "bg-[#8C8B82]" : "bg-[#8C2E24]"}`}>
+                                    {isCorrect ? <CheckCircle className="w-3.5 h-3.5" /> : skipped ? <span className="text-[10px] font-bold">—</span> : <XCircle className="w-3.5 h-3.5" />}
                                 </div>
                                 {/* Q label */}
-                                <span className="text-xs font-black text-[#9CA3AF] flex-shrink-0 w-6">Q{qi + 1}</span>
+                                <span className="text-xs font-semibold text-[#8C8B82] flex-shrink-0 w-6">Q{qi + 1}</span>
                                 {/* Question text preview */}
-                                <span className={`flex-1 text-sm font-medium line-clamp-1 ${isCorrect ? "text-[#065F46]" : skipped ? "text-[#6B7280]" : "text-[#7F1D1D]"}`}>
+                                <span className={`flex-1 text-sm font-medium line-clamp-1 ${isCorrect ? "text-[#2F6B3A] dark:text-[#7EBA88]" : skipped ? "text-[#5B5A52] dark:text-[#ABA99C]" : "text-[#8C2E24] dark:text-[#D08A7E]"}`}>
                                     {q.question}
                                 </span>
                                 {/* Your answer preview */}
                                 {!isOpen && (
-                                    <span className={`text-xs font-semibold flex-shrink-0 max-w-[160px] truncate ${isCorrect ? "text-[#10B981]" : "text-[#EF4444]"}`}>
+                                    <span className={`text-xs font-semibold flex-shrink-0 max-w-[160px] truncate ${isCorrect ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#8C2E24] dark:text-[#D08A7E]"}`}>
                                         {skipped ? "Skipped" : ans.selected_answer}
                                     </span>
                                 )}
-                                <ChevronRight className={`w-4 h-4 text-[#9CA3AF] flex-shrink-0 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+                                <ChevronRight className={`w-4 h-4 text-[#8C8B82] flex-shrink-0 transition-transform ${isOpen ? "rotate-90" : ""}`} />
                             </button>
 
                             {/* Expanded detail */}
                             {isOpen && (
-                                <div className="px-4 pb-4 border-t border-[#E5E7EB]/60">
+                                <div className="px-4 pb-4 border-t border-[#DEDCD3] dark:border-[#35352C]">
                                     {/* Full question */}
-                                    <p className="text-sm font-semibold text-[#374151] mt-3 mb-3 leading-relaxed">{q.question}</p>
+                                    <p className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] mt-3 mb-3 leading-relaxed">{q.question}</p>
 
                                     {/* Options grid */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                                         {q.options.map((opt, oi) => {
                                             const isCorrectOpt = oi === q.correctIndex;
                                             const isChosen = ans?.selected_answer === opt;
-                                            let cls = "border border-[#E5E7EB] bg-white text-[#374151]";
-                                            if (isCorrectOpt) cls = "border-2 border-[#10B981] bg-[#F0FDF4] text-[#065F46] font-bold";
-                                            else if (isChosen && !isCorrectOpt) cls = "border-2 border-[#EF4444] bg-[#FFF5F5] text-[#7F1D1D] line-through";
+                                            let cls = "border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#1B1B18] dark:text-[#F2F1EA]";
+                                            if (isCorrectOpt) cls = "border-2 border-[#2F6B3A] bg-[#E9F1E9] dark:bg-[#1A2A1D] text-[#2F6B3A] dark:text-[#7EBA88] font-semibold";
+                                            else if (isChosen && !isCorrectOpt) cls = "border-2 border-[#8C2E24] bg-[#F5E7E4] dark:bg-[#2C1816] text-[#8C2E24] dark:text-[#D08A7E] line-through";
                                             return (
-                                                <div key={oi} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${cls}`}>
-                                                    <span className="text-xs font-black text-[#9CA3AF] flex-shrink-0">
+                                                <div key={oi} className={`flex items-center gap-2 px-3 py-2 text-sm ${cls}`}>
+                                                    <span className="text-xs font-semibold text-[#8C8B82] flex-shrink-0">
                                                         {["A", "B", "C", "D"][oi]}
                                                     </span>
                                                     <span className="flex-1">{opt}</span>
-                                                    {isCorrectOpt && <CheckCircle className="w-3.5 h-3.5 text-[#10B981] flex-shrink-0" />}
-                                                    {isChosen && !isCorrectOpt && <XCircle className="w-3.5 h-3.5 text-[#EF4444] flex-shrink-0" />}
+                                                    {isCorrectOpt && <CheckCircle className="w-3.5 h-3.5 text-[#2F6B3A] flex-shrink-0" />}
+                                                    {isChosen && !isCorrectOpt && <XCircle className="w-3.5 h-3.5 text-[#8C2E24] flex-shrink-0" />}
                                                 </div>
                                             );
                                         })}
                                     </div>
 
                                     {/* Result label */}
-                                    <div className={`flex items-center gap-2 text-xs font-bold mb-2 ${isCorrect ? "text-[#10B981]" : skipped ? "text-[#9CA3AF]" : "text-[#EF4444]"}`}>
+                                    <div className={`flex items-center gap-2 text-xs font-semibold mb-2 ${isCorrect ? "text-[#2F6B3A] dark:text-[#7EBA88]" : skipped ? "text-[#8C8B82]" : "text-[#8C2E24] dark:text-[#D08A7E]"}`}>
                                         {isCorrect ? <><CheckCircle className="w-3.5 h-3.5" /> Correct!</>
                                             : skipped ? <>— Skipped</>
-                                                : <><XCircle className="w-3.5 h-3.5" /> Incorrect — correct answer: <span className="text-[#065F46]">{q.options[q.correctIndex]}</span></>}
+                                                : <><XCircle className="w-3.5 h-3.5" /> Incorrect — correct answer: <span className="text-[#2F6B3A]">{q.options[q.correctIndex]}</span></>}
                                     </div>
 
                                     {/* Explanation */}
                                     {q.explanation && (
-                                        <div className="text-xs text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-3 py-2 leading-relaxed">
+                                        <div className="text-xs text-[#5B5A52] dark:text-[#ABA99C] bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] p-3 leading-relaxed">
                                             💡 <strong>Explanation:</strong> {q.explanation}
                                         </div>
                                     )}
@@ -209,63 +209,62 @@ function ContestLeaderboardCard({
     const participated = Boolean(myResult);
 
     return (
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
             {/* Card header */}
             <button
                 onClick={() => setOpen(o => !o)}
-                className="w-full flex items-center justify-between px-6 py-5 hover:bg-[#FAFAFA] transition-colors text-left">
+                className="w-full flex items-center justify-between px-6 py-5 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors text-left">
                 <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center flex-shrink-0">
-                        <Trophy className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 bg-[#6B2737] flex items-center justify-center flex-shrink-0 text-white">
+                        <Trophy className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-base font-black text-[#111827]">{contest.title}</div>
-                        <div className="text-xs text-[#9CA3AF] mt-0.5 flex items-center gap-2">
+                        <div className="font-heading text-base font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{contest.title}</div>
+                        <div className="text-xs text-[#8C8B82] mt-0.5 flex items-center gap-2">
                             <span className="capitalize">{contest.topic}</span>
                             <span>·</span>
                             <span>{results.length} participant{results.length !== 1 ? "s" : ""}</span>
                             <span>·</span>
                             <span>{formatDate(contest.announced_at!)}</span>
                             {participated && (
-                                <span className="ml-1 text-[#6366F1] font-bold">· You participated</span>
+                                <span className="ml-1 text-[#6B2737] dark:text-[#B5677A] font-semibold">· You participated</span>
                             )}
                         </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 flex-shrink-0">
                     {myRank !== null && (
-                        <div className={`text-center px-3 py-1.5 rounded-xl ${myRank <= 3 ? "bg-[#FEF3C7] border border-[#FCD34D]" : "bg-[#EEF2FF]"}`}>
-                            <div className="text-lg font-black text-[#6366F1]">
+                        <div className="text-center px-3 py-1.5 border border-[#6B2737] bg-[#FAFAF8] dark:bg-[#14140F]">
+                            <div className="text-base font-bold text-[#6B2737] dark:text-[#B5677A]">
                                 {myRank <= 3 ? MEDAL_EMOJI[myRank - 1] : `#${myRank}`}
                             </div>
-                            <div className="text-[10px] text-[#9CA3AF] font-bold">your rank</div>
+                            <div className="text-[10px] text-[#8C8B82] font-semibold uppercase tracking-wider">your rank</div>
                         </div>
                     )}
                     <div className="hidden sm:flex items-center gap-1">
-                        {results.slice(0, 3).map((r, i) => (
-                            <div key={r.id} className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                                style={{ backgroundColor: COLORS[i] }}>
+                        {results.slice(0, 3).map((r) => (
+                            <div key={r.id} className="w-7 h-7 flex items-center justify-center text-white text-xs font-bold bg-[#6B2737]">
                                 {(r.profiles?.full_name ?? "?")[0]?.toUpperCase()}
                             </div>
                         ))}
                     </div>
-                    {open ? <ChevronUp className="w-4 h-4 text-[#9CA3AF]" /> : <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />}
+                    {open ? <ChevronUp className="w-4 h-4 text-[#8C8B82]" /> : <ChevronDown className="w-4 h-4 text-[#8C8B82]" />}
                 </div>
             </button>
 
             {/* Expanded content */}
             {open && (
-                <div className="border-t border-[#F3F4F6]">
+                <div className="border-t border-[#DEDCD3] dark:border-[#35352C]">
                     {/* Sub-tabs */}
-                    <div className="flex gap-1 p-3 border-b border-[#F3F4F6] bg-[#F9FAFB]">
+                    <div className="flex gap-2 p-3 border-b border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F]">
                         <button
                             onClick={() => setSubTab("rankings")}
-                            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${subTab === "rankings" ? "bg-white text-[#6366F1] shadow-sm border border-[#E5E7EB]" : "text-[#9CA3AF] hover:text-[#6B7280]"}`}>
+                            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium transition-colors ${subTab === "rankings" ? "bg-[#6B2737] text-white" : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#EAE8E1] dark:hover:bg-[#262620]"}`}>
                             <BarChart2 className="w-3.5 h-3.5" /> Rankings
                         </button>
                         <button
                             onClick={() => setSubTab("review")}
-                            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${subTab === "review" ? "bg-white text-[#6366F1] shadow-sm border border-[#E5E7EB]" : "text-[#9CA3AF] hover:text-[#6B7280]"}`}>
+                            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium transition-colors ${subTab === "review" ? "bg-[#6B2737] text-white" : "text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#EAE8E1] dark:hover:bg-[#262620]"}`}>
                             <BookOpen className="w-3.5 h-3.5" /> My Answers
                         </button>
                     </div>
@@ -273,40 +272,39 @@ function ContestLeaderboardCard({
                     {/* Rankings tab */}
                     {subTab === "rankings" && (
                         <>
-                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-6 py-3 bg-[#F9FAFB] text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest">
+                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-6 py-3 bg-[#FAFAF8] dark:bg-[#14140F] text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest border-b border-[#DEDCD3] dark:border-[#35352C]">
                                 <div className="w-10">Rank</div>
                                 <div>Participant</div>
                                 <div className="text-right">Score</div>
                                 <div className="text-right hidden sm:block">Accuracy</div>
                                 <div className="text-right">Time</div>
                             </div>
-                            <div className="divide-y divide-[#F9FAFB]">
+                            <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
                                 {results.map((r, idx) => {
                                     const rank = idx + 1;
                                     const isMe = r.user_id === userId;
                                     return (
                                         <div key={r.id}
-                                            className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-6 py-3.5 items-center ${isMe ? "bg-[#EEF2FF] border-l-4 border-l-[#6366F1]" : "hover:bg-[#FAFAFA]"}`}>
-                                            <div className="w-10 text-center text-lg font-black">
-                                                {rank <= 3 ? MEDAL_EMOJI[rank - 1] : <span className="text-sm text-[#9CA3AF]">#{rank}</span>}
+                                            className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-6 py-3.5 items-center ${isMe ? "bg-[#F3E7E9] dark:bg-[#2E1A20] border-l-4 border-l-[#6B2737]" : "hover:bg-[#FAFAF8] dark:hover:bg-[#262620]"}`}>
+                                            <div className="w-10 text-center text-base font-bold">
+                                                {rank <= 3 ? MEDAL_EMOJI[rank - 1] : <span className="text-sm text-[#8C8B82]">#{rank}</span>}
                                             </div>
                                             <div className="flex items-center gap-2.5 min-w-0">
-                                                <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
-                                                    style={{ backgroundColor: isMe ? "#6366F1" : COLORS[rank % COLORS.length] }}>
+                                                <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold bg-[#6B2737]">
                                                     {(r.profiles?.full_name ?? "?")[0]?.toUpperCase()}
                                                 </div>
-                                                <div className={`text-sm font-bold truncate ${isMe ? "text-[#6366F1]" : "text-[#111827]"}`}>
+                                                <div className={`text-sm font-medium truncate ${isMe ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#1B1B18] dark:text-[#F2F1EA]"}`}>
                                                     {r.profiles?.full_name ?? "Unknown"}
-                                                    {isMe && <span className="ml-1.5 text-[10px] font-black bg-[#C7D2FE] text-[#6366F1] px-1.5 py-0.5 rounded-full">you</span>}
+                                                    {isMe && <span className="ml-1.5 text-[10px] font-semibold bg-[#6B2737] text-white px-1.5 py-0.5">you</span>}
                                                 </div>
                                             </div>
-                                            <div className={`text-sm font-black text-right ${isMe ? "text-[#6366F1]" : "text-[#111827]"}`}>
-                                                {r.score}<span className="text-[#9CA3AF] text-xs font-normal">/{r.total_questions}</span>
+                                            <div className={`text-sm font-semibold text-right ${isMe ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#1B1B18] dark:text-[#F2F1EA]"}`}>
+                                                {r.score}<span className="text-[#8C8B82] text-xs font-normal">/{r.total_questions}</span>
                                             </div>
-                                            <div className={`text-sm font-bold text-right hidden sm:block ${Number(r.accuracy) >= 70 ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                                            <div className={`text-sm font-medium text-right hidden sm:block ${Number(r.accuracy) >= 70 ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                                                 {Number(r.accuracy).toFixed(1)}%
                                             </div>
-                                            <div className="text-sm text-[#6B7280] text-right">{formatTime(r.time_taken_seconds)}</div>
+                                            <div className="text-sm text-[#8C8B82] text-right">{formatTime(r.time_taken_seconds)}</div>
                                         </div>
                                     );
                                 })}
@@ -437,34 +435,34 @@ export default function LeaderboardPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-7">
                 <div>
-                    <h1 className="text-2xl font-black text-[#111827] mb-1 flex items-center gap-2.5">
-                        <Trophy className="w-6 h-6 text-[#F59E0B]" /> Leaderboard
+                    <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1 flex items-center gap-2.5">
+                        <Trophy className="w-6 h-6 text-[#93670F] dark:text-[#D4A94A]" /> Leaderboard
                     </h1>
-                    <p className="text-sm text-[#6B7280]">
+                    <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
                         All published contest results · Click any contest to view rankings and review your answers.
                     </p>
                 </div>
                 {myWeeklyRank > 0 && (
-                    <div className="bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl px-4 py-2 text-sm text-[#6B7280]">
-                        Weekly rank: <strong className="text-[#6366F1]">#{myWeeklyRank}</strong>
+                    <div className="bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] px-4 py-2 text-sm text-[#5B5A52] dark:text-[#ABA99C]">
+                        Weekly rank: <strong className="text-[#6B2737] dark:text-[#B5677A]">#{myWeeklyRank}</strong>
                     </div>
                 )}
             </div>
 
             {/* Section 1: Contest Results */}
             <div className="mb-10">
-                <h2 className="text-xs font-black text-[#9CA3AF] uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Medal className="w-4 h-4 text-[#6366F1]" /> Contest Results
-                    <span className="text-[#D1D5DB] font-normal normal-case tracking-normal">
+                <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Medal className="w-4 h-4 text-[#6B2737] dark:text-[#B5677A]" /> Contest Results
+                    <span className="text-[#8C8B82] font-normal normal-case tracking-normal">
                         — expand a contest to see rankings &amp; your answer review
                     </span>
                 </h2>
 
                 {contests.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-[#E5E7EB] flex flex-col items-center justify-center py-20 text-center">
-                        <Swords className="w-12 h-12 text-[#E5E7EB] mb-3" />
-                        <p className="text-[#9CA3AF] font-semibold mb-1">No results published yet</p>
-                        <p className="text-sm text-[#D1D5DB]">Once the admin publishes a contest leaderboard, it will appear here.</p>
+                    <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] flex flex-col items-center justify-center py-20 text-center">
+                        <Swords className="w-12 h-12 text-[#8C8B82] mb-3" />
+                        <p className="text-[#8C8B82] font-semibold mb-1">No results published yet</p>
+                        <p className="text-sm text-[#8C8B82]">Once the admin publishes a contest leaderboard, it will appear here.</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -477,48 +475,48 @@ export default function LeaderboardPage() {
 
             {/* Section 2: Weekly Top */}
             <div>
-                <h2 className="text-xs font-black text-[#9CA3AF] uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Flame className="w-4 h-4 text-[#F59E0B]" /> Top This Week (All Contests)
+                <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-[#93670F] dark:text-[#D4A94A]" /> Top This Week (All Contests)
                 </h2>
 
                 {weekly.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-[#E5E7EB] flex flex-col items-center justify-center py-14 text-center">
-                        <Trophy className="w-10 h-10 text-[#E5E7EB] mb-3" />
-                        <p className="text-sm text-[#9CA3AF]">No contest activity in the past 7 days.</p>
+                    <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] flex flex-col items-center justify-center py-14 text-center">
+                        <Trophy className="w-10 h-10 text-[#8C8B82] mb-3" />
+                        <p className="text-sm text-[#8C8B82]">No contest activity in the past 7 days.</p>
                     </div>
                 ) : (
                     <>
                         {/* Top 3 podium */}
                         {weekly.length >= 2 && (
-                            <div className="bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF] rounded-2xl border border-[#E0E7FF] p-6 mb-4">
-                                <div className="text-center text-xs font-black text-[#9CA3AF] uppercase tracking-widest mb-5">🏆 Top 3 This Week</div>
+                            <div className="bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] p-6 mb-4">
+                                <div className="text-center text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-5">🏆 Top 3 This Week</div>
                                 <div className="flex items-end justify-center gap-5">
                                     {weekly[1] && (
                                         <div className="text-center flex-1 max-w-[120px]">
-                                            <div className="w-12 h-12 rounded-xl bg-[#8B5CF6] flex items-center justify-center text-white text-lg font-black mb-1 mx-auto">
+                                            <div className="w-12 h-12 bg-[#6B2737] flex items-center justify-center text-white text-lg font-bold mb-1 mx-auto">
                                                 {weekly[1].name[0]?.toUpperCase()}
                                             </div>
-                                            <div className="text-xs font-bold text-[#374151] truncate">{weekly[1].name}</div>
-                                            <div className="text-[10px] text-[#9CA3AF]">{weekly[1].totalScore} pts</div>
-                                            <div className="h-14 bg-[#DDD6FE] rounded-t-lg w-12 mx-auto mt-1 flex items-end justify-center pb-1"><span className="text-xl">🥈</span></div>
+                                            <div className="text-xs font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{weekly[1].name}</div>
+                                            <div className="text-[10px] text-[#8C8B82]">{weekly[1].totalScore} pts</div>
+                                            <div className="h-14 bg-[#FAFAF8] dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] w-12 mx-auto mt-1 flex items-end justify-center pb-1"><span className="text-xl">🥈</span></div>
                                         </div>
                                     )}
                                     <div className="text-center flex-1 max-w-[130px]">
-                                        <div className="w-16 h-16 rounded-xl bg-[#6366F1] flex items-center justify-center text-white text-2xl font-black mb-1 mx-auto shadow-lg shadow-[#6366F1]/30">
+                                        <div className="w-16 h-16 bg-[#6B2737] flex items-center justify-center text-white text-2xl font-bold mb-1 mx-auto">
                                             {weekly[0].name[0]?.toUpperCase()}
                                         </div>
-                                        <div className="text-sm font-black text-[#374151] truncate">{weekly[0].name}</div>
-                                        <div className="text-xs text-[#6366F1] font-semibold">{weekly[0].totalScore} pts</div>
-                                        <div className="h-20 bg-[#6366F1] rounded-t-lg w-16 mx-auto mt-1 flex items-end justify-center pb-1"><span className="text-2xl">🥇</span></div>
+                                        <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{weekly[0].name}</div>
+                                        <div className="text-xs text-[#6B2737] dark:text-[#B5677A] font-semibold">{weekly[0].totalScore} pts</div>
+                                        <div className="h-20 bg-[#6B2737] w-16 mx-auto mt-1 flex items-end justify-center pb-1 text-white"><span className="text-2xl">🥇</span></div>
                                     </div>
                                     {weekly[2] && (
                                         <div className="text-center flex-1 max-w-[120px]">
-                                            <div className="w-12 h-12 rounded-xl bg-[#10B981] flex items-center justify-center text-white text-lg font-black mb-1 mx-auto">
+                                            <div className="w-12 h-12 bg-[#2F6B3A] flex items-center justify-center text-white text-lg font-bold mb-1 mx-auto">
                                                 {weekly[2].name[0]?.toUpperCase()}
                                             </div>
-                                            <div className="text-xs font-bold text-[#374151] truncate">{weekly[2].name}</div>
-                                            <div className="text-[10px] text-[#9CA3AF]">{weekly[2].totalScore} pts</div>
-                                            <div className="h-10 bg-[#A7F3D0] rounded-t-lg w-12 mx-auto mt-1 flex items-end justify-center pb-1"><span className="text-xl">🥉</span></div>
+                                            <div className="text-xs font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{weekly[2].name}</div>
+                                            <div className="text-[10px] text-[#8C8B82]">{weekly[2].totalScore} pts</div>
+                                            <div className="h-10 bg-[#E9F1E9] dark:bg-[#1A2A1D] border border-[#2F6B3A] w-12 mx-auto mt-1 flex items-end justify-center pb-1"><span className="text-xl">🥉</span></div>
                                         </div>
                                     )}
                                 </div>
@@ -526,41 +524,40 @@ export default function LeaderboardPage() {
                         )}
 
                         {/* Full table */}
-                        <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm overflow-hidden">
-                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-[#F3F4F6] text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest">
+                        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
+                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-[#DEDCD3] dark:border-[#35352C] text-[10px] font-semibold text-[#8C8B82] uppercase tracking-widest bg-[#FAFAF8] dark:bg-[#14140F]">
                                 <div className="w-10">Rank</div>
                                 <div>Participant</div>
                                 <div className="text-right">Contests</div>
                                 <div className="text-right hidden sm:block">Avg Accuracy</div>
                                 <div className="text-right">Total Score</div>
                             </div>
-                            <div className="divide-y divide-[#F9FAFB]">
+                            <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
                                 {weekly.map((entry, idx) => {
                                     const rank = idx + 1;
                                     const isMe = entry.user_id === myUserId;
                                     return (
                                         <div key={entry.user_id}
-                                            className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-4 items-center ${isMe ? "bg-[#EEF2FF] border-l-4 border-l-[#6366F1]" : "hover:bg-[#FAFAFA]"}`}>
-                                            <div className="w-10 text-center text-lg font-black">
-                                                {rank <= 3 ? MEDAL_EMOJI[rank - 1] : <span className="text-sm text-[#9CA3AF]">#{rank}</span>}
+                                            className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-4 items-center ${isMe ? "bg-[#F3E7E9] dark:bg-[#2E1A20] border-l-4 border-l-[#6B2737]" : "hover:bg-[#FAFAF8] dark:hover:bg-[#262620]"}`}>
+                                            <div className="w-10 text-center text-lg font-bold">
+                                                {rank <= 3 ? MEDAL_EMOJI[rank - 1] : <span className="text-sm text-[#8C8B82]">#{rank}</span>}
                                             </div>
                                             <div className="flex items-center gap-2.5 min-w-0">
-                                                <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
-                                                    style={{ backgroundColor: isMe ? "#6366F1" : COLORS[rank % COLORS.length] }}>
+                                                <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold bg-[#6B2737]">
                                                     {entry.name[0]?.toUpperCase()}
                                                 </div>
-                                                <div className={`text-sm font-bold truncate ${isMe ? "text-[#6366F1]" : "text-[#111827]"}`}>
+                                                <div className={`text-sm font-medium truncate ${isMe ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#1B1B18] dark:text-[#F2F1EA]"}`}>
                                                     {entry.name}
-                                                    {isMe && <span className="ml-1.5 text-[10px] font-black bg-[#C7D2FE] text-[#6366F1] px-1.5 py-0.5 rounded-full">you</span>}
+                                                    {isMe && <span className="ml-1.5 text-[10px] font-semibold bg-[#6B2737] text-white px-1.5 py-0.5">you</span>}
                                                 </div>
                                             </div>
-                                            <div className="text-sm text-[#6B7280] text-right flex items-center gap-1 justify-end">
+                                            <div className="text-sm text-[#5B5A52] dark:text-[#ABA99C] text-right flex items-center gap-1 justify-end">
                                                 <Target className="w-3 h-3" /> {entry.totalContests}
                                             </div>
-                                            <div className={`text-sm font-bold text-right hidden sm:flex items-center gap-1 justify-end ${entry.avgAccuracy >= 70 ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                                            <div className={`text-sm font-medium text-right hidden sm:flex items-center gap-1 justify-end ${entry.avgAccuracy >= 70 ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                                                 <CheckCircle className="w-3 h-3" /> {entry.avgAccuracy.toFixed(1)}%
                                             </div>
-                                            <div className={`text-sm font-black text-right ${isMe ? "text-[#6366F1]" : "text-[#374151]"}`}>
+                                            <div className={`text-sm font-semibold text-right ${isMe ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#1B1B18] dark:text-[#F2F1EA]"}`}>
                                                 {entry.totalScore} pts
                                             </div>
                                         </div>
@@ -570,19 +567,19 @@ export default function LeaderboardPage() {
                         </div>
 
                         {myWeeklyRank > 0 && (
-                            <div className="mt-4 bg-gradient-to-r from-[#EEF2FF] to-[#F5F3FF] border border-[#C7D2FE] rounded-2xl p-4 flex items-center gap-4">
+                            <div className="mt-4 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] p-4 flex items-center gap-4">
                                 <div className="text-2xl">{myWeeklyRank <= 3 ? MEDAL_EMOJI[myWeeklyRank - 1] : `#${myWeeklyRank}`}</div>
                                 <div className="flex-1">
-                                    <div className="text-sm font-black text-[#4338CA]">
+                                    <div className="text-sm font-semibold text-[#6B2737] dark:text-[#B5677A]">
                                         {myWeeklyRank === 1 ? "You're #1 this week! 🎉" : `You're ranked #${myWeeklyRank} this week.`}
                                     </div>
-                                    <div className="text-xs text-[#818CF8] mt-0.5">
+                                    <div className="text-xs text-[#8C8B82] mt-0.5">
                                         {weekly[myWeeklyRank - 1]?.totalContests} contest{weekly[myWeeklyRank - 1]?.totalContests !== 1 ? "s" : ""} completed
                                         · {weekly[myWeeklyRank - 1]?.totalScore} total points
                                         · {weekly[myWeeklyRank - 1]?.avgAccuracy.toFixed(1)}% avg accuracy
                                     </div>
                                 </div>
-                                <Clock className="w-5 h-5 text-[#C7D2FE]" />
+                                <Clock className="w-5 h-5 text-[#8C8B82]" />
                             </div>
                         )}
                     </>

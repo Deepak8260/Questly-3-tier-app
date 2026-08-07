@@ -5,7 +5,8 @@ import {
   User, Mail, Lock, Moon, Sun, LogOut, Trash2,
   Save, CheckCircle, AlertTriangle, Eye, EyeOff, Loader2,
   Upload, Camera, X, Twitter, Linkedin, Github, Globe, Bell, Pencil,
-  MessageSquare, Zap, Shield, Crop, RotateCw, ZoomIn, ZoomOut, Move
+  MessageSquare, Zap, Shield, Crop, RotateCw, ZoomIn, ZoomOut, Move,
+  Swords, Trophy, Calendar
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTheme } from "@/lib/ThemeContext";
@@ -17,14 +18,14 @@ function Section({ title, description, icon, children }: {
   icon: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] overflow-hidden">
-      <div className="px-6 py-5 border-b border-[#F3F4F6] dark:border-[#334155] flex items-start gap-3">
-        <div className="w-9 h-9 rounded-xl bg-[#EEF2FF] dark:bg-[#1e1b4b] flex items-center justify-center text-[#6366F1] flex-shrink-0">
+    <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
+      <div className="px-6 py-4 border-b border-[#DEDCD3] dark:border-[#35352C] flex items-start gap-3 bg-[#FAFAF8] dark:bg-[#14140F]">
+        <div className="w-8 h-8 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] flex items-center justify-center text-[#6B2737] dark:text-[#B5677A] flex-shrink-0">
           {icon}
         </div>
         <div>
-          <h2 className="text-sm font-bold text-[#111827] dark:text-[#f8fafc]">{title}</h2>
-          <p className="text-xs text-[#9CA3AF] mt-0.5">{description}</p>
+          <h2 className="font-heading text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{title}</h2>
+          <p className="text-xs text-[#8C8B82] mt-0.5">{description}</p>
         </div>
       </div>
       <div className="px-6 py-5">{children}</div>
@@ -36,13 +37,13 @@ function Section({ title, description, icon, children }: {
 function Field({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-[#374151] dark:text-[#94a3b8]">{label}</label>
+      <label className="text-xs font-semibold text-[#5B5A52] dark:text-[#ABA99C]">{label}</label>
       <input
         {...props}
-        className="w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155]
-                   bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc]
-                   placeholder:text-[#9CA3AF] outline-none
-                   focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all
+        className="w-full px-4 py-2.5 border border-[#DEDCD3] dark:border-[#35352C]
+                   bg-[#FAFAF8] dark:bg-[#14140F] text-sm text-[#1B1B18] dark:text-[#F2F1EA]
+                   placeholder:text-[#8C8B82] outline-none
+                   focus:border-[#6B2737] transition-colors
                    disabled:opacity-50 disabled:cursor-not-allowed"
       />
     </div>
@@ -53,32 +54,40 @@ function Field({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> 
 function TextArea({ label, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-[#374151] dark:text-[#94a3b8]">{label}</label>
+      <label className="text-xs font-semibold text-[#5B5A52] dark:text-[#ABA99C]">{label}</label>
       <textarea
         {...props}
         rows={4}
-        className="w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155]
-                   bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc]
-                   placeholder:text-[#9CA3AF] outline-none resize-none
-                   focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+        className="w-full px-4 py-2.5 border border-[#DEDCD3] dark:border-[#35352C]
+                   bg-[#FAFAF8] dark:bg-[#14140F] text-sm text-[#1B1B18] dark:text-[#F2F1EA]
+                   placeholder:text-[#8C8B82] outline-none resize-none
+                   focus:border-[#6B2737] transition-colors"
       />
     </div>
   );
 }
 
 // ── Toggle switch ─────────────────────────────────────────────────
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+function Toggle({ checked, onChange, label, icon }: {
+  checked: boolean; onChange: (v: boolean) => void; label: string; icon?: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-[#F3F4F6] dark:border-[#334155] last:border-0">
-      <span className="text-sm text-[#374151] dark:text-[#f8fafc]">{label}</span>
+    <div className="flex items-center justify-between py-3.5 border-b border-[#EAE8E1] dark:border-[#262620] last:border-0">
+      <div className="flex items-center gap-2.5">
+        {icon && <span className="text-[#8C8B82]">{icon}</span>}
+        <span className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{label}</span>
+      </div>
       <button
+        type="button"
         onClick={() => onChange(!checked)}
-        className={`relative w-11 h-6 rounded-full transition-colors ${
-          checked ? "bg-[#6366F1]" : "bg-[#E5E7EB] dark:bg-[#334155]"
+        className={`relative w-11 h-6 rounded-full transition-all duration-200 border ${
+          checked
+            ? "bg-[#6B2737] border-[#6B2737]"
+            : "bg-[#EAE8E1] dark:bg-[#262620] border-[#DEDCD3] dark:border-[#35352C]"
         }`}
       >
         <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+          className={`absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
             checked ? "translate-x-5" : "translate-x-0"
           }`}
         />
@@ -90,9 +99,9 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 // ── Toast message ─────────────────────────────────────────────────
 function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
   return (
-    <div className={`flex items-center gap-2 text-sm px-4 py-3 rounded-xl border ${type === "success"
-      ? "bg-[#D1FAE5] border-[#6EE7B7] text-[#065F46]"
-      : "bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]"
+    <div className={`flex items-center gap-2 text-xs px-4 py-3 border ${type === "success"
+      ? "bg-[#E9F1E9] dark:bg-[#1A2A1D] border-[#2F6B3A] text-[#2F6B3A] dark:text-[#7EBA88]"
+      : "bg-[#F5E7E4] dark:bg-[#2C1816] border-[#8C2E24] text-[#8C2E24] dark:text-[#D08A7E]"
       }`}>
       {type === "success"
         ? <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -490,10 +499,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="animate-fade-in-up max-w-2xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#111827] dark:text-[#f8fafc] mb-1">Settings</h1>
-        <p className="text-sm text-[#6B7280] dark:text-[#94a3b8]">Manage your account and preferences</p>
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Settings</h1>
+        <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">Manage your account and preferences</p>
       </div>
 
       <div className="space-y-6">
@@ -506,10 +515,10 @@ export default function SettingsPage() {
                 <img
                   src={avatarUrl}
                   alt="Avatar"
-                  className="w-20 h-20 rounded-2xl object-cover border-2 border-[#E5E7EB] dark:border-[#334155]"
+                  className="w-16 h-16 object-cover border border-[#DEDCD3] dark:border-[#35352C]"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white text-2xl font-black">
+                <div className="w-16 h-16 bg-[#6B2737] flex items-center justify-center text-white text-xl font-bold">
                   {initials}
                 </div>
               )}
@@ -517,16 +526,16 @@ export default function SettingsPage() {
               <div className="absolute -bottom-1 -right-1">
                 <button
                   onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-                  className="w-8 h-8 bg-[#6366F1] rounded-xl flex items-center justify-center text-white cursor-pointer hover:bg-[#4F46E5] transition-colors shadow-lg"
+                  className="w-7 h-7 bg-[#6B2737] flex items-center justify-center text-white cursor-pointer hover:bg-[#551F2C] transition-colors"
                 >
-                  {avatarUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+                  {avatarUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Pencil className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
               {/* Avatar menu */}
               {showAvatarMenu && (
                 <>
-                  <div className="absolute top-full left-0 z-50 w-48 mt-2 bg-white dark:bg-[#1e293b] border border-[#E5E7EB] dark:border-[#334155] rounded-xl shadow-lg overflow-hidden">
+                  <div className="absolute top-full left-0 z-50 w-48 mt-2 bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] shadow-md overflow-hidden">
                     <div className="py-1">
                       {avatarUrl && (
                         <button
@@ -534,13 +543,13 @@ export default function SettingsPage() {
                             setShowAvatarMenu(false);
                             setShowViewImageModal(true);
                           }}
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-[#374151] dark:text-[#f8fafc] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] w-full text-left"
+                          className="flex items-center gap-3 px-4 py-2 text-xs text-[#1B1B18] dark:text-[#F2F1EA] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] w-full text-left"
                         >
                           <Eye className="w-4 h-4" />
                           View photo
                         </button>
                       )}
-                      <label className="flex items-center gap-3 px-4 py-2 text-sm text-[#374151] dark:text-[#f8fafc] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] cursor-pointer w-full text-left">
+                      <label className="flex items-center gap-3 px-4 py-2 text-xs text-[#1B1B18] dark:text-[#F2F1EA] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] cursor-pointer w-full text-left">
                         <Camera className="w-4 h-4" />
                         <input
                           type="file"
@@ -560,7 +569,7 @@ export default function SettingsPage() {
                             setShowAvatarMenu(false);
                             removeAvatar();
                           }}
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-[#EF4444] hover:bg-[#FEF2F2] dark:hover:bg-[#1c0809] w-full text-left"
+                          className="flex items-center gap-3 px-4 py-2 text-xs text-[#8C2E24] hover:bg-[#F5E7E4] dark:hover:bg-[#2C1816] w-full text-left"
                         >
                           <Trash2 className="w-4 h-4" />
                           Remove photo
@@ -576,9 +585,9 @@ export default function SettingsPage() {
               )}
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc]">{displayName || "—"}</p>
-              <p className="text-xs text-[#9CA3AF]">{email}</p>
-              <p className="text-[10px] text-[#9CA3AF] mt-1">
+              <p className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{displayName || "—"}</p>
+              <p className="text-xs text-[#8C8B82]">{email}</p>
+              <p className="text-[10px] text-[#8C8B82] mt-0.5">
                 Upload a profile picture (max 5MB)
               </p>
             </div>
@@ -597,45 +606,45 @@ export default function SettingsPage() {
               placeholder="Tell us a little about yourself..."
             />
             <div className="space-y-3 pt-2">
-              <p className="text-xs font-semibold text-[#374151] dark:text-[#94a3b8]">Social Links</p>
+              <p className="text-xs font-semibold text-[#5B5A52] dark:text-[#ABA99C]">Social Links</p>
               <div className="relative">
-                <Twitter className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <Twitter className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8C8B82]" />
                 <input
                   type="url"
                   placeholder="https://twitter.com/username"
                   value={socialLinks.twitter}
                   onChange={e => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none focus:border-[#6B2737] transition-colors"
                 />
               </div>
               <div className="relative">
-                <Linkedin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <Linkedin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8C8B82]" />
                 <input
                   type="url"
                   placeholder="https://linkedin.com/in/username"
                   value={socialLinks.linkedin}
                   onChange={e => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none focus:border-[#6B2737] transition-colors"
                 />
               </div>
               <div className="relative">
-                <Github className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <Github className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8C8B82]" />
                 <input
                   type="url"
                   placeholder="https://github.com/username"
                   value={socialLinks.github}
                   onChange={e => setSocialLinks({ ...socialLinks, github: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none focus:border-[#6B2737] transition-colors"
                 />
               </div>
               <div className="relative">
-                <Globe className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                <Globe className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8C8B82]" />
                 <input
                   type="url"
                   placeholder="https://yourwebsite.com"
                   value={socialLinks.website}
                   onChange={e => setSocialLinks({ ...socialLinks, website: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] text-sm text-[#111827] dark:text-[#f8fafc] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#6366F1]/30 focus:border-[#6366F1] transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder:text-[#8C8B82] outline-none focus:border-[#6B2737] transition-colors"
                 />
               </div>
             </div>
@@ -646,7 +655,7 @@ export default function SettingsPage() {
               type="email"
               placeholder="your@email.com"
             />
-            <p className="text-[11px] text-[#9CA3AF]">
+            <p className="text-[11px] text-[#8C8B82]">
               Email cannot be changed here. Contact support if needed.
             </p>
           </div>
@@ -655,8 +664,8 @@ export default function SettingsPage() {
             <button
               onClick={saveProfile}
               disabled={profileSaving}
-              className="flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50
-                         text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-md"
+              className="flex items-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] disabled:opacity-50
+                         text-white text-xs font-medium px-4 py-2 transition-colors"
             >
               {profileSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Profile
@@ -671,21 +680,25 @@ export default function SettingsPage() {
               checked={notificationPrefs.email_notifications}
               onChange={(v) => setNotificationPrefs({ ...notificationPrefs, email_notifications: v })}
               label="Email Notifications"
+              icon={<Mail className="w-4 h-4" />}
             />
             <Toggle
               checked={notificationPrefs.push_notifications}
               onChange={(v) => setNotificationPrefs({ ...notificationPrefs, push_notifications: v })}
               label="Push Notifications"
+              icon={<Bell className="w-4 h-4" />}
             />
             <Toggle
               checked={notificationPrefs.battle_invites}
               onChange={(v) => setNotificationPrefs({ ...notificationPrefs, battle_invites: v })}
               label="Battle Invites"
+              icon={<Swords className="w-4 h-4" />}
             />
             <Toggle
               checked={notificationPrefs.contest_reminders}
               onChange={(v) => setNotificationPrefs({ ...notificationPrefs, contest_reminders: v })}
               label="Contest Reminders"
+              icon={<Trophy className="w-4 h-4" />}
             />
           </div>
         </Section>
@@ -697,31 +710,31 @@ export default function SettingsPage() {
               <button
                 key={t}
                 onClick={() => selectTheme(t)}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all ${theme === t
-                  ? "border-[#6366F1] bg-[#EEF2FF] dark:bg-[#1e1b4b]"
-                  : "border-[#E5E7EB] dark:border-[#334155] bg-[#F9FAFB] dark:bg-[#0f172a] hover:border-[#C7D2FE]"
+                className={`flex items-center gap-3 px-4 py-3 border transition-colors ${theme === t
+                  ? "border-[#6B2737] bg-[#F3E7E9] dark:bg-[#2E1A20]"
+                  : "border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] hover:bg-[#EAE8E1] dark:hover:bg-[#262620]"
                   }`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${t === "light" ? "bg-[#FEF3C7]" : "bg-[#1e293b]"
+                <div className={`w-7 h-7 flex items-center justify-center ${t === "light" ? "bg-[#FAFAF8]" : "bg-[#1C1C16]"
                   }`}>
                   {t === "light"
-                    ? <Sun className="w-4 h-4 text-[#F59E0B]" />
-                    : <Moon className="w-4 h-4 text-[#94a3b8]" />}
+                    ? <Sun className="w-4 h-4 text-[#93670F]" />
+                    : <Moon className="w-4 h-4 text-[#ABA99C]" />}
                 </div>
                 <div className="text-left">
-                  <div className={`text-sm font-bold capitalize ${theme === t ? "text-[#6366F1]" : "text-[#374151] dark:text-[#f8fafc]"
+                  <div className={`text-xs font-semibold capitalize ${theme === t ? "text-[#6B2737] dark:text-[#B5677A]" : "text-[#1B1B18] dark:text-[#F2F1EA]"
                     }`}>{t} Mode</div>
-                  <div className="text-[10px] text-[#9CA3AF]">
+                  <div className="text-[10px] text-[#8C8B82]">
                     {t === "light" ? "Clean & bright" : "Easy on the eyes"}
                   </div>
                 </div>
                 {theme === t && (
-                  <CheckCircle className="w-4 h-4 text-[#6366F1] ml-auto flex-shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-[#6B2737] dark:text-[#B5677A] ml-auto flex-shrink-0" />
                 )}
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-[#9CA3AF] mt-3">
+          <p className="text-[11px] text-[#8C8B82] mt-3">
             Your preference is saved to this browser automatically.
           </p>
         </Section>
@@ -740,7 +753,7 @@ export default function SettingsPage() {
               />
               <button
                 onClick={() => setShowPwds(v => !v)}
-                className="absolute right-3 bottom-2.5 text-[#9CA3AF] hover:text-[#6B7280]"
+                className="absolute right-3 bottom-2.5 text-[#8C8B82] hover:text-[#5B5A52]"
                 type="button"
               >
                 {showPwds ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -767,14 +780,14 @@ export default function SettingsPage() {
                       (/[^A-Za-z0-9]/.test(newPwd) ? 1 : 0)
                     );
                     return (
-                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= strength
-                        ? strength <= 1 ? "bg-[#EF4444]" : strength <= 2 ? "bg-[#F59E0B]" : strength <= 3 ? "bg-[#10B981]" : "bg-[#059669]"
-                        : "bg-[#E5E7EB] dark:bg-[#334155]"
+                      <div key={i} className={`h-1 flex-1 transition-colors ${i <= strength
+                        ? strength <= 1 ? "bg-[#8C2E24]" : strength <= 2 ? "bg-[#93670F]" : strength <= 3 ? "bg-[#2F6B3A]" : "bg-[#2F6B3A]"
+                        : "bg-[#DEDCD3] dark:bg-[#35352C]"
                         }`} />
                     );
                   })}
                 </div>
-                <p className="text-[11px] text-[#9CA3AF]">
+                <p className="text-[11px] text-[#8C8B82]">
                   Include uppercase, numbers, and symbols for a stronger password.
                 </p>
               </div>
@@ -784,8 +797,8 @@ export default function SettingsPage() {
           <button
             onClick={changePassword}
             disabled={pwdSaving || !newPwd || !confirmPwd}
-            className="mt-4 flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50
-                     text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-md"
+            className="mt-4 flex items-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] disabled:opacity-50
+                     text-white text-xs font-medium px-4 py-2 transition-colors"
           >
             {pwdSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
             Update Password
@@ -796,48 +809,48 @@ export default function SettingsPage() {
         <Section title="Account" description="Session and account management" icon={<LogOut className="w-4 h-4" />}>
           <div className="space-y-3">
             {/* Sign out */}
-            <div className="flex items-center justify-between py-3 border-b border-[#F3F4F6] dark:border-[#334155]">
+            <div className="flex items-center justify-between py-3 border-b border-[#EAE8E1] dark:border-[#262620]">
               <div>
-                <p className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc]">Sign Out</p>
-                <p className="text-xs text-[#9CA3AF]">End your current session</p>
+                <p className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">Sign Out</p>
+                <p className="text-xs text-[#8C8B82]">End your current session</p>
               </div>
               <button
                 onClick={signOut}
-                className="flex items-center gap-2 text-sm font-semibold text-[#6B7280] dark:text-[#94a3b8]
-                           border border-[#E5E7EB] dark:border-[#334155] px-4 py-2 rounded-xl
-                           hover:bg-[#F9FAFB] dark:hover:bg-[#334155] transition-all"
+                className="flex items-center gap-2 text-xs font-medium text-[#5B5A52] dark:text-[#ABA99C]
+                           border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] px-4 py-2
+                           hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" /> Sign Out
               </button>
             </div>
 
             {/* Email info */}
-            <div className="flex items-center gap-3 py-3 border-b border-[#F3F4F6] dark:border-[#334155]">
-              <Mail className="w-4 h-4 text-[#9CA3AF]" />
+            <div className="flex items-center gap-3 py-3 border-b border-[#EAE8E1] dark:border-[#262620]">
+              <Mail className="w-4 h-4 text-[#8C8B82]" />
               <div>
-                <p className="text-xs text-[#9CA3AF]">Logged in as</p>
-                <p className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc]">{email}</p>
+                <p className="text-xs text-[#8C8B82]">Logged in as</p>
+                <p className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{email}</p>
               </div>
             </div>
           </div>
         </Section>
 
         {/* ── Danger zone ── */}
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border-2 border-[#FEE2E2] dark:border-[#7f1d1d] overflow-hidden">
-          <div className="px-6 py-5 border-b border-[#FEE2E2] dark:border-[#7f1d1d] flex items-start gap-3 bg-[#FEF2F2] dark:bg-[#1c0809]">
-            <div className="w-9 h-9 rounded-xl bg-[#FEE2E2] flex items-center justify-center text-[#EF4444] flex-shrink-0">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#8C2E24] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#8C2E24] flex items-start gap-3 bg-[#F5E7E4] dark:bg-[#2C1816]">
+            <div className="w-8 h-8 border border-[#8C2E24] flex items-center justify-center text-[#8C2E24] flex-shrink-0">
               <Trash2 className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-[#DC2626]">Danger Zone</h2>
-              <p className="text-xs text-[#EF4444] mt-0.5">
+              <h2 className="font-heading text-sm font-medium text-[#8C2E24]">Danger Zone</h2>
+              <p className="text-xs text-[#8C2E24] mt-0.5">
                 These actions are permanent and cannot be undone.
               </p>
             </div>
           </div>
           <div className="px-6 py-5">
-            <p className="text-sm text-[#374151] dark:text-[#f8fafc] mb-1 font-semibold">Delete Account</p>
-            <p className="text-xs text-[#9CA3AF] mb-4">
+            <p className="text-sm text-[#1B1B18] dark:text-[#F2F1EA] mb-1 font-medium">Delete Account</p>
+            <p className="text-xs text-[#8C8B82] mb-4">
               This will permanently remove all your quizzes, certificates, and account data.
             </p>
             <Field
@@ -850,8 +863,8 @@ export default function SettingsPage() {
             <button
               onClick={deleteAccount}
               disabled={deleting || deleteConfirm !== "DELETE"}
-              className="mt-4 flex items-center gap-2 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40
-                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
+              className="mt-4 flex items-center gap-2 bg-[#8C2E24] hover:bg-[#6D241C] disabled:opacity-40
+                       text-white text-xs font-medium px-4 py-2 transition-colors"
             >
               {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               Delete My Account

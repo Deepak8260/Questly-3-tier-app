@@ -39,20 +39,19 @@ const DIFF_COLOR: Record<string, string> = {
 };
 
 // ── Stat card ─────────────────────────────────────────────────────
-function StatCard({ icon, label, value, sub, color }: {
+function StatCard({ icon, label, value, sub }: {
   icon: React.ReactNode; label: string; value: string | number;
-  sub?: string; color: string;
+  sub?: string;
 }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-5 flex items-start gap-4">
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: `${color}18` }}>
-        <span style={{ color }}>{icon}</span>
+    <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5 flex items-start gap-4">
+      <div className="w-10 h-10 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] flex items-center justify-center flex-shrink-0 text-[#6B2737] dark:text-[#B5677A]">
+        {icon}
       </div>
       <div>
-        <div className="text-xs text-[#9CA3AF] font-medium mb-0.5">{label}</div>
-        <div className="text-2xl font-black text-[#111827] dark:text-[#f8fafc]">{value}</div>
-        {sub && <div className="text-xs text-[#6B7280] dark:text-[#94a3b8] mt-0.5">{sub}</div>}
+        <div className="text-xs text-[#8C8B82] font-medium mb-0.5">{label}</div>
+        <div className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{value}</div>
+        {sub && <div className="text-xs text-[#5B5A52] dark:text-[#ABA99C] mt-0.5">{sub}</div>}
       </div>
     </div>
   );
@@ -61,9 +60,9 @@ function StatCard({ icon, label, value, sub, color }: {
 // ── Mini bar chart (CSS-based, no library) ─────────────────────────
 function ScoreBar({ score, max = 100, color }: { score: number; max?: number; color: string }) {
   return (
-    <div className="h-2 bg-[#F3F4F6] dark:bg-[#334155] rounded-full overflow-hidden">
+    <div className="h-2 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
       <div
-        className="h-full rounded-full transition-all duration-700"
+        className="h-full transition-all duration-700"
         style={{ width: `${(score / max) * 100}%`, backgroundColor: color }}
       />
     </div>
@@ -109,7 +108,7 @@ export default function AnalyticsPage() {
   const bestScore  = total ? Math.max(...attempts.map(a => a.score_pct)) : 0;
   const worstScore = total ? Math.min(...attempts.map(a => a.score_pct)) : 0;
 
-  // Topic breakdown (unique topics, best score per topic)
+  // Topic breakdown
   const topicMap: Record<string, { scores: number[]; passed: boolean }> = {};
   attempts.forEach(a => {
     const t = a.topic;
@@ -139,10 +138,10 @@ export default function AnalyticsPage() {
     d, count, avg: Math.round(totalScore / count),
   }));
 
-  // Recent 10 attempts for score timeline
+  // Recent 10 attempts
   const recent = [...attempts].reverse().slice(0, 10).reverse();
 
-  // Score trend (compare last 5 vs previous 5)
+  // Score trend
   const scoreArr = attempts.map(a => a.score_pct);
   const half = Math.floor(scoreArr.length / 2);
   const recentHalf = scoreArr.slice(half).reduce((a, b) => a + b, 0) / (scoreArr.length - half || 1);
@@ -150,23 +149,23 @@ export default function AnalyticsPage() {
   const trending   = total >= 2 ? recentHalf - prevHalf : 0;
 
   return (
-    <div className="animate-fade-in-up">
+    <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-[#111827] dark:text-[#f8fafc] mb-1">Analytics</h1>
-          <p className="text-sm text-[#6B7280] dark:text-[#94a3b8]">
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Analytics</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
             Your learning performance across all quizzes
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={load} title="Refresh"
-            className="p-2 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1e293b] text-[#6B7280] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] transition-all">
+            className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
           <Link href="/dashboard/generate"
-            className="flex items-center gap-1.5 text-sm font-semibold text-white bg-[#6366F1] hover:bg-[#4F46E5] px-4 py-2 rounded-xl transition-all hover:shadow-md">
+            className="flex items-center gap-1.5 text-xs font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] px-4 py-2 transition-colors">
             <Zap className="w-3.5 h-3.5" /> New Quiz
           </Link>
         </div>
@@ -174,29 +173,29 @@ export default function AnalyticsPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="flex items-center justify-center py-24 text-[#9CA3AF]">
+        <div className="flex items-center justify-center py-24 text-[#8C8B82]">
           <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading analytics…
         </div>
       )}
 
       {/* Error */}
       {!loading && error && (
-        <div className="bg-[#FEF2F2] dark:bg-[#1c0809] rounded-2xl border border-[#FECACA] dark:border-[#7f1d1d] p-5 text-sm text-[#DC2626]">
-          <p className="font-bold mb-1">Could not load analytics</p>
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#8C2E24] p-5 text-sm text-[#8C2E24]">
+          <p className="font-semibold mb-1">Could not load analytics</p>
           <p className="font-mono text-xs">{error}</p>
         </div>
       )}
 
       {/* Empty state */}
       {!loading && !error && total === 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-16 text-center">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-16 text-center">
           <div className="text-5xl mb-4">📊</div>
-          <h3 className="text-lg font-bold text-[#111827] dark:text-[#f8fafc] mb-2">No data yet</h3>
-          <p className="text-sm text-[#6B7280] dark:text-[#94a3b8] mb-6">
+          <h3 className="font-heading text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-2">No data yet</h3>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C] mb-6">
             Take your first quiz and your analytics will appear here.
           </p>
           <Link href="/dashboard/generate"
-            className="inline-flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold px-6 py-3 rounded-xl text-sm">
+            className="inline-flex items-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white text-xs font-medium px-5 py-2.5 transition-colors">
             <Zap className="w-4 h-4" /> Generate a Quiz
           </Link>
         </div>
@@ -209,40 +208,38 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard icon={<BarChart2 className="w-5 h-5" />}
               label="Total Quizzes" value={total}
-              sub={`${passed} passed`} color="#6366F1" />
+              sub={`${passed} passed`} />
             <StatCard icon={<Target className="w-5 h-5" />}
               label="Average Score" value={`${avgScore}%`}
-              sub={trending > 0 ? `▲ ${trending.toFixed(0)}% trending up` : trending < 0 ? `▼ ${Math.abs(trending).toFixed(0)}% trending down` : "Stable"}
-              color={trending >= 0 ? "#10B981" : "#EF4444"} />
+              sub={trending > 0 ? `▲ ${trending.toFixed(0)}% trending up` : trending < 0 ? `▼ ${Math.abs(trending).toFixed(0)}% trending down` : "Stable"} />
             <StatCard icon={<Trophy className="w-5 h-5" />}
               label="Pass Rate" value={`${passRate}%`}
-              sub={`${certs} certificate${certs !== 1 ? "s" : ""} earned`} color="#F59E0B" />
+              sub={`${certs} certificate${certs !== 1 ? "s" : ""} earned`} />
             <StatCard icon={<Clock className="w-5 h-5" />}
               label="Avg Time" value={fmtTime(avgTime)}
-              sub="per quiz" color="#8B5CF6" />
+              sub="per quiz" />
           </div>
 
           {/* ── Score timeline ── */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-5">
-            <h2 className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest mb-5 flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5" /> Score Timeline (last {recent.length} quizzes)
+          <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5">
+            <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-5 flex items-center gap-2">
+              <TrendingUp className="w-3.5 h-3.5 text-[#6B2737] dark:text-[#B5677A]" /> Score Timeline (last {recent.length} quizzes)
             </h2>
             {/* Bar chart */}
             <div className="flex items-end gap-2 h-36">
-              {recent.map((a, i) => {
+              {recent.map((a) => {
                 const h = `${Math.max(8, a.score_pct)}%`;
-                const col = a.passed ? "#6366F1" : "#F59E0B";
+                const col = a.passed ? "#6B2737" : "#93670F";
                 return (
                   <div key={a.id} className="flex-1 flex flex-col items-center gap-1 group relative">
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#1F2937] text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#1B1B18] text-white text-[10px] px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                       {a.topic} — {a.score_pct}%
                     </div>
                     <div
-                      className="w-full rounded-t-lg transition-all duration-500"
-                      style={{ height: h, backgroundColor: col, opacity: 0.85 }}
+                      className="w-full transition-all duration-500"
+                      style={{ height: h, backgroundColor: col }}
                     />
-                    <div className="text-[9px] text-[#9CA3AF] text-center truncate w-full">
+                    <div className="text-[9px] text-[#8C8B82] text-center truncate w-full">
                       {fmtDate(a.created_at)}
                     </div>
                   </div>
@@ -250,12 +247,12 @@ export default function AnalyticsPage() {
               })}
             </div>
             {/* Legend */}
-            <div className="flex items-center gap-4 mt-3 text-xs text-[#9CA3AF]">
+            <div className="flex items-center gap-4 mt-3 text-xs text-[#8C8B82]">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-[#6366F1] inline-block" /> Passed
+                <span className="w-3 h-3 bg-[#6B2737] inline-block" /> Passed
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-[#F59E0B] inline-block" /> Failed
+                <span className="w-3 h-3 bg-[#93670F] inline-block" /> Failed
               </span>
             </div>
           </div>
@@ -264,30 +261,30 @@ export default function AnalyticsPage() {
           <div className="grid lg:grid-cols-2 gap-6">
 
             {/* Topic breakdown */}
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-5">
-              <h2 className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest mb-5 flex items-center gap-2">
-                <BookOpen className="w-3.5 h-3.5" /> Performance by Topic
+            <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5">
+              <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-5 flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-[#6B2737] dark:text-[#B5677A]" /> Performance by Topic
               </h2>
               <div className="space-y-4">
                 {topicStats.slice(0, 8).map(t => (
                   <div key={t.topic}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc] truncate max-w-[60%]">
+                      <span className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate max-w-[60%]">
                         {t.topic}
                       </span>
                       <div className="flex items-center gap-2 text-xs">
-                        <span className="text-[#9CA3AF]">{t.attempts} attempt{t.attempts !== 1 ? "s" : ""}</span>
-                        <span className={`font-black ${t.best >= 70 ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                        <span className="text-[#8C8B82]">{t.attempts} attempt{t.attempts !== 1 ? "s" : ""}</span>
+                        <span className={`font-semibold ${t.best >= 70 ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                           Best: {t.best}%
                         </span>
                         {t.passed && (
-                          <span title="Passed"><Award className="w-3 h-3 text-[#F59E0B]" /></span>
+                          <span title="Passed"><Award className="w-3.5 h-3.5 text-[#93670F] dark:text-[#D4A94A]" /></span>
                         )}
                       </div>
                     </div>
                     <ScoreBar
                       score={t.best}
-                      color={t.best >= 70 ? "#10B981" : "#F59E0B"}
+                      color={t.best >= 70 ? "#2F6B3A" : "#93670F"}
                     />
                   </div>
                 ))}
@@ -298,52 +295,52 @@ export default function AnalyticsPage() {
             <div className="space-y-5">
 
               {/* Difficulty breakdown */}
-              <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-5">
-                <h2 className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest mb-5 flex items-center gap-2">
-                  <Target className="w-3.5 h-3.5" /> By Difficulty
+              <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5">
+                <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-5 flex items-center gap-2">
+                  <Target className="w-3.5 h-3.5 text-[#6B2737] dark:text-[#B5677A]" /> By Difficulty
                 </h2>
                 <div className="space-y-4">
                   {diffStats.map(({ d, count, avg }) => (
                     <div key={d}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold capitalize text-[#111827] dark:text-[#f8fafc]">{d}</span>
-                        <span className="text-xs text-[#9CA3AF]">{count} quiz{count !== 1 ? "zes" : ""} · Avg {avg}%</span>
+                        <span className="text-sm font-medium capitalize text-[#1B1B18] dark:text-[#F2F1EA]">{d}</span>
+                        <span className="text-xs text-[#8C8B82]">{count} quiz{count !== 1 ? "zes" : ""} · Avg {avg}%</span>
                       </div>
-                      <ScoreBar score={avg} color={DIFF_COLOR[d] ?? "#6366F1"} />
+                      <ScoreBar score={avg} color="#6B2737" />
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Highlights */}
-              <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-5">
-                <h2 className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-3.5 h-3.5" /> Highlights
+              <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5">
+                <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#6B2737] dark:text-[#B5677A]" /> Highlights
                 </h2>
                 <div className="space-y-3">
                   {[
-                    { label: "Best score ever",    value: `${bestScore}%`,  icon: "🏆", color: "#10B981" },
-                    { label: "Lowest score",       value: `${worstScore}%`, icon: "📉", color: "#F59E0B" },
-                    { label: "Certificates earned",value: certs,            icon: "🎓", color: "#8B5CF6" },
-                    { label: "Unique topics",      value: topicStats.length, icon: "📚", color: "#6366F1" },
+                    { label: "Best score ever",    value: `${bestScore}%`,  icon: "🏆" },
+                    { label: "Lowest score",       value: `${worstScore}%`, icon: "📉" },
+                    { label: "Certificates earned",value: certs,            icon: "🎓" },
+                    { label: "Unique topics",      value: topicStats.length, icon: "📚" },
                   ].map(h => (
-                    <div key={h.label} className="flex items-center justify-between py-2 border-b border-[#F9FAFB] dark:border-[#334155] last:border-b-0">
-                      <span className="text-sm text-[#6B7280] dark:text-[#94a3b8] flex items-center gap-2">
+                    <div key={h.label} className="flex items-center justify-between py-2 border-b border-[#EAE8E1] dark:border-[#262620] last:border-b-0">
+                      <span className="text-sm text-[#5B5A52] dark:text-[#ABA99C] flex items-center gap-2">
                         <span>{h.icon}</span> {h.label}
                       </span>
-                      <span className="text-sm font-black" style={{ color: h.color }}>{h.value}</span>
+                      <span className="text-sm font-semibold text-[#1B1B18] dark:text-[#F2F1EA]">{h.value}</span>
                     </div>
                   ))}
 
                   {/* Trend */}
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-[#6B7280] dark:text-[#94a3b8] flex items-center gap-2">
+                    <span className="text-sm text-[#5B5A52] dark:text-[#ABA99C] flex items-center gap-2">
                       {trending >= 0
-                        ? <TrendingUp className="w-4 h-4 text-[#10B981]" />
-                        : <TrendingDown className="w-4 h-4 text-[#EF4444]" />}
+                        ? <TrendingUp className="w-4 h-4 text-[#2F6B3A] dark:text-[#7EBA88]" />
+                        : <TrendingDown className="w-4 h-4 text-[#8C2E24] dark:text-[#D08A7E]" />}
                       Score trend
                     </span>
-                    <span className={`text-sm font-black ${trending >= 0 ? "text-[#10B981]" : "text-[#EF4444]"}`}>
+                    <span className={`text-sm font-semibold ${trending >= 0 ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#8C2E24] dark:text-[#D08A7E]"}`}>
                       {trending >= 0 ? "+" : ""}{trending.toFixed(1)}%
                     </span>
                   </div>
@@ -353,32 +350,32 @@ export default function AnalyticsPage() {
           </div>
 
           {/* ── Recent attempts table ── */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6] dark:border-[#334155]">
-              <h2 className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest">
+          <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#DEDCD3] dark:border-[#35352C]">
+              <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest">
                 Recent Attempts
               </h2>
               <Link href="/dashboard/quizzes"
-                className="text-xs text-[#6366F1] hover:text-[#4F46E5] font-semibold">
+                className="text-xs text-[#6B2737] dark:text-[#B5677A] hover:underline font-medium">
                 View all →
               </Link>
             </div>
-            <div className="divide-y divide-[#F9FAFB] dark:divide-[#334155]">
+            <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
               {[...attempts].reverse().slice(0, 6).map(a => (
-                <div key={a.id} className="flex items-center px-5 py-3 gap-4 hover:bg-[#FAFAFA] dark:hover:bg-[#263348] transition-colors">
+                <div key={a.id} className="flex items-center px-5 py-3 gap-4 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-[#111827] dark:text-[#f8fafc] truncate">{a.topic}</div>
-                    <div className="text-xs text-[#9CA3AF] mt-0.5">
+                    <div className="text-sm font-medium text-[#1B1B18] dark:text-[#F2F1EA] truncate">{a.topic}</div>
+                    <div className="text-xs text-[#8C8B82] mt-0.5">
                       {fmtDate(a.created_at)} · {a.correct_answers}/{a.total_questions} correct
                     </div>
                   </div>
                   <div className="hidden sm:block w-32">
-                    <ScoreBar score={a.score_pct} color={a.passed ? "#6366F1" : "#F59E0B"} />
+                    <ScoreBar score={a.score_pct} color={a.passed ? "#2F6B3A" : "#93670F"} />
                   </div>
-                  <div className={`w-14 text-right text-sm font-black ${a.passed ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+                  <div className={`w-14 text-right text-sm font-semibold ${a.passed ? "text-[#2F6B3A] dark:text-[#7EBA88]" : "text-[#93670F] dark:text-[#D4A94A]"}`}>
                     {a.score_pct}%
                   </div>
-                  <div className="w-16 text-right text-xs text-[#9CA3AF]">{fmtTime(a.time_taken_secs)}</div>
+                  <div className="w-16 text-right text-xs text-[#8C8B82]">{fmtTime(a.time_taken_secs)}</div>
                 </div>
               ))}
             </div>

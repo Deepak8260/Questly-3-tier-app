@@ -31,16 +31,16 @@ export default function RoadmapPage() {
   const progress = Math.round((doneCount / roadmap.weeks.length) * 100);
 
   return (
-    <div className="animate-fade-in-up">
-      <div className="mb-7">
-        <h1 className="text-2xl font-black text-[#111827] mb-1">Study Roadmap</h1>
-        <p className="text-sm text-[#6B7280]">AI generates a personalized week-by-week plan for your learning goal.</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Study Roadmap</h1>
+        <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">AI generates a personalized week-by-week plan for your learning goal.</p>
       </div>
 
       {/* Generate new roadmap */}
-      <form onSubmit={handleGenerate} className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-5 mb-6">
-        <label className="text-xs font-black text-[#9CA3AF] uppercase tracking-widest mb-3 block flex items-center gap-1.5">
-          <Zap className="w-3.5 h-3.5 text-[#6366F1]" /> Generate New Roadmap
+      <form onSubmit={handleGenerate} className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-5">
+        <label className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest mb-3 block flex items-center gap-1.5">
+          <Zap className="w-3.5 h-3.5 text-[#6B2737] dark:text-[#B5677A]" /> Generate New Roadmap
         </label>
         <div className="flex gap-3">
           <input
@@ -48,12 +48,12 @@ export default function RoadmapPage() {
             value={goal}
             onChange={e => setGoal(e.target.value)}
             placeholder="e.g. Learn Python for Data Science, Master React.js, Prepare for IELTS..."
-            className="flex-1 px-4 py-2.5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/15 transition-all"
+            className="flex-1 px-4 py-2.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] text-sm text-[#1B1B18] dark:text-[#F2F1EA] placeholder-[#8C8B82] outline-none"
           />
           <button
             type="submit"
             disabled={generating || !goal.trim()}
-            className="bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50 text-white font-semibold px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm transition-colors"
+            className="bg-[#6B2737] hover:bg-[#551F2C] disabled:opacity-50 text-white font-medium px-5 py-2.5 flex items-center gap-2 text-xs transition-colors"
           >
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Map className="w-4 h-4" />}
             {generating ? "Generating..." : "Generate"}
@@ -62,30 +62,30 @@ export default function RoadmapPage() {
       </form>
 
       {/* Current Roadmap */}
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-[#F3F4F6]">
+        <div className="p-6 border-b border-[#DEDCD3] dark:border-[#35352C]">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <div className="text-xs font-bold text-[#6366F1] uppercase tracking-wider mb-1">Current Goal</div>
-              <h2 className="text-lg font-black text-[#111827]">{roadmap.goal}</h2>
+              <div className="text-xs font-semibold text-[#6B2737] dark:text-[#B5677A] uppercase tracking-wider mb-1">Current Goal</div>
+              <h2 className="font-heading text-xl font-medium text-[#1B1B18] dark:text-[#F2F1EA]">{roadmap.goal}</h2>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-black text-[#6366F1]">{progress}%</div>
-              <div className="text-xs text-[#6B7280]">{doneCount}/{roadmap.weeks.length} weeks</div>
+              <div className="font-heading text-2xl font-medium text-[#6B2737] dark:text-[#B5677A]">{progress}%</div>
+              <div className="text-xs text-[#8C8B82]">{doneCount}/{roadmap.weeks.length} weeks</div>
             </div>
           </div>
           {/* Progress bar */}
-          <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+          <div className="h-2 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] transition-all duration-500"
+              className="h-full bg-[#6B2737] transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         {/* Weeks */}
-        <div className="divide-y divide-[#F9FAFB]">
+        <div className="divide-y divide-[#EAE8E1] dark:divide-[#262620]">
           {roadmap.weeks.map((week) => {
             const isExpanded = expanded.includes(week.week);
             const toggle = () => setExpanded(prev =>
@@ -93,54 +93,52 @@ export default function RoadmapPage() {
             );
 
             return (
-              <div key={week.week} className={week.current ? "bg-[#FAFBFF]" : ""}>
+              <div key={week.week} className={week.current ? "bg-[#FAFAF8] dark:bg-[#14140F]" : ""}>
                 <button
                   type="button"
                   onClick={toggle}
-                  className="w-full text-left px-6 py-4 flex items-center gap-4 hover:bg-[#FAFAFA] transition-colors"
+                  className="w-full text-left px-6 py-4 flex items-center gap-4 hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors"
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    week.done ? "bg-[#D1FAE5]" : week.current ? "bg-[#EEF2FF]" : "bg-[#F3F4F6]"
-                  }`}>
+                  <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
                     {week.done
-                      ? <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                      ? <CheckCircle className="w-5 h-5 text-[#2F6B3A] dark:text-[#7EBA88]" />
                       : week.current
-                      ? <div className="w-2.5 h-2.5 bg-[#6366F1] rounded-full animate-pulse" />
-                      : <Lock className="w-4 h-4 text-[#9CA3AF]" />}
+                      ? <div className="w-3 h-3 bg-[#6B2737] dark:bg-[#B5677A] animate-pulse" />
+                      : <Lock className="w-4 h-4 text-[#8C8B82]" />}
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#9CA3AF]">Week {week.week}</span>
+                      <span className="text-xs font-semibold text-[#8C8B82]">Week {week.week}</span>
                       {week.current && (
-                        <span className="bg-[#EEF2FF] border border-[#C7D2FE] text-[#6366F1] text-xs font-bold px-2 py-0.5 rounded-full">
+                        <span className="bg-[#F3E7E9] dark:bg-[#2E1A20] border border-[#6B2737] text-[#6B2737] dark:text-[#B5677A] text-[10px] font-semibold px-2 py-0.5">
                           Current
                         </span>
                       )}
                       {week.done && (
-                        <span className="bg-[#D1FAE5] text-[#065F46] text-xs font-bold px-2 py-0.5 rounded-full">
+                        <span className="bg-[#E9F1E9] dark:bg-[#1A2A1D] border border-[#2F6B3A] text-[#2F6B3A] dark:text-[#7EBA88] text-[10px] font-semibold px-2 py-0.5">
                           Done
                         </span>
                       )}
                     </div>
-                    <div className="font-bold text-[#111827] text-sm">{week.title}</div>
-                    <div className="text-xs text-[#9CA3AF] mt-0.5">{week.topics.join(" · ")}</div>
+                    <div className="font-medium text-[#1B1B18] dark:text-[#F2F1EA] text-sm">{week.title}</div>
+                    <div className="text-xs text-[#8C8B82] mt-0.5">{week.topics.join(" · ")}</div>
                   </div>
                   {isExpanded
-                    ? <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
-                    : <ChevronRight className="w-4 h-4 text-[#9CA3AF]" />}
+                    ? <ChevronDown className="w-4 h-4 text-[#8C8B82]" />
+                    : <ChevronRight className="w-4 h-4 text-[#8C8B82]" />}
                 </button>
 
                 {isExpanded && (
-                  <div className="px-6 pb-5 pt-1">
-                    <div className="ml-[52px] space-y-2">
+                  <div className="px-6 pb-5 pt-1 border-t border-[#EAE8E1] dark:border-[#262620] bg-[#FAFAF8] dark:bg-[#14140F]">
+                    <div className="ml-[48px] space-y-2">
                       {week.topics.map((topic, ti) => (
                         <div key={ti} className="flex items-center gap-3">
                           {week.done
-                            ? <CheckCircle className="w-4 h-4 text-[#10B981] flex-shrink-0" />
-                            : <Circle className="w-4 h-4 text-[#D1D5DB] flex-shrink-0" />}
-                          <span className="text-sm text-[#374151]">{topic}</span>
+                            ? <CheckCircle className="w-4 h-4 text-[#2F6B3A] dark:text-[#7EBA88] flex-shrink-0" />
+                            : <Circle className="w-4 h-4 text-[#8C8B82] flex-shrink-0" />}
+                          <span className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">{topic}</span>
                           {(week.done || week.current) && (
-                            <a href="/dashboard/generate" className="ml-auto text-xs text-[#6366F1] hover:text-[#4F46E5] font-medium">
+                            <a href="/dashboard/generate" className="ml-auto text-xs text-[#6B2737] dark:text-[#B5677A] hover:underline font-medium">
                               Quiz →
                             </a>
                           )}

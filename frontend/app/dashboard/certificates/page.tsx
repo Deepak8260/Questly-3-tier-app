@@ -104,28 +104,28 @@ export default function CertificatesPage() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="animate-fade-in-up">
+    <div className="space-y-6">
 
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-7">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-[#111827] dark:text-[#f8fafc] mb-1">Certificates</h1>
-          <p className="text-sm text-[#6B7280] dark:text-[#94a3b8]">
+          <h1 className="font-heading text-2xl font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-1">Certificates</h1>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C]">
             {loading ? "Loading…" : `${earned.length} earned · Score 70%+ on any quiz to earn one.`}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={load} title="Refresh"
-            className="p-2 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1e293b] text-[#6B7280] hover:bg-[#F3F4F6] dark:hover:bg-[#334155] transition-all">
+            className="p-2.5 border border-[#DEDCD3] dark:border-[#35352C] bg-white dark:bg-[#1C1C16] text-[#5B5A52] dark:text-[#ABA99C] hover:bg-[#FAFAF8] dark:hover:bg-[#262620] transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
           {earned.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-[#D1FAE5] border border-[#6EE7B7] text-[#065F46] text-xs font-bold px-3 py-1.5 rounded-full">
-              <Trophy className="w-3 h-3" /> {earned.length} Earned
+            <div className="flex items-center gap-1.5 border border-[#2F6B3A] bg-[#E9F1E9] dark:bg-[#1A2A1D] text-[#2F6B3A] dark:text-[#7EBA88] text-xs font-semibold px-3 py-1.5">
+              <Trophy className="w-3.5 h-3.5" /> {earned.length} Earned
             </div>
           )}
           <Link href="/dashboard/generate"
-            className="flex items-center gap-1.5 text-sm font-semibold text-white bg-[#6366F1] hover:bg-[#4F46E5] px-4 py-2 rounded-xl transition-all hover:shadow-md">
+            className="flex items-center gap-1.5 text-xs font-medium text-white bg-[#6B2737] hover:bg-[#551F2C] px-4 py-2 transition-colors">
             <Zap className="w-3.5 h-3.5" /> New Quiz
           </Link>
         </div>
@@ -133,20 +133,20 @@ export default function CertificatesPage() {
 
       {/* ── Loading ─────────────────────────────────────────────── */}
       {loading && (
-        <div className="flex items-center justify-center py-24 text-[#9CA3AF]">
+        <div className="flex items-center justify-center py-24 text-[#8C8B82]">
           <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading certificates…
         </div>
       )}
 
       {/* ── Error ───────────────────────────────────────────────── */}
       {!loading && error && (
-        <div className="bg-white dark:bg-[#1e293b] border border-[#FECACA] dark:border-[#7f1d1d] rounded-2xl p-5">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#8C2E24] p-5">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-[#DC2626] flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-[#8C2E24] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-bold text-[#DC2626]">Could not load certificates</p>
-              <p className="text-xs text-[#EF4444] font-mono mt-1">{error}</p>
-              <p className="text-xs text-[#6B7280] mt-2">
+              <p className="text-sm font-semibold text-[#8C2E24]">Could not load certificates</p>
+              <p className="text-xs text-[#8C2E24] font-mono mt-1">{error}</p>
+              <p className="text-xs text-[#8C8B82] mt-2">
                 Make sure you have run the Supabase setup SQL from the <strong>My Quizzes</strong> page first.
               </p>
             </div>
@@ -156,14 +156,14 @@ export default function CertificatesPage() {
 
       {/* ── Empty ───────────────────────────────────────────────── */}
       {!loading && !error && earned.length === 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-16 text-center mb-8">
+        <div className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-16 text-center">
           <div className="text-5xl mb-4">🎓</div>
-          <h3 className="text-lg font-bold text-[#111827] dark:text-[#f8fafc] mb-2">No certificates yet</h3>
-          <p className="text-sm text-[#6B7280] dark:text-[#94a3b8] mb-6">
+          <h3 className="font-heading text-lg font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-2">No certificates yet</h3>
+          <p className="text-sm text-[#5B5A52] dark:text-[#ABA99C] mb-6">
             Score <strong>70% or above</strong> on any quiz to earn a certificate.
           </p>
           <Link href="/dashboard/generate"
-            className="inline-flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold px-6 py-3 rounded-xl transition-all hover:shadow-lg text-sm">
+            className="inline-flex items-center gap-2 bg-[#6B2737] hover:bg-[#551F2C] text-white text-xs font-medium px-5 py-2.5 transition-colors">
             <Zap className="w-4 h-4" /> Generate a Quiz
           </Link>
         </div>
@@ -172,48 +172,45 @@ export default function CertificatesPage() {
       {/* ── Earned certificates grid ─────────────────────────────── */}
       {!loading && !error && earned.length > 0 && (
         <>
-          <h2 className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest mb-4 flex items-center gap-2">
-            <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" /> Earned Certificates
+          <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest flex items-center gap-2">
+            <Trophy className="w-3.5 h-3.5 text-[#93670F] dark:text-[#D4A94A]" /> Earned Certificates
           </h2>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5 mb-10">
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
             {earned.map((cert) => {
-              const grad = LEVEL_GRADIENT[(cert.difficulty?.toLowerCase() ?? "medium") as keyof typeof LEVEL_GRADIENT] ?? LEVEL_GRADIENT.medium;
               const certId = makeCertId(cert.id, cert.created_at);
 
               return (
                 <div key={cert.id}
-                  className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] shadow-sm overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 group">
+                  className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden group">
 
                   {/* Visual banner */}
-                  <div className={`h-36 bg-gradient-to-br ${grad} relative flex items-center justify-center overflow-hidden`}>
-                    {/* Decorative rings */}
-                    <div className="absolute top-2 left-2 w-20 h-20 border-2 border-white/20 rounded-full" />
-                    <div className="absolute bottom-2 right-2 w-14 h-14 border-2 border-white/20 rounded-full" />
-                    <div className="absolute -top-4 -right-4 w-24 h-24 border-2 border-white/10 rounded-full" />
+                  <div className="h-32 bg-[#6B2737] relative flex items-center justify-center overflow-hidden">
+                    <div className="absolute top-2 left-2 w-20 h-20 border border-white/10 rounded-full" />
+                    <div className="absolute bottom-2 right-2 w-14 h-14 border border-white/10 rounded-full" />
                     <div className="relative text-center">
-                      <div className="text-4xl mb-1.5">🏆</div>
-                      <div className="text-white text-[10px] font-black tracking-[3px] uppercase opacity-80">Certificate</div>
-                      <div className="text-white text-[9px] opacity-50 mt-0.5 font-mono">{certId}</div>
+                      <div className="text-3xl mb-1">🏆</div>
+                      <div className="text-white text-[9px] font-semibold tracking-[3px] uppercase opacity-90">Certificate</div>
+                      <div className="text-white text-[9px] opacity-60 mt-0.5 font-mono">{certId}</div>
                     </div>
-                    <div className="absolute top-3 right-3 bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full capitalize">
+                    <div className="absolute top-3 right-3 bg-white/15 text-white text-[10px] font-semibold px-2 py-0.5 border border-white/20 capitalize">
                       {cert.difficulty}
                     </div>
                   </div>
 
                   {/* Info */}
                   <div className="p-4">
-                    <h3 className="font-bold text-[#111827] dark:text-[#f8fafc] mb-2 text-sm leading-snug">{cert.topic}</h3>
-                    <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#94a3b8] mb-3">
+                    <h3 className="font-heading font-medium text-[#1B1B18] dark:text-[#F2F1EA] mb-2 text-sm leading-snug">{cert.topic}</h3>
+                    <div className="flex items-center justify-between text-xs text-[#5B5A52] dark:text-[#ABA99C] mb-3">
                       <span className="flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3 text-[#10B981]" />
-                        Score: <strong className="text-[#10B981]">{cert.score_pct}%</strong>
-                        <span className="text-[#D1D5DB] dark:text-[#475569] mx-1">·</span>
+                        <CheckCircle className="w-3.5 h-3.5 text-[#2F6B3A] dark:text-[#7EBA88]" />
+                        Score: <strong className="text-[#2F6B3A] dark:text-[#7EBA88]">{cert.score_pct}%</strong>
+                        <span className="text-[#8C8B82] mx-1">·</span>
                         {cert.correct_answers}/{cert.total_questions} correct
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-[#9CA3AF] mb-3">
-                      <Clock className="w-3 h-3" />
+                    <div className="flex items-center gap-1 text-xs text-[#8C8B82] mb-4">
+                      <Clock className="w-3.5 h-3.5" />
                       <span title={new Date(cert.created_at).toLocaleString()}>{relativeDate(cert.created_at)}</span>
                     </div>
 
@@ -221,7 +218,7 @@ export default function CertificatesPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setActive(cert)}
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-[#6366F1] border border-[#E0E7FF] dark:border-[#3730a3] rounded-lg py-2 hover:bg-[#EEF2FF] dark:hover:bg-[#1e1b4b] transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-[#1B1B18] dark:text-[#F2F1EA] border border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] hover:bg-[#EAE8E1] dark:hover:bg-[#262620] py-2 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" /> View & Download
                       </button>
@@ -236,32 +233,32 @@ export default function CertificatesPage() {
 
       {/* ── In Progress ─────────────────────────────────────────── */}
       {!loading && !error && inProgress.length > 0 && (
-        <div>
-          <h2 className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest mb-4 flex items-center gap-2">
-            <Lock className="w-3.5 h-3.5" /> In Progress — Retry to Unlock
+        <div className="space-y-4">
+          <h2 className="text-xs font-semibold text-[#8C8B82] uppercase tracking-widest flex items-center gap-2">
+            <Lock className="w-3.5 h-3.5 text-[#8C8B82]" /> In Progress — Retry to Unlock
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {inProgress.map((q) => (
               <div key={q.id}
-                className="bg-white dark:bg-[#1e293b] rounded-2xl border border-[#E5E7EB] dark:border-[#334155] p-5 flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#F3F4F6] dark:bg-[#334155] rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                className="bg-white dark:bg-[#1C1C16] border border-[#DEDCD3] dark:border-[#35352C] p-4 flex items-center gap-4">
+                <div className="w-10 h-10 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] flex items-center justify-center text-xl flex-shrink-0">
                   📚
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-[#111827] dark:text-[#f8fafc] text-sm mb-1.5 truncate">{q.topic}</h3>
+                  <h3 className="font-medium text-[#1B1B18] dark:text-[#F2F1EA] text-sm mb-1.5 truncate">{q.topic}</h3>
                   {/* Progress bar */}
-                  <div className="h-1.5 bg-[#F3F4F6] dark:bg-[#334155] rounded-full overflow-hidden mb-1">
+                  <div className="h-1.5 bg-[#FAFAF8] dark:bg-[#14140F] border border-[#DEDCD3] dark:border-[#35352C] overflow-hidden mb-1">
                     <div
-                      className="h-full bg-[#F59E0B] rounded-full transition-all"
+                      className="h-full bg-[#6B2737] transition-all"
                       style={{ width: `${(q.score_pct / 70) * 100}%` }}
                     />
                   </div>
-                  <p className="text-xs text-[#9CA3AF]">
+                  <p className="text-xs text-[#8C8B82]">
                     {q.score_pct}% · Need <strong>70%</strong> to unlock
                   </p>
                 </div>
                 <Link href="/dashboard/generate"
-                  className="text-xs font-semibold text-[#6366F1] bg-[#EEF2FF] dark:bg-[#1e1b4b] px-3 py-1.5 rounded-lg hover:bg-[#E0E7FF] dark:hover:bg-[#312e81] transition-colors whitespace-nowrap">
+                  className="text-xs font-medium text-[#6B2737] dark:text-[#B5677A] border border-[#DEDCD3] dark:border-[#35352C] bg-[#FAFAF8] dark:bg-[#14140F] px-3 py-1.5 hover:bg-[#EAE8E1] dark:hover:bg-[#262620] transition-colors whitespace-nowrap">
                   Retry →
                 </Link>
               </div>

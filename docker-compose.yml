@@ -4,26 +4,41 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-new
+    container_name: backendcont
     ports:
       - "3001:3001"
     environment:
-      - PORT=3001
-      - NODE_ENV=production
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+      PORT: 3001
+      NODE_ENV: production
+      SUPABASE_URL: "${SUPABASE_URL}"
+      SUPABASE_ANON_KEY: "${SUPABASE_ANON_KEY}"
+      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
+    networks:
+      - qnet
+    restart: unless-stopped
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-new
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: "${NEXT_PUBLIC_SUPABASE_URL}"
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+        GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+        NEXT_PUBLIC_API_BASE_URL: "${NEXT_PUBLIC_API_BASE_URL}"
+    container_name: frontcont
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      NODE_ENV: production
+    networks:
+      - qnet
     depends_on:
       - backend
+    restart: unless-stopped
+
+networks:
+  qnet:
+    driver: bridge

@@ -40,6 +40,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/*
+          Runtime-injected public config. Written by docker-entrypoint.js
+          at container START (not image build) time, so NEXT_PUBLIC_*
+          values can change with a plain `docker run -e ...` / compose
+          env change instead of a rebuild. Must load before any script
+          that calls getPublicEnv() (see lib/env.ts).
+          eslint-disable-next-line @next/next/no-sync-scripts
+        */}
+        <script src="/__ENV.js" />
         {/* Anti-flash: must run synchronously before paint */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script dangerouslySetInnerHTML={{ __html: antiFlashScript }} />

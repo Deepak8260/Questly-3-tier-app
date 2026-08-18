@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/generate-public-env.js",
     "dev": "next dev --port 3000",
     "build": "next build",
+    "prestart": "node scripts/generate-public-env.js",
     "start": "next start",
     "lint": "eslint"
   },

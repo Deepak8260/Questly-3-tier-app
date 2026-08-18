@@ -11,6 +11,8 @@ services:
       - ./backend/.env
     environment:
       - NODE_ENV=production
+    networks:
+      - qnet
     restart: unless-stopped
 
   frontend:
@@ -25,4 +27,10 @@ services:
       - NODE_ENV=production
     depends_on:
       - backend
+    networks:
+      - qnet
     restart: unless-stopped
+
+networks:
+  qnet:
+    external: true

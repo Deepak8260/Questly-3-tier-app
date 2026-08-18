@@ -52,8 +52,10 @@ const PUBLIC_ENV_KEYS = [
 ];
 
 function main() {
-  // rootDir: project root when run locally (scripts/../), or /app when
-  // run from docker-entrypoint.js in the container.
+  // rootDir: the frontend project folder when run locally (this script
+  // lives at frontend/scripts/, so ".." is frontend/), or /app when run
+  // from docker-entrypoint.js in the container. frontend/.env is its
+  // own file, separate from backend/.env.
   const rootDir = process.argv[2] || path.join(__dirname, "..");
   const outDir = process.argv[3] || path.join(rootDir, "public");
 

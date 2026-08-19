@@ -8,9 +8,14 @@ __pycache__/
 .env.*
 **/.env
 **/.env.*
+
+# Keep example templates tracked
+!.env.example
+!*.env.example
 !**/.env.example
 !**/.env.*.example
-!.env.example
+!backend/.env.example
+!frontend/.env.example
 
 # Virtual environment
 venv/

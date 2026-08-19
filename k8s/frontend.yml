@@ -2,7 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: questly
+  namespace: questly-ns
+
 spec:
   replicas: 1
 
@@ -18,8 +19,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: questly-frontend:latest
-          imagePullPolicy: Never
+          image: kumar3472/questly-frontend:latest
+          imagePullPolicy: Always
 
           ports:
             - containerPort: 3000
@@ -27,6 +28,10 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+
+          envFrom:
+            - secretRef:
+                name: questly-frontend-secrets
 
           resources:
             requests:
@@ -42,7 +47,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend
-  namespace: questly
+  namespace: questly-ns
+
 spec:
   selector:
     app: frontend

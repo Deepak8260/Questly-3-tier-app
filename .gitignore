@@ -5,6 +5,12 @@ __pycache__/
 
 # Environment variables — NEVER commit this
 .env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+!.env.example
 
 # Virtual environment
 venv/

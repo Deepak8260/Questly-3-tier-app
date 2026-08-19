@@ -17,6 +17,10 @@ __pycache__/
 !backend/.env.example
 !frontend/.env.example
 
+# Kubernetes local secret manifests - never commit real values
+k8s/*-secrets.yml
+!k8s/*-secrets.example.yml
+
 # Virtual environment
 venv/
 .venv/

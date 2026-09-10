@@ -3,6 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import quizRoutes from "./routes/quiz";
 
+// backend/.env — its own file, separate from frontend/.env. Only read
+// at local `npm run dev`/`npm start` time; in Docker, docker-compose's
+// `env_file: ./backend/.env` injects these directly into the
+// container's environment (no .env file is copied into the image, see
+// .dockerignore), so this call is a harmless no-op there.
 dotenv.config();
 
 const app = express();

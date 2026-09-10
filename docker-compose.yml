@@ -1,44 +1,41 @@
 version: '3.8'
 
 services:
+
   backend:
+    container_name: questly-backend
     build:
       context: ./backend
-      dockerfile: Dockerfile-new
-    container_name: backendcont
+      dockerfile: Dockerfile
+    image: kumar3472/questly-backend:latest
     ports:
       - "3001:3001"
+    env_file:
+      - ./backend/.env
     environment:
-      PORT: 3001
-      NODE_ENV: production
-      SUPABASE_URL: "${SUPABASE_URL}"
-      SUPABASE_ANON_KEY: "${SUPABASE_ANON_KEY}"
-      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY}"
-      GEMINI_API_KEY: "${GEMINI_API_KEY}"
+      - NODE_ENV=production
     networks:
       - qnet
     restart: unless-stopped
 
   frontend:
+    container_name: questly-frontend
     build:
       context: ./frontend
-      dockerfile: Dockerfile-new
-      args:
-        NEXT_PUBLIC_SUPABASE_URL: "${NEXT_PUBLIC_SUPABASE_URL}"
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: "${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
-        GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
-        NEXT_PUBLIC_API_BASE_URL: "${NEXT_PUBLIC_API_BASE_URL}"
-    container_name: frontcont
+      dockerfile: Dockerfile
+    image: kumar3472/questly-frontend:latest
     ports:
       - "3000:3000"
+    env_file:
+      - ./frontend/.env
     environment:
-      NODE_ENV: production
-    networks:
-      - qnet
+      - NODE_ENV=production
     depends_on:
       - backend
+    networks:
+      - qnet
     restart: unless-stopped
 
 networks:
   qnet:
-    driver: bridge
+    name: qnet

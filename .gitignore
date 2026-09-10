@@ -5,6 +5,21 @@ __pycache__/
 
 # Environment variables — NEVER commit this
 .env
+.env.*
+**/.env
+**/.env.*
+
+# Keep example templates tracked
+!.env.example
+!*.env.example
+!**/.env.example
+!**/.env.*.example
+!backend/.env.example
+!frontend/.env.example
+
+# Kubernetes local secret manifests - never commit real values
+k8s/*-secrets.yml
+!k8s/*-secrets.example.yml
 
 # Virtual environment
 venv/
@@ -29,3 +44,6 @@ generated/
 
 # Local dev
 instance/ 
+
+node_modules/
+**/node_modules/

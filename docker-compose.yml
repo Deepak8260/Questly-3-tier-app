@@ -2,6 +2,9 @@ version: '3.8'
 
 services:
 
+  # ==========================================
+  # QUESTLY BACKEND
+  # ==========================================
   backend:
     container_name: questly-backend
     build:
@@ -18,6 +21,10 @@ services:
       - qnet
     restart: unless-stopped
 
+
+  # ==========================================
+  # QUESTLY FRONTEND
+  # ==========================================
   frontend:
     container_name: questly-frontend
     build:
@@ -36,6 +43,155 @@ services:
       - qnet
     restart: unless-stopped
 
+
+  # ==========================================
+  # REDIS
+  # ==========================================
+  redis:
+    container_name: redis
+    image: redis:latest
+    expose:
+      - "6379"
+    networks:
+      - qnet
+    restart: unless-stopped
+
+
+  # ==========================================
+  # CADVISOR
+  # ==========================================
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - qnet
+    restart: unless-stopped
+
+
+  # ==========================================
+  # NODE EXPORTER
+  # ==========================================
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:latest
+    expose:
+      - "9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - qnet
+    restart: unless-stopped
+
+
+  # ==========================================
+  # PROMETHEUS
+  # ==========================================
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - qnet
+    restart: unless-stopped
+
+
+  # ==========================================
+  # LOKI
+  # ==========================================
+  loki:
+    container_name: loki
+    image: grafana/loki:3.7.0
+    command:
+      - '-config.file=/etc/loki/loki-config.yml'
+    volumes:
+      - ./loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    expose:
+      - "3100"
+    networks:
+      - qnet
+    restart: unless-stopped
+
+
+  # ==========================================
+  # GRAFANA ALLOY
+  # ==========================================
+  alloy:
+    container_name: alloy
+    image: grafana/alloy:latest
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./alloy-config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy/data
+    expose:
+      - "12345"
+    depends_on:
+      - loki
+    networks:
+      - qnet
+    restart: unless-stopped
+
+
+  # ==========================================
+  # GRAFANA
+  # ==========================================
+  grafana:
+    container_name: grafana
+    image: grafana/grafana-enterprise:latest
+    ports:
+      - "3002:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - qnet
+    restart: unless-stopped
+
+
+# ==========================================
+# NETWORK
+# ==========================================
 networks:
   qnet:
     name: qnet
+
+
+# ==========================================
+# VOLUMES
+# ==========================================
+volumes:
+  prometheus_data:
+  grafana-storage:
+  loki_data:
+  alloy_data:

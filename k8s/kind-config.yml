@@ -12,4 +12,13 @@ nodes:
         hostPort: 30081
         protocol: TCP
 
+      # Observability
+      - containerPort: 30030          # Grafana
+        hostPort: 30030
+        protocol: TCP
+
+      - containerPort: 30090          # Prometheus
+        hostPort: 30090
+        protocol: TCP
+
   - role: worker

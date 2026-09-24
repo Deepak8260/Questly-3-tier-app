@@ -1,0 +1,5 @@
+window.__ENV__ = {
+  "NEXT_PUBLIC_SUPABASE_URL": "https://wmfcwauxpudapgubxwch.supabase.co",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtZmN3YXV4cHVkYXBndWJ4d2NoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4ODEzNjAsImV4cCI6MjA4ODQ1NzM2MH0.0bEvA-CIOD-Ai77wwCkSFh2jwwIqASNFCDJu5OHPYU4",
+  "NEXT_PUBLIC_API_BASE_URL": "http://localhost:3001"
+};

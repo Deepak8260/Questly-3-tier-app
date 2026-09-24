@@ -1,12 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// NOTE: These are intentionally NOT prefixed with NEXT_PUBLIC_.
+// Middleware runs server-side (in the Node/Edge runtime) on every
+// request, so process.env is read live at runtime here — there is no
+// build-time inlining to worry about, unlike NEXT_PUBLIC_ vars used in
+// client components. Using the plain names keeps this value out of the
+// client bundle entirely and lets it be changed with a plain
+// `docker run -e` / compose env change, no rebuild required.
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {

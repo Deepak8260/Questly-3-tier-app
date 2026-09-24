@@ -70,29 +70,47 @@ echo "[5/7] Creating namespace and secrets..."
 
 kubectl apply -f "$K8S_DIR/namespace.yml"
 
-echo "Generating backend secret from backend/.env..."
+if [ -f "$K8S_DIR/../backend/.env" ]; then
+    echo "Generating backend secret from backend/.env..."
 
-kubectl create secret generic questly-backend-secrets \
-    --from-env-file="$K8S_DIR/../backend/.env" \
-    --namespace="$NAMESPACE" \
-    --dry-run=client \
-    -o yaml > "$K8S_DIR/backend-secrets.yml"
+    kubectl create secret generic questly-backend-secrets \
+        --from-env-file="$K8S_DIR/../backend/.env" \
+        --namespace="$NAMESPACE" \
+        --dry-run=client \
+        -o yaml > "$K8S_DIR/backend-secrets.yml"
 
-kubectl apply -f "$K8S_DIR/backend-secrets.yml"
+    kubectl apply -f "$K8S_DIR/backend-secrets.yml"
 
-echo "Backend secret created."
+    echo "Backend secret created."
+else
+    # No .env (e.g. Jenkins) - use the secret already stored in the cluster
+    kubectl get secret questly-backend-secrets -n "$NAMESPACE" >/dev/null 2>&1 || {
+        echo "ERROR: backend/.env not found and secret 'questly-backend-secrets' does not exist in '$NAMESPACE'."
+        exit 1
+    }
+    echo "Backend secret already exists in cluster - using it."
+fi
 
-echo "Generating frontend secret from frontend/.env..."
+if [ -f "$K8S_DIR/../frontend/.env" ]; then
+    echo "Generating frontend secret from frontend/.env..."
 
-kubectl create secret generic questly-frontend-secrets \
-    --from-env-file="$K8S_DIR/../frontend/.env" \
-    --namespace="$NAMESPACE" \
-    --dry-run=client \
-    -o yaml > "$K8S_DIR/frontend-secrets.yml"
+    kubectl create secret generic questly-frontend-secrets \
+        --from-env-file="$K8S_DIR/../frontend/.env" \
+        --namespace="$NAMESPACE" \
+        --dry-run=client \
+        -o yaml > "$K8S_DIR/frontend-secrets.yml"
 
-kubectl apply -f "$K8S_DIR/frontend-secrets.yml"
+    kubectl apply -f "$K8S_DIR/frontend-secrets.yml"
 
-echo "Frontend secret created."
+    echo "Frontend secret created."
+else
+    # No .env (e.g. Jenkins) - use the secret already stored in the cluster
+    kubectl get secret questly-frontend-secrets -n "$NAMESPACE" >/dev/null 2>&1 || {
+        echo "ERROR: frontend/.env not found and secret 'questly-frontend-secrets' does not exist in '$NAMESPACE'."
+        exit 1
+    }
+    echo "Frontend secret already exists in cluster - using it."
+fi
 
 # 6. Deploy applications
 echo ""
@@ -104,6 +122,16 @@ echo ""
 echo "Deploying frontend..."
 
 kubectl apply -f "$K8S_DIR/frontend.yml"
+
+# Manifests use the :latest tag with imagePullPolicy: Always, so
+# 'kubectl apply' alone does not replace running pods when only the
+# image on Docker Hub changed. Restart forces new pods, which pull the
+# newest image and reload the secrets created above.
+echo ""
+echo "Restarting deployments to pull the latest images..."
+
+kubectl rollout restart deployment/backend deployment/frontend \
+    -n "$NAMESPACE"
 
 # 7. Wait for applications
 echo ""

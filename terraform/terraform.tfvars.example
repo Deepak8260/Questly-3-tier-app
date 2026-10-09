@@ -20,8 +20,8 @@ subnet_newbits        = <newbits>     # number, 8 turns a /16 into /24 subnets
 public_subnet_offset  = <offset>      # number, index of first public subnet
 private_subnet_offset = <offset>      # number, index of first private subnet
 
-admin_cidr        = "<your-public-ip>/32"  # curl -s https://checkip.amazonaws.com
-app_ingress_cidrs = ["<cidr>"]             # who can reach the ALB
+admin_cidrs       = ["<your-public-ip>/32"] # curl -s https://checkip.amazonaws.com; list all if it varies
+app_ingress_cidrs = ["<cidr>"]              # who can reach the ALB
 
 # ---------- Ports ----------
 ssh_port          = <port>

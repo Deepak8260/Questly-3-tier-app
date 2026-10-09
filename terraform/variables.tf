@@ -63,13 +63,13 @@ variable "private_subnet_offset" {
   type        = number
 }
 
-variable "admin_cidr" {
-  description = "Your public IP in CIDR form (e.g. 203.0.113.10/32). Only this range can reach SSH and Jenkins on the master."
-  type        = string
+variable "admin_cidrs" {
+  description = "Your public IP(s) in CIDR form (e.g. [\"203.0.113.10/32\"]). Only these can reach SSH and Jenkins on the master. List every IP when your network load-balances across several."
+  type        = list(string)
 
   validation {
-    condition     = can(cidrhost(var.admin_cidr, 0)) && var.admin_cidr != "0.0.0.0/0"
-    error_message = "admin_cidr must be a valid CIDR and must not be 0.0.0.0/0."
+    condition     = length(var.admin_cidrs) > 0 && alltrue([for c in var.admin_cidrs : can(cidrhost(c, 0)) && c != "0.0.0.0/0"])
+    error_message = "admin_cidrs must be a non-empty list of valid CIDRs and must not contain 0.0.0.0/0."
   }
 }
 

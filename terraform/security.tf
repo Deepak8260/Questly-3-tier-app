@@ -2,7 +2,7 @@
 # Three security groups, one per role:
 #
 #   alb    : listener port from app_ingress_cidrs -> agent NodePorts
-#   master : SSH + Jenkins from admin_cidr only
+#   master : SSH + Jenkins from admin_cidrs only
 #   agent  : SSH from master, app NodePorts from the ALB,
 #            Grafana/Prometheus NodePorts from the master only
 #
@@ -72,18 +72,22 @@ resource "aws_vpc_security_group_egress_rule" "alb_to_backend" {
 # ---------------------------------------------------------------------
 
 resource "aws_vpc_security_group_ingress_rule" "master_ssh" {
+  for_each = toset(var.admin_cidrs)
+
   security_group_id = aws_security_group.master.id
   description       = "SSH from admin"
-  cidr_ipv4         = var.admin_cidr
+  cidr_ipv4         = each.value
   ip_protocol       = "tcp"
   from_port         = var.ssh_port
   to_port           = var.ssh_port
 }
 
 resource "aws_vpc_security_group_ingress_rule" "master_jenkins" {
+  for_each = toset(var.admin_cidrs)
+
   security_group_id = aws_security_group.master.id
   description       = "Jenkins UI from admin"
-  cidr_ipv4         = var.admin_cidr
+  cidr_ipv4         = each.value
   ip_protocol       = "tcp"
   from_port         = var.jenkins_port
   to_port           = var.jenkins_port

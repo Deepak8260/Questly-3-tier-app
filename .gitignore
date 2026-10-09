@@ -69,3 +69,13 @@ venv/
 .venv/
 quiz_history.db
 instance/
+
+# ---------- Terraform ----------
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+terraform.tfvars
+*.auto.tfvars
+!terraform.tfvars.example

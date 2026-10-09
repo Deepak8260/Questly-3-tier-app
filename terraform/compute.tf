@@ -21,9 +21,11 @@ resource "aws_instance" "master" {
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
 
   user_data = templatefile("${path.module}/scripts/master-userdata.sh", {
-    java_package = var.java_package
-    jenkins_port = var.jenkins_port
-    ssh_port     = var.ssh_port
+    java_package         = var.java_package
+    jenkins_apt_key_url  = var.jenkins_apt_key_url
+    jenkins_apt_repo_url = var.jenkins_apt_repo_url
+    jenkins_port         = var.jenkins_port
+    ssh_port             = var.ssh_port
   })
 
   metadata_options {

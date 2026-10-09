@@ -215,6 +215,16 @@ variable "java_package" {
   type        = string
 }
 
+variable "jenkins_apt_repo_url" {
+  description = "Jenkins apt repository base URL (LTS: https://pkg.jenkins.io/debian-stable)."
+  type        = string
+}
+
+variable "jenkins_apt_key_url" {
+  description = "URL of the key that signs the Jenkins apt repository. Jenkins rotates it; check https://www.jenkins.io/doc/book/installing/linux/."
+  type        = string
+}
+
 variable "docker_compose_package" {
   description = "apt package providing the Docker Compose v2 plugin (`docker compose`) on the agent."
   type        = string

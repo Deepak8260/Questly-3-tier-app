@@ -58,6 +58,8 @@ master_volume_size   = <gib>
 agent_volume_size    = <gib>
 
 java_package           = "<apt-java-package>"
+jenkins_apt_repo_url   = "<jenkins-apt-repo-url>" # e.g. https://pkg.jenkins.io/debian-stable
+jenkins_apt_key_url    = "<jenkins-apt-key-url>"  # current key from jenkins.io/doc/book/installing/linux
 docker_compose_package = "<apt-compose-package>"
 kind_version           = "<kind-version>"         # e.g. v0.29.0
 kubectl_version        = "<kubectl-version>"      # within one minor of the kind node image

@@ -1,44 +1,81 @@
 #!/bin/bash
-# Master: Jenkins controller.
-# Rendered by Terraform templatefile(). Log: /var/log/cloud-init-output.log
-set -euxo pipefail
-export DEBIAN_FRONTEND=noninteractive
 
-apt-get update -y
-apt-get install -y fontconfig ${java_package} git curl
+# -------------------------------------------------
+# Jenkins Automated Installation Script
+# Installs Java (OpenJDK 21) and Jenkins LTS
+# Compatible with Debian / Ubuntu systems
+# -------------------------------------------------
 
-install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
-  -o /etc/apt/keyrings/jenkins-keyring.asc
-echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
-  > /etc/apt/sources.list.d/jenkins.list
+set -e
 
-apt-get update -y
-apt-get install -y jenkins
+echo "========================================="
+echo " Starting Jenkins Installation Setup "
+echo "========================================="
 
-# Listen on the port Terraform opened in the security group
-install -d /etc/systemd/system/jenkins.service.d
-cat > /etc/systemd/system/jenkins.service.d/override.conf <<OVERRIDE
-[Service]
-Environment="JENKINS_PORT=${jenkins_port}"
-OVERRIDE
-systemctl daemon-reload
-systemctl enable jenkins
-systemctl restart jenkins
+# ------------------------------
+# Step 1: Update Package Index
+# ------------------------------
+echo "[1/6] Updating system packages..."
+sudo apt update -y
 
+# ------------------------------
+# Step 2: Install Java
+# ------------------------------
+echo "[2/6] Installing OpenJDK 21..."
+sudo apt install -y fontconfig openjdk-21-jre
+
+echo "Checking Java installation..."
 java -version
-systemctl is-active jenkins
 
-%{ if ssh_port != 22 ~}
-# Move sshd to the port Terraform opened in the security groups
-# (Ubuntu 24.04 starts sshd through ssh.socket)
-install -d /etc/systemd/system/ssh.socket.d
-cat > /etc/systemd/system/ssh.socket.d/port.conf <<SOCKET
-[Socket]
-ListenStream=
-ListenStream=${ssh_port}
-SOCKET
-systemctl daemon-reload
-systemctl stop ssh.service || true
-systemctl restart ssh.socket
-%{ endif ~}
+# ------------------------------
+# Step 3: Add Jenkins Repository Key
+# ------------------------------
+echo "[3/6] Adding Jenkins repository key..."
+
+sudo mkdir -p /etc/apt/keyrings
+
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+
+# ------------------------------
+# Step 4: Add Jenkins Repository
+# ------------------------------
+echo "[4/6] Adding Jenkins repository..."
+
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] \
+https://pkg.jenkins.io/debian-stable binary/" | \
+sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+# ------------------------------
+# Step 5: Install Jenkins
+# ------------------------------
+echo "[5/6] Installing Jenkins..."
+
+sudo apt update -y
+sudo apt install -y jenkins
+
+# ------------------------------
+# Step 6: Start Jenkins Service
+# ------------------------------
+echo "[6/6] Enabling and starting Jenkins..."
+
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+
+echo ""
+echo "========================================="
+echo " Jenkins Installation Completed "
+echo "========================================="
+
+echo "Checking Jenkins service status..."
+sudo systemctl status jenkins --no-pager
+
+echo ""
+echo "Access Jenkins at:"
+echo "http://<your-server-ip>:8080"
+echo ""
+
+echo "Initial Admin Password:"
+echo "--------------------------------"
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+echo "--------------------------------"

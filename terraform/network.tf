@@ -1,10 +1,10 @@
 # =====================================================================
-# VPC with 2 public + 2 private subnets across two AZs in Mumbai.
+# VPC with public + private subnets across var.az_count AZs.
 #
 #   public  : ALB, NAT gateway, master (Jenkins)
 #   private : agent (kind cluster running frontend + backend pods)
 #
-# The ALB needs subnets in at least two AZs, hence two of each.
+# The ALB needs subnets in at least two AZs.
 # =====================================================================
 
 data "aws_availability_zones" "available" {
@@ -13,10 +13,10 @@ data "aws_availability_zones" "available" {
 
 locals {
   name = "${var.project_name}-${var.environment}"
-  azs  = slice(data.aws_availability_zones.available.names, 0, 2)
+  azs  = slice(data.aws_availability_zones.available.names, 0, var.az_count)
 
-  public_subnets  = { for i, az in local.azs : az => cidrsubnet(var.vpc_cidr, 8, i) }
-  private_subnets = { for i, az in local.azs : az => cidrsubnet(var.vpc_cidr, 8, i + 10) }
+  public_subnets  = { for i, az in local.azs : az => cidrsubnet(var.vpc_cidr, var.subnet_newbits, i + var.public_subnet_offset) }
+  private_subnets = { for i, az in local.azs : az => cidrsubnet(var.vpc_cidr, var.subnet_newbits, i + var.private_subnet_offset) }
 }
 
 resource "aws_vpc" "main" {

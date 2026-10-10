@@ -17,8 +17,8 @@ terraform {
   #   encrypt      = true
   #   use_lockfile = true
   #
-  # then uncomment the line below and run
+  # then run
   # `terraform init -backend-config=backend.hcl -migrate-state`.
   #
-  # backend "s3" {}
+  backend "s3" {}
 }

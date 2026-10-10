@@ -171,12 +171,12 @@ aws s3api put-public-access-block --bucket $BUCKET `
   --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
 ```
 
-| Setting | What it does |
-|---|---|
-| Versioning | Keeps old copies of the state so you can restore one |
-| Public access block | Nobody outside the account can read the state |
-| `encrypt` | The state is encrypted in the bucket |
-| `use_lockfile` | Two people cannot apply at the same time |
+| Setting             | What it does                                         |
+| ------------------- | ---------------------------------------------------- |
+| Versioning          | Keeps old copies of the state so you can restore one |
+| Public access block | Nobody outside the account can read the state        |
+| `encrypt`         | The state is encrypted in the bucket                 |
+| `use_lockfile`    | Two people cannot apply at the same time             |
 
 ## 8. Plan and apply
 
@@ -190,13 +190,13 @@ terraform show tfplan
 terraform apply tfplan
 ```
 
-| Command | What it does |
-|---|---|
-| `terraform init -backend-config="backend.hcl"` | Downloads the AWS provider and connects to the state bucket. Needed the first time only. |
-| `terraform validate` | Checks the code for errors. |
-| `terraform plan -out=tfplan` | Works out what will be created and saves it to the file `tfplan`. Nothing is created yet. |
-| `terraform show tfplan` | Shows the saved plan so you can review it. |
-| `terraform apply tfplan` | Creates exactly what is in the saved plan. It does not ask for `yes`. |
+| Command                                          | What it does                                                                               |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `terraform init -backend-config="backend.hcl"` | Downloads the AWS provider and connects to the state bucket. Needed the first time only.   |
+| `terraform validate`                           | Checks the code for errors.                                                                |
+| `terraform plan -out=tfplan`                   | Works out what will be created and saves it to the file`tfplan`. Nothing is created yet. |
+| `terraform show tfplan`                        | Shows the saved plan so you can review it.                                                 |
+| `terraform apply tfplan`                       | Creates exactly what is in the saved plan. It does not ask for`yes`.                     |
 
 When you review the plan, read the last line. A first run of this project
 shows `Plan: 43 to add, 0 to change, 0 to destroy.`
@@ -239,12 +239,12 @@ terraform apply -input=false tfplan
 terraform plan -detailed-exitcode
 ```
 
-| Command or flag | Why teams use it |
-|---|---|
-| `terraform fmt -check -recursive` | Fails if any file is badly formatted. Run `terraform fmt -recursive` to fix. |
-| `-input=false` | Fails instead of prompting when a variable is missing. Used in CI pipelines. |
-| `-lock-timeout=60s` | Waits for another person's run to finish instead of failing at once. |
-| `terraform plan -detailed-exitcode` | Run after apply. Exit code `0` means AWS matches the code; `2` means something drifted. |
+| Command or flag                       | Why teams use it                                                                           |
+| ------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `terraform fmt -check -recursive`   | Fails if any file is badly formatted. Run`terraform fmt -recursive` to fix.              |
+| `-input=false`                      | Fails instead of prompting when a variable is missing. Used in CI pipelines.               |
+| `-lock-timeout=60s`                 | Waits for another person's run to finish instead of failing at once.                       |
+| `terraform plan -detailed-exitcode` | Run after apply. Exit code`0` means AWS matches the code; `2` means something drifted. |
 
 ## 11. Team rules
 

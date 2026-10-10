@@ -1,16 +1,24 @@
+locals {
+  # Private key sits next to the public key, without the .pub suffix
+  ssh_private_key_path = trimsuffix(var.ssh_public_key_path, ".pub")
+  ssh_jump             = "-J ${var.ssh_user}@${aws_eip.master.public_ip}"
+  # Omit ":80" so the URLs stay clean on the default HTTP port
+  alb_url = var.alb_listener_port == 80 ? "http://${aws_lb.app.dns_name}" : "http://${aws_lb.app.dns_name}:${var.alb_listener_port}"
+}
+
 output "app_url" {
   description = "Public URL of the Questly frontend."
-  value       = "http://${aws_lb.app.dns_name}"
+  value       = local.alb_url
 }
 
 output "next_public_api_base_url" {
   description = "Value for NEXT_PUBLIC_API_BASE_URL in the frontend secret."
-  value       = "http://${aws_lb.app.dns_name}"
+  value       = local.alb_url
 }
 
 output "jenkins_url" {
   description = "Jenkins UI on the master."
-  value       = "http://${aws_eip.master.public_ip}:8080"
+  value       = "http://${aws_eip.master.public_ip}:${var.jenkins_port}"
 }
 
 output "master_public_ip" {
@@ -25,17 +33,17 @@ output "agent_private_ip" {
 
 output "ssh_master" {
   description = "SSH into the master."
-  value       = "ssh -i ~/.ssh/questly-key ubuntu@${aws_eip.master.public_ip}"
+  value       = "ssh -i ${local.ssh_private_key_path} -p ${var.ssh_port} ${var.ssh_user}@${aws_eip.master.public_ip}"
 }
 
 output "ssh_agent" {
   description = "SSH into the private agent, jumping through the master."
-  value       = "ssh -i ~/.ssh/questly-key -J ubuntu@${aws_eip.master.public_ip} ubuntu@${aws_instance.agent.private_ip}"
+  value       = "ssh -i ${local.ssh_private_key_path} ${local.ssh_jump}:${var.ssh_port} -p ${var.ssh_port} ${var.ssh_user}@${aws_instance.agent.private_ip}"
 }
 
 output "monitoring_tunnel" {
-  description = "Open Grafana (localhost:30030) and Prometheus (localhost:30090) on your laptop."
-  value       = "ssh -i ~/.ssh/questly-key -J ubuntu@${aws_eip.master.public_ip} -L 30030:localhost:30030 -L 30090:localhost:30090 -N ubuntu@${aws_instance.agent.private_ip}"
+  description = "Open Grafana and Prometheus on your laptop at the same localhost ports (forwarded by the master to the agent)."
+  value       = "ssh -i ${local.ssh_private_key_path} -p ${var.ssh_port} -L ${var.grafana_node_port}:${aws_instance.agent.private_ip}:${var.grafana_node_port} -L ${var.prometheus_node_port}:${aws_instance.agent.private_ip}:${var.prometheus_node_port} -N ${var.ssh_user}@${aws_eip.master.public_ip}"
 }
 
 output "vpc_id" {

@@ -1,6 +1,6 @@
-# Latest Ubuntu 24.04 LTS AMI published by Canonical
+# Latest AMI published under var.ami_ssm_parameter (Ubuntu 24.04 in .env.example)
 data "aws_ssm_parameter" "ubuntu_ami" {
-  name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
+  name = var.ami_ssm_parameter
 }
 
 resource "aws_key_pair" "main" {
@@ -20,14 +20,20 @@ resource "aws_instance" "master" {
   key_name               = aws_key_pair.main.key_name
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
 
-  user_data = file("${path.module}/scripts/master-userdata.sh")
+  user_data = templatefile("${path.module}/scripts/master-userdata.sh", {
+    java_package         = var.java_package
+    jenkins_apt_key_url  = var.jenkins_apt_key_url
+    jenkins_apt_repo_url = var.jenkins_apt_repo_url
+    jenkins_port         = var.jenkins_port
+    ssh_port             = var.ssh_port
+  })
 
   metadata_options {
     http_tokens = "required" # IMDSv2 only
   }
 
   root_block_device {
-    volume_type = "gp3"
+    volume_type = var.root_volume_type
     volume_size = var.master_volume_size
     encrypted   = true
   }
@@ -65,8 +71,12 @@ resource "aws_instance" "agent" {
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
 
   user_data = templatefile("${path.module}/scripts/agent-userdata.sh", {
-    kind_version    = var.kind_version
-    kubectl_version = var.kubectl_version
+    java_package           = var.java_package
+    docker_compose_package = var.docker_compose_package
+    kind_version           = var.kind_version
+    kubectl_version        = var.kubectl_version
+    ssh_port               = var.ssh_port
+    ssh_user               = var.ssh_user
   })
 
   metadata_options {
@@ -74,7 +84,7 @@ resource "aws_instance" "agent" {
   }
 
   root_block_device {
-    volume_type = "gp3"
+    volume_type = var.root_volume_type
     volume_size = var.agent_volume_size
     encrypted   = true
   }

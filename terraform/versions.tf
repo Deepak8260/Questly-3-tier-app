@@ -8,14 +8,17 @@ terraform {
     }
   }
 
-  # Remote state (recommended for teams). Create the bucket once, then
-  # uncomment and run `terraform init -migrate-state`.
+  # Remote state (recommended for teams). Backend blocks cannot read
+  # variables, so keep the values in a git-ignored backend.hcl:
   #
-  # backend "s3" {
   #   bucket       = "questly-terraform-state-<unique-suffix>"
   #   key          = "questly/dev/terraform.tfstate"
   #   region       = "ap-south-1"
   #   encrypt      = true
   #   use_lockfile = true
-  # }
+  #
+  # then uncomment the line below and run
+  # `terraform init -backend-config=backend.hcl -migrate-state`.
+  #
+  # backend "s3" {}
 }

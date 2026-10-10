@@ -1,11 +1,68 @@
-# Copy to terraform.tfvars and fill in. terraform.tfvars is git-ignored.
+# =====================================================================
+# Template for terraform.tfvars - placeholders only, no real values.
+#
+#   Copy-Item terraform.tfvars.example terraform.tfvars   (git-ignored)
+#
+# Replace every <...> with a real value. Strings keep their quotes;
+# numbers and lists do not. Every variable is required.
+# =====================================================================
 
-# Your public IP + /32  (find it with: curl -s https://checkip.amazonaws.com)
-admin_cidr = "203.0.113.10/32"
+# ---------- General ----------
+project_name   = "<project-name>"     # resource name prefix, e.g. myapp
+environment    = "<environment>"      # dev | staging | prod
+aws_region     = "<aws-region>"       # e.g. ap-south-1
+managed_by_tag = "<managed-by-tag>"   # e.g. terraform
 
-# aws_region           = "ap-south-1"
-# environment          = "dev"
-# ssh_public_key_path  = "~/.ssh/questly-key.pub"
-# master_instance_type = "t3.medium"
-# agent_instance_type  = "t3.large"
-# app_ingress_cidrs    = ["0.0.0.0/0"]
+# ---------- Network ----------
+vpc_cidr              = "<vpc-cidr>"  # e.g. 10.0.0.0/16
+az_count              = <az-count>    # number, at least 2 (ALB requirement)
+subnet_newbits        = <newbits>     # number, 8 turns a /16 into /24 subnets
+public_subnet_offset  = <offset>      # number, index of first public subnet
+private_subnet_offset = <offset>      # number, index of first private subnet
+
+admin_cidrs       = ["<your-public-ip>/32"] # curl -s https://checkip.amazonaws.com; list all if it varies
+app_ingress_cidrs = ["<cidr>"]              # who can reach the ALB
+
+# ---------- Ports ----------
+ssh_port          = <port>
+jenkins_port      = <port>
+alb_listener_port = <port>
+
+# NodePorts must match k8s/frontend.yml, k8s/backend.yml,
+# k8s/monitoring/*.yml and k8s/kind-config.yml
+frontend_node_port   = <node-port>
+backend_node_port    = <node-port>
+grafana_node_port    = <node-port>
+prometheus_node_port = <node-port>
+
+# ---------- Load balancer ----------
+api_path_pattern        = "<path-pattern>"  # e.g. /api/*
+api_rule_priority       = <priority>
+frontend_health_path    = "<path>"
+frontend_health_matcher = "<http-codes>"    # e.g. 200-399
+backend_health_path     = "<path>"
+backend_health_matcher  = "<http-codes>"
+health_check_interval   = <seconds>
+healthy_threshold       = <count>
+unhealthy_threshold     = <count>
+
+# ---------- Compute ----------
+ami_ssm_parameter   = "<ssm-parameter-path-of-ami-id>"
+ssh_user            = "<ami-login-user>"        # e.g. ubuntu
+ssh_public_key_path = "<path-to-public-key.pub>" # private key = same path without .pub
+
+master_instance_type = "<instance-type>"
+agent_instance_type  = "<instance-type>"
+root_volume_type     = "<ebs-volume-type>"       # e.g. gp3
+master_volume_size   = <gib>
+agent_volume_size    = <gib>
+
+java_package           = "<apt-java-package>"
+jenkins_apt_repo_url   = "<jenkins-apt-repo-url>" # e.g. https://pkg.jenkins.io/debian-stable
+jenkins_apt_key_url    = "<jenkins-apt-key-url>"  # current key from jenkins.io/doc/book/installing/linux
+docker_compose_package = "<apt-compose-package>"
+kind_version           = "<kind-version>"         # e.g. v0.29.0
+kubectl_version        = "<kubectl-version>"      # within one minor of the kind node image
+
+# ---------- IAM ----------
+ssm_policy_arn = "<iam-policy-arn>"

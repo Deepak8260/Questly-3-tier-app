@@ -26,7 +26,12 @@ app_ingress_cidrs = ["<cidr>"]              # who can reach the ALB
 # ---------- Ports ----------
 ssh_port          = <port>
 jenkins_port      = <port>
-alb_listener_port = <port>
+alb_listener_port = <port>              # HTTP, redirected to HTTPS
+alb_https_port    = <port>
+
+# ---------- Domain / HTTPS ----------
+app_domain_name = "<app-domain-name>"    # e.g. questly.example.com; its DNS must point at the ALB
+alb_ssl_policy  = "<elb-ssl-policy>"     # e.g. ELBSecurityPolicy-TLS13-1-2-2021-06
 
 # NodePorts must match k8s/frontend.yml, k8s/backend.yml,
 # k8s/monitoring/*.yml and k8s/kind-config.yml

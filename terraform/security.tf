@@ -42,11 +42,22 @@ resource "aws_vpc_security_group_ingress_rule" "alb_http" {
   for_each = toset(var.app_ingress_cidrs)
 
   security_group_id = aws_security_group.alb.id
-  description       = "HTTP from allowed clients"
+  description       = "HTTP from allowed clients (redirected to HTTPS)"
   cidr_ipv4         = each.value
   ip_protocol       = "tcp"
   from_port         = var.alb_listener_port
   to_port           = var.alb_listener_port
+}
+
+resource "aws_vpc_security_group_ingress_rule" "alb_https" {
+  for_each = toset(var.app_ingress_cidrs)
+
+  security_group_id = aws_security_group.alb.id
+  description       = "HTTPS from allowed clients"
+  cidr_ipv4         = each.value
+  ip_protocol       = "tcp"
+  from_port         = var.alb_https_port
+  to_port           = var.alb_https_port
 }
 
 resource "aws_vpc_security_group_egress_rule" "alb_to_frontend" {

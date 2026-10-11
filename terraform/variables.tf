@@ -93,8 +93,23 @@ variable "jenkins_port" {
 }
 
 variable "alb_listener_port" {
-  description = "HTTP port the ALB listens on."
+  description = "HTTP port the ALB listens on. Requests here are redirected to HTTPS."
   type        = number
+}
+
+variable "alb_https_port" {
+  description = "HTTPS port the ALB listens on."
+  type        = number
+}
+
+variable "alb_ssl_policy" {
+  description = "TLS security policy of the HTTPS listener."
+  type        = string
+}
+
+variable "app_domain_name" {
+  description = "Domain name of the app (e.g. questly.example.com). An ACM certificate is issued for it; its DNS must point at the ALB."
+  type        = string
 }
 
 variable "frontend_node_port" {

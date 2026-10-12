@@ -3,7 +3,7 @@
 What to do once `terraform apply` has finished, from two empty EC2
 instances to the Questly app running behind the load balancer.
 
-Before this guide: [install-terraform-aws-cli.md](install-terraform-aws-cli.md).
+Before this guide: [01-install-terraform-aws-cli.md](01-install-terraform-aws-cli.md).
 
 Every section is marked:
 

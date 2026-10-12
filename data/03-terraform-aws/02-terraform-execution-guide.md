@@ -1376,7 +1376,7 @@ Docker, kind and kubectl are installed on the agent.
 
 The load balancer will report the agent as unhealthy until the app is
 deployed, because nothing is listening on ports 30080 and 30081 yet.
-That part is covered in [after-terraform-apply.md](after-terraform-apply.md).
+That part is covered in [04-after-terraform-apply.md](04-after-terraform-apply.md).
 
 *Verified earlier on 10 October 2026:* after an apply, both instances
 were running with the key `questly-dev-key` attached, the master's boot

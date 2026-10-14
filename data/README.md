@@ -45,7 +45,7 @@ Follow these in order. Each guide assumes the ones before it are done.
 | # | Guide | What it covers |
 |---|---|---|
 | 1 | [Install Terraform and AWS CLI](03-terraform-aws/01-install-terraform-aws-cli.md) | Setting up Terraform and the AWS CLI on Windows. |
-| 2 | [What happens when you run `terraform apply`](03-terraform-aws/02-questly-terraform-apply-flow.md) | The order in which Terraform reads the code and creates each AWS resource, and why. |
+| 2 | [Terraform resource inventory and creation flow](03-terraform-aws/02-questly-terraform-resource-inventory-and-creation-flow.md) | Every AWS resource the code creates, the order Terraform creates them in, and each one explained step by step. |
 | 3 | [SSH into the master and agent](03-terraform-aws/03-ssh-into-servers.md) | Connecting to the servers and what decides whether SSH works. |
 | 4 | [After Terraform apply](03-terraform-aws/04-after-terraform-apply.md) | Deploying Questly on the infrastructure Terraform created. |
 | 5 | [Custom domain and HTTPS](03-terraform-aws/05-custom-domain-and-https.md) | Pointing a domain at the load balancer and adding an ACM certificate with HTTP-to-HTTPS redirect. |

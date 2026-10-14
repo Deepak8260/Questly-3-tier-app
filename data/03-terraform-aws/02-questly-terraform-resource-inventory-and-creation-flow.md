@@ -1,990 +1,1661 @@
-# Questly: What Happens, in Order, When You Run `terraform apply`
+# Questly Terraform: What Gets Created, in What Order, and How
 
-This guide follows one `terraform apply` in the `terraform/` folder from
-the moment you press Enter until the servers finish booting. It is about
-the **sequence**: what Terraform does first, what it creates next, and
-why each thing has to wait for another.
+This guide has three parts:
 
-## What this guide is based on
+1. **The list:** everything the Terraform code will create.
+2. **The order:** the same things, arranged in the order Terraform
+   creates them.
+3. **One by one:** each item from the order, with the exact steps
+   Terraform takes to create it.
 
-Every project fact below was read from the files in this repository.
-Nothing was run against AWS to write it.
-
-| File | Read? | What it contributes |
-|---|---|---|
-| `versions.tf`, `providers.tf`, `variables.tf` | Yes | Settings, provider, 45 variable declarations |
-| `network.tf`, `security.tf`, `iam.tf`, `compute.tf`, `alb.tf` | Yes | 3 data sources, 43 resource blocks |
-| `outputs.tf` | Yes | 3 locals, 13 outputs |
-| `terraform.tfvars` | Yes | The configured values. Your admin IP is not reproduced here. |
-| `terraform.tfvars.example` | Keys only | Has the same variable names as `terraform.tfvars` |
-| `backend.hcl` | Yes | State key, region, encryption, lock setting. The bucket name is not reproduced here. |
-| `.terraform.lock.hcl` | Yes | Provider version |
-| `scripts/master-userdata.sh`, `scripts/agent-userdata.sh` | Yes | The boot scripts |
-| `tfplan` | **No** | It is a binary saved plan. Its contents were not read. |
-| The Terraform state (in S3) | **No** | Not accessed |
-| Your AWS account, DNS, SSH key files, running servers | **No** | Not accessed |
-
-Three labels are used where the difference matters:
-
-- **Confirmed from repository:** read from a file listed above.
-- **General Terraform behavior:** how Terraform or the AWS provider
-  works, not something specific to your code.
-- **Not checked:** depends on your state or your AWS account, which this
-  guide did not look at.
-
-One consequence runs through the whole guide. The values in
-`terraform.tfvars` are **configured** values. They say what Terraform
-will ask for. They do not prove what exists in AWS today.
+Everything here was read from the files in `terraform/`. The values are
+what the code is set to ask for. Nothing was checked in your AWS
+account, so this describes what Terraform **will do**, not what exists
+right now.
 
 ---
 
-## 1. The core distinction: loading files versus creating resources
+# PART 1: The list of what will be created
 
-There are two different "orders". Mixing them up is the usual source of
-confusion.
+All names start with `questly-dev`. The region is `ap-south-1` (Mumbai).
+In total: **47 AWS resources**.
 
-| | Loading the configuration | Creating the resources |
-|---|---|---|
-| What it is | Terraform reading your code | Terraform asking AWS to make things |
-| Where it happens | On your laptop | Requests from your laptop to AWS |
-| What decides the order | Nothing. All `.tf` files are combined into one configuration. | The dependency graph: which block uses a value from which other block |
-| Do file names matter? | No | No |
-| Does the position of a block in a file matter? | No | No |
+## Servers: 2 EC2 instances
 
-### Loading: one combined configuration, not nine scripts
+**Master EC2 (Jenkins server)**
 
-*General Terraform behavior.* Terraform reads every `.tf` file in the
-working directory and treats them as if they were one file. After that,
-the file boundaries are gone. `aws_vpc.main` is just "a resource",
-whichever file it was written in.
+- Instance type: `t3.medium` (not `t2.medium`)
+- Storage: 18 GB, type `gp3`, encrypted
+- Operating system: Ubuntu 24.04
+- SSH key: `questly-dev-key`
+- Network: inside the project's own VPC, in a **public subnet**
+- Security group: its own, `questly-dev-master-sg`
+- Public IP: yes, a fixed one (1 Elastic IP for the master)
+- Boot script: installs Java 21 and Jenkins
 
-So these statements are all wrong for this project:
+**Agent EC2 (build server, runs the kind cluster)**
 
-- "Terraform runs `variables.tf`, then `network.tf`, then `compute.tf`."
-- "`network.tf` runs before `security.tf` because of its name."
-- "The VPC is created first because it is near the top of its file."
+- Instance type: `t3.medium`
+- Storage: 18 GB, type `gp3`, encrypted
+- Operating system: Ubuntu 24.04
+- SSH key: the same `questly-dev-key`
+- Network: inside the same VPC, in a **private subnet**
+- Security group: its own, `questly-dev-agent-sg`
+- Public IP: none
+- Boot script: installs Java 21, Docker, Docker Compose, kind and
+  kubectl
 
-If you renamed `network.tf` to `zzz.tf`, or moved the VPC block to the
-bottom of it, the plan would be identical.
+## SSH key: 1 key pair
 
-Each kind of block has a different job in the combined configuration:
+- `questly-dev-key`: a copy of your public key, stored in AWS and used
+  by both servers
 
-| Kind of block | Where in this project | Its job |
-|---|---|---|
-| `terraform { }` | `versions.tf` | Minimum Terraform version, the AWS provider version, and that state is kept in S3 |
-| `variable` | `variables.tf` (45) | Declares an input. None has a default. |
-| values | `terraform.tfvars` | Supplies the value of each variable |
-| `provider` | `providers.tf` | Region and three default tags |
-| `locals` | `network.tf` (4), `outputs.tf` (3) | Values worked out from other values |
-| `data` | `network.tf`, `compute.tf`, `iam.tf` (3) | Looks something up. Creates nothing. |
-| `resource` | the five resource files (43 blocks) | Something to create and manage in AWS |
-| `output` | `outputs.tf` (13) | A value printed at the end |
+## Network: 1 separate VPC and everything inside it
 
-### `terraform init` is a separate, earlier command
+- 1 VPC, `10.0.0.0/16` (the project's own, not the AWS default VPC)
+- 1 internet gateway
+- 2 public subnets: `10.0.0.0/24` and `10.0.1.0/24`
+- 2 private subnets: `10.0.10.0/24` and `10.0.11.0/24`
+- 1 Elastic IP for the NAT gateway
+- 1 NAT gateway (in the first public subnet)
+- 1 public route table (internet traffic → internet gateway)
+- 2 public route table associations (one per public subnet)
+- 1 private route table (internet traffic → NAT gateway)
+- 2 private route table associations (one per private subnet)
 
-*General Terraform behavior.* `terraform apply` does not run `init` for
-you. `init` is what downloads the provider and connects the folder to
-the state bucket. If the folder is not initialized, `apply` stops with
-an error and tells you to run `init`.
+## Security: 3 security groups and 13 rules
 
-*Confirmed from repository.* `versions.tf` contains an empty
-`backend "s3" {}` block, and its comment says to run
-`terraform init -backend-config=backend.hcl`. A `.terraform/` folder
-exists with a downloaded provider and a saved backend setting, so `init`
-has been run in this folder at some point.
+- 1 security group for the master, with 3 rules:
+  - SSH (port 22) in, only from your IP
+  - Jenkins (port 8080) in, only from your IP
+  - everything out
+- 1 security group for the agent, with 6 rules:
+  - SSH (port 22) in, only from the master
+  - frontend (port 30080) in, only from the load balancer
+  - backend (port 30081) in, only from the load balancer
+  - Grafana (port 30030) in, only from the master
+  - Prometheus (port 30090) in, only from the master
+  - everything out
+- 1 security group for the load balancer, with 4 rules:
+  - HTTP (port 80) in, from anywhere
+  - HTTPS (port 443) in, from anywhere
+  - out to the agent on port 30080
+  - out to the agent on port 30081
 
-### Creating: Terraform follows the dependency graph
+## Permissions: 3 IAM resources
 
-*General Terraform behavior.* When one block uses a value from another
-block, Terraform must create the second one first. There are two ways a
-dependency is made:
+- 1 IAM role, `questly-dev-ec2-role`
+- 1 policy attachment (gives the role AWS Session Manager access)
+- 1 instance profile, `questly-dev-ec2-profile` (hands the role to both
+  servers)
 
-**Implicit dependency.** The block refers to another block's value.
-Terraform sees the reference by itself.
+## Load balancer: 1 ALB and its parts
 
-```hcl
-# network.tf line 30
-resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id      # needs the VPC's ID, so the VPC comes first
-}
-```
+- 1 Application Load Balancer, `questly-dev-alb`, public, in both public
+  subnets
+- 2 target groups:
+  - frontend → agent port 30080
+  - backend → agent port 30081
+- 2 target group attachments (they put the agent into each target group)
+- 1 HTTP listener on port 80 (redirects to HTTPS)
+- 1 HTTPS listener on port 443 (sends to the frontend)
+- 1 listener rule: `/api/*` goes to the backend
 
-**Explicit dependency.** No value is shared, but there is a real-world
-reason to wait, so the code says so with `depends_on`.
+## HTTPS: ACM certificate
 
-```hcl
-# compute.tf line 102
-# Packages are downloaded through the NAT gateway at first boot
-depends_on = [aws_route_table_association.private]
-```
+- 1 certificate **request** for `questly.kumardevops.online`
+- 1 certificate validation (Terraform waits here until AWS approves the
+  certificate)
+- **Manual, not Terraform:** one DNS record that you must add at your
+  domain provider, so AWS can approve the certificate
 
-*Confirmed from repository.* This project has exactly three
-`depends_on` lines:
+## Count
 
-| Resource | Waits for | File and line |
-|---|---|---|
-| `aws_nat_gateway.main` | `aws_internet_gateway.main` | `network.tf` line 87 |
-| `aws_eip.master` | `aws_internet_gateway.main` | `compute.tf` line 58 |
-| `aws_instance.agent` | `aws_route_table_association.private` | `compute.tf` line 102 |
-
-Every other dependency in the project is implicit.
-
-Terraform starts a resource as soon as everything it depends on is
-finished. Resources that do not depend on each other run at the same
-time, up to 10 at once by default. This means **there is no single fixed
-order**. Only the dependencies are guaranteed.
-
----
-
-## 2. What happens after I type `terraform apply`
-
-### Which command are you running?
-
-*General Terraform behavior.* There are two forms, and they behave
-differently:
-
-| Command | Makes a new plan? | Asks for `yes`? |
-|---|---|---|
-| `terraform apply` | Yes | Yes |
-| `terraform apply tfplan` | No. It applies the saved file exactly. | No. You are expected to have reviewed the file already. |
-
-*Confirmed from repository.* A saved plan file named `tfplan` exists in
-the folder. A saved plan can only be applied if the state has not
-changed since it was made. If it has, Terraform rejects the file as
-stale. I did not read the file, so I cannot say whether it is still
-usable.
-
-The timeline below follows plain `terraform apply`. With a saved plan,
-steps 6 to 8 were already done when the plan was made, and step 9 is
-skipped.
-
-### Part A: before anything in AWS changes (steps 1 to 9)
-
-**Step 1: Terraform starts and checks the folder is initialized**
-
-- **What Terraform is doing:** It looks in the current folder for the
-  provider and the backend setting that `init` saved earlier.
-- **Code involved:** `versions.tf` (`terraform { }` block), the
-  `.terraform/` folder, `.terraform.lock.hcl`.
-- **Values used:** `required_version = ">= 1.6.0"`. AWS provider
-  `~> 6.0`, which the lock file pins to exactly `6.68.0`. Backend type
-  `s3`.
-- **Why it happens now:** Terraform cannot read state or talk to AWS
-  without these.
-- **Result:** Terraform knows where the state lives and which provider
-  program to use.
-- **What waits for it:** Everything.
-- **How to verify:** `terraform version` shows your Terraform and
-  provider versions. *Not checked:* which Terraform version is installed
-  on your laptop.
-
-**Step 2: It loads all `.tf` files as one configuration**
-
-- **What Terraform is doing:** Reading the nine `.tf` files and merging
-  them.
-- **Code involved:** `versions.tf`, `providers.tf`, `variables.tf`,
-  `network.tf`, `security.tf`, `iam.tf`, `compute.tf`, `alb.tf`,
-  `outputs.tf`.
-- **Values used:** None yet. This is structure only: 45 variables,
-  7 locals, 3 data sources, 43 resource blocks, 13 outputs.
-- **Why it happens now:** Terraform needs the whole description before
-  it can work out any order.
-- **Result:** One configuration in memory. `scripts/` is not loaded
-  here, and neither is `terraform.tfvars.example`.
-- **What waits for it:** Every later step.
-- **How to verify:** `terraform validate` checks that the combined
-  configuration is consistent. It does not contact AWS.
-
-**Step 3: It gives every variable a value**
-
-- **What Terraform is doing:** Matching each `variable` block with a
-  value and checking it.
-- **Code involved:** `variables.tf`, `terraform.tfvars`.
-- **Values used:** All 45 come from `terraform.tfvars`, which Terraform
-  loads automatically because of its name. Examples:
-  `project_name = "questly"`, `environment = "dev"`,
-  `aws_region = "ap-south-1"`, `vpc_cidr = "10.0.0.0/16"`,
-  `az_count = 2`.
-- **Why it happens now:** Almost every other expression uses `var.`
-  something.
-- **Result:** Every `var.<name>` has a value. Three variables also have
-  a `validation` block: `vpc_cidr` must be a valid range, `az_count`
-  must be at least 2, and `admin_cidrs` must not be empty or contain
-  `0.0.0.0/0`. A bad value stops the run here.
-- **What waits for it:** The provider, the locals, and every resource.
-
-**Step 4: It locks the state and reads it**
-
-- **What Terraform is doing:** Putting a lock next to the state so two
-  runs cannot change it at once, then downloading the state.
-- **Code involved:** `backend "s3" {}` in `versions.tf`, with the
-  settings from `backend.hcl` that `init` saved.
-- **Values used:** `key = "questly/dev/terraform.tfstate"`,
-  `region = "ap-south-1"`, `encrypt = true`, `use_lockfile = true`.
-- **Why it happens now:** The state is Terraform's record of what it
-  already manages. Without it, Terraform cannot tell "create" from
-  "already exists".
-- **Result:** Terraform knows which resources it has created before.
-  *Not checked:* what your state contains right now. It may be empty,
-  complete, or partial.
-- **What waits for it:** The plan in step 8.
-
-**Step 5: It configures the AWS provider**
-
-- **What Terraform is doing:** Starting the AWS provider program and
-  handing it its settings.
-- **Code involved:** `provider "aws"` in `providers.tf`.
-- **Values used:** `region = var.aws_region` gives `ap-south-1`. The
-  three default tags are `Project = "questly"`, `Environment = "dev"`
-  and `ManagedBy = "terraform"`.
-- **Why it happens now:** The data sources in the next step need a
-  working connection to AWS.
-- **Result:** Every request goes to `ap-south-1`, and every taggable
-  resource gets those three tags. `providers.tf` contains no access
-  keys, so the provider looks for credentials in the standard places on
-  your laptop. *Not checked:* which credentials it finds.
-- **What waits for it:** Every data source and resource.
-- **How to verify:** `aws sts get-caller-identity` shows which AWS
-  identity your laptop is using.
-
-**Step 6: It reads the three data sources**
-
-- **What Terraform is doing:** Asking questions whose answers it needs
-  for the plan. A data source never creates anything.
-- **Code involved and values used:**
-
-| Data source | File | Question | Answered by |
-|---|---|---|---|
-| `data.aws_availability_zones.available` | `network.tf` line 10 | Which zones are available in this region? | AWS |
-| `data.aws_ssm_parameter.ubuntu_ami` | `compute.tf` line 2 | What image ID is stored under `var.ami_ssm_parameter`? The configured name is the Ubuntu 24.04 path published by Canonical. | AWS |
-| `data.aws_iam_policy_document.ec2_assume_role` | `iam.tf` line 4 | None. It builds a JSON policy from the block. | Your laptop |
-
-- **Why it happens now:** None of them depends on a resource, only on
-  variables and the provider, so they can be read during planning.
-- **Result:** A list of zone names, one image ID, and one JSON text.
-  *Not checked:* the actual zone names and image ID, because they come
-  from AWS at the moment you run the command.
-- **What waits for it:** `local.azs` and all four subnet blocks need the
-  zones. Both EC2 instances need the image ID. `aws_iam_role.ec2` needs
-  the JSON.
-
-**Step 7: It evaluates locals, expressions and files on your laptop**
-
-- **What Terraform is doing:** Working out every value that can be
-  known before AWS creates anything.
-- **Code involved:** `locals` in `network.tf` lines 14 to 20, `file()`
-  in `compute.tf` line 8, `templatefile()` in `compute.tf` lines 23
-  and 73.
-- **Values used:**
-
-```
-local.name            = "${var.project_name}-${var.environment}"  →  "questly-dev"
-local.azs             = the first 2 zone names from step 6         (az_count = 2)
-local.public_subnets  = { zone A = "10.0.0.0/24",  zone B = "10.0.1.0/24"  }
-local.private_subnets = { zone A = "10.0.10.0/24", zone B = "10.0.11.0/24" }
-```
-
-  The subnet ranges come from
-  `cidrsubnet(var.vpc_cidr, var.subnet_newbits, i + offset)` with
-  `subnet_newbits = 8`, `public_subnet_offset = 0` and
-  `private_subnet_offset = 10`.
-
-  Terraform also reads the public key file named by
-  `ssh_public_key_path` (configured as `~/.ssh/id_ed25519.pub`) and the
-  two files in `scripts/`.
-- **Why it happens now:** These need only variables, data sources and
-  local files.
-- **Result:** Names, subnet ranges, the key text and both boot scripts
-  are ready. If the public key file is missing, the run fails here,
-  before anything is sent to AWS. *Not checked:* whether that file
-  exists.
-- **What waits for it:** Every resource that uses `local.name`, the four
-  `for_each` subnet and association blocks, `aws_key_pair.main`, and
-  both instances.
-
-Values that AWS chooses, such as `aws_vpc.main.id`, cannot be worked out
-here. The plan shows them as `(known after apply)`.
-
-**Step 8: It builds the graph and the plan**
-
-- **What Terraform is doing:** Three things. It expands `for_each`, it
-  draws the dependency graph, and it compares the code with the state
-  and with AWS.
-- **Code involved:** All 43 resource blocks. Eight of them use
-  `for_each`.
-- **Values used:** With the current `terraform.tfvars`, four blocks make
-  two copies each (the public and private subnets and their route table
-  associations, because `az_count = 2`). The other four make one copy
-  each, because `admin_cidrs` and `app_ingress_cidrs` each hold one
-  entry. That gives **47 resources from 43 blocks**.
-- **Why it happens now:** Everything the plan needs is now known.
-- **Result:** For each of the 47, one decision:
-
-| Situation | Plan says |
+| Group | Resources |
 |---|---|
-| Not in the state | `+ create` |
-| In the state and matches the code | nothing |
-| In the state, differs, can be changed in place | `~ update in-place` |
-| In the state, differs, cannot be changed in place | `-/+ replace` |
-| In the state but removed from the code | `- destroy` |
+| Network | 14 |
+| Security groups and rules | 16 |
+| IAM | 3 |
+| Key pair, 2 servers, master's Elastic IP | 4 |
+| Load balancer, target groups, attachments, listeners, rule | 8 |
+| Certificate and validation | 2 |
+| **Total** | **47** |
 
-  For resources already in the state, Terraform first asks AWS for their
-  current settings. This is how it notices changes made by hand.
+## Not created by Terraform
 
-  *Not checked:* which of these your plan will show. If the state is
-  empty, it is `47 to add`. If everything already exists and matches, it
-  is `No changes`. Anything in between is possible.
-- **What waits for it:** The approval and the whole of Part B.
-- **How to verify:** `terraform plan` does steps 1 to 8 and stops. It
-  changes nothing in AWS. Read the last line:
-  `Plan: X to add, Y to change, Z to destroy.`
-
-**Step 9: It shows the plan and waits for you**
-
-- **What Terraform is doing:** Printing the plan and asking
-  `Enter a value:`.
-- **Why it happens now:** This is the last moment before AWS changes.
-- **Result:** Only the exact word `yes` continues. Anything else
-  cancels, and nothing was changed.
-- **What waits for it:** Part B.
-
-### Part B: Terraform changes AWS (steps 10 to 21)
-
-Read this part with three things in mind:
-
-1. Each step happens **only for resources your plan marked to create**.
-   If a resource already exists and matches, its step is skipped.
-2. The step numbers are an **illustrative** order that respects the
-   dependencies. Steps on different branches overlap in time. Your
-   terminal will print them in a different order.
-3. After each resource finishes, Terraform writes it to the state
-   straight away. If a later resource fails, the finished ones stay
-   created and recorded.
-
-**Step 10: The resources that depend on nothing**
-
-- **What Terraform is doing:** Starting five resources at once.
-- **Code involved and values used:**
-
-| Resource | File | Key values | Why it is needed |
-|---|---|---|---|
-| `aws_vpc.main` | `network.tf` line 22 | `cidr_block = var.vpc_cidr` gives `10.0.0.0/16` | The private network that holds everything |
-| `aws_eip.nat` | `network.tf` line 75 | `domain = "vpc"` | A fixed public IP for the NAT gateway |
-| `aws_key_pair.main` | `compute.tf` line 6 | Name `questly-dev-key`, public key text from step 7 | Lets you log in to both servers over SSH |
-| `aws_iam_role.ec2` | `iam.tf` line 15 | Name `questly-dev-ec2-role`, policy JSON from step 6 | The identity the servers use for Session Manager |
-| `aws_acm_certificate.app` | `alb.tf` line 74 | `domain_name = var.app_domain_name`, `validation_method = "DNS"` | The HTTPS certificate for the app's domain |
-
-- **Why it happens now:** None of them refers to another resource. They
-  use only variables, locals, data sources and local files.
-- **Result:** AWS returns an ID for each. The certificate exists but is
-  not issued yet. AWS also returns the DNS record it wants as proof that
-  you own the domain.
-- **What waits for it:** Nearly everything waits for the VPC. The NAT
-  gateway waits for `aws_eip.nat`. Both instances wait for the key pair.
-  The policy attachment and the instance profile wait for the role. The
-  certificate validation waits for the certificate.
-
-**Step 11: The resources that need only the VPC, the role or the certificate**
-
-- **What Terraform is doing:** Starting everything that step 10
-  unlocked.
-- **Code involved and values used:**
-
-| Resource | File | Waits for | Why it is needed |
-|---|---|---|---|
-| `aws_internet_gateway.main` | `network.tf` line 30 | VPC | Connects the VPC to the internet |
-| `aws_subnet.public` (2) | `network.tf` line 40 | VPC | `10.0.0.0/24` and `10.0.1.0/24`: load balancer, NAT gateway, master |
-| `aws_subnet.private` (2) | `network.tf` line 56 | VPC | `10.0.10.0/24` and `10.0.11.0/24`: the agent |
-| `aws_security_group.alb`, `.master`, `.agent` | `security.tf` lines 13, 21, 29 | VPC | Three firewalls. They contain no rules yet. |
-| `aws_lb_target_group.frontend`, `.backend` | `alb.tf` lines 26, 41 | VPC | Where the load balancer forwards to: ports `30080` and `30081` |
-| `aws_iam_role_policy_attachment.ssm` | `iam.tf` line 20 | IAM role | Gives the role the Session Manager policy |
-| `aws_iam_instance_profile.ec2` | `iam.tf` line 25 | IAM role | The wrapper that lets an EC2 instance use the role |
-| `aws_acm_certificate_validation.app` | `alb.tf` line 86 | certificate | See step 19 |
-
-- **Why it happens now:** Each one has `vpc_id = aws_vpc.main.id`,
-  `role = aws_iam_role.ec2.name` or
-  `certificate_arn = aws_acm_certificate.app.arn`. Those values exist
-  only after step 10.
-- **Result:** The network's parts exist but are not connected by routes
-  yet. The security groups are empty.
-- **What waits for it:** Steps 12 to 20.
-
-**Step 12: The 13 security group rules**
-
-- **What Terraform is doing:** Adding rules to the three empty groups.
-  Each rule is its own resource.
-- **Code involved:** `security.tf` lines 41 to 168.
-- **Values used:** Ports from `terraform.tfvars`: `ssh_port = 22`,
-  `jenkins_port = 8080`, `alb_listener_port = 80`,
-  `alb_https_port = 443`, the two app ports and the two monitoring
-  ports. SSH and Jenkins on the master are opened only to the addresses
-  in `admin_cidrs`.
-- **Why it happens now:** Every rule has a `security_group_id`, so it
-  waits for its own group. Seven rules also name a second group in
-  `referenced_security_group_id`, so they wait for two groups. For
-  example `alb_to_frontend` (line 63) belongs to the ALB group and
-  points at the agent group.
-- **Result:** The load balancer may reach the agent's app ports, the
-  master may reach the agent over SSH, and both servers may send traffic
-  out (`master_all`, `agent_all`).
-- **What waits for it:** **Nothing.** No resource refers to a rule. This
-  matters for steps 16 and 20: Terraform does not make the instances
-  wait for their rules. In practice the rules take seconds and a server
-  takes much longer to boot.
-
-**Step 13: The public route table and its associations**
-
-- **What Terraform is doing:** Creating the route "all internet traffic
-  goes to the internet gateway", then attaching both public subnets to
-  it.
-- **Code involved:** `aws_route_table.public` (`network.tf` line 94),
-  then `aws_route_table_association.public` (line 105, 2 copies).
-- **Why it happens now:** The route table uses `aws_vpc.main.id` and
-  `aws_internet_gateway.main.id`. The associations use the subnets' IDs
-  and the route table's ID, so they come after it.
-- **Result:** The two public subnets can actually reach the internet.
-- **What waits for it:** Nothing refers to these associations.
-
-**Step 14: The NAT gateway**
-
-- **What Terraform is doing:** Creating the gateway that gives the
-  private subnets outbound internet access.
-- **Code involved:** `aws_nat_gateway.main` (`network.tf` line 81).
-- **Values used:** `allocation_id = aws_eip.nat.id` and
-  `subnet_id = aws_subnet.public[local.azs[0]].id`, which is the public
-  subnet in the first zone.
-- **Why it happens now:** It needs the IP from step 10 and a public
-  subnet from step 11. `depends_on` on line 87 also makes it wait for
-  the internet gateway.
-- **Result:** A working NAT gateway. *General Terraform behavior:* the
-  provider waits until AWS reports it as available, which typically
-  takes a minute or more. You see `Still creating...` lines.
-- **What waits for it:** The private route table (step 18), and through
-  it the agent.
-
-**Step 15: The load balancer**
-
-- **What Terraform is doing:** Creating the public Application Load
-  Balancer.
-- **Code involved:** `aws_lb.app` (`alb.tf` line 14).
-- **Values used:** Name `questly-dev-alb`,
-  `security_groups = [aws_security_group.alb.id]`,
-  `subnets = [for s in aws_subnet.public : s.id]`, which is both public
-  subnets.
-- **Why it happens now:** It needs the ALB security group and both
-  public subnets from step 11.
-- **Result:** A load balancer with a DNS name, but no listeners yet, so
-  it answers nothing. This is usually one of the slower resources.
-- **What waits for it:** Both listeners (step 19) and the `alb_dns_name`
-  output.
-
-**Step 16: The master server is launched, and its boot script is handed over**
-
-- **What Terraform is doing:** Asking AWS to start the Jenkins server.
-- **Code involved:** `aws_instance.master` (`compute.tf` line 15).
-- **Values used:**
-
-| Argument | Comes from | Value |
-|---|---|---|
-| `ami` | `data.aws_ssm_parameter.ubuntu_ami.value` | The image ID from step 6 |
-| `instance_type` | `var.master_instance_type` | `t3.medium` |
-| `subnet_id` | `aws_subnet.public[local.azs[0]].id` | The public subnet in the first zone |
-| `vpc_security_group_ids` | `aws_security_group.master.id` | The master's group |
-| `key_name` | `aws_key_pair.main.key_name` | `questly-dev-key` |
-| `iam_instance_profile` | `aws_iam_instance_profile.ec2.name` | `questly-dev-ec2-profile` |
-| `user_data` | `templatefile(".../scripts/master-userdata.sh", {...})` | The script text from step 7 |
-
-- **Why it happens now:** It needs the subnet, security group, key pair
-  and instance profile. All were created in steps 10 and 11.
-- **Result:** AWS reports the instance as running, and Terraform records
-  it. The script travels inside the launch request. **Terraform does not
-  run it** and never connects to the server.
-- **What waits for it:** `aws_eip.master` (step 17).
-
-Two details that are confirmed from the repository:
-
-- `templatefile()` is given five values, but the script contains no
-  `${...}` placeholders. So the script is sent exactly as written, and
-  those five values have no effect on it.
-- `lifecycle { ignore_changes = [ami, user_data] }` (lines 47 to 49)
-  means that once the master exists, a newer Ubuntu image or an edited
-  script does not cause Terraform to replace it.
-
-**Step 17: The master's public IP**
-
-- **What Terraform is doing:** Reserving a fixed public IP and attaching
-  it to the master.
-- **Code involved:** `aws_eip.master` (`compute.tf` line 52).
-- **Why it happens now:** `instance = aws_instance.master.id` needs the
-  instance. `depends_on` on line 58 also names the internet gateway.
-- **Result:** The master is reachable from the addresses in
-  `admin_cidrs`. Before this step it has no public IP, because the
-  public subnets set `map_public_ip_on_launch = false`.
-- **What waits for it:** The outputs `master_public_ip`, `jenkins_url`,
-  `ssh_master`, `ssh_agent` and `monitoring_tunnel`.
-
-The master's boot script needs the internet, which needs this IP and the
-routes from step 13. The master does not depend on either of them, so
-Terraform does not guarantee they exist before the server boots. They
-are quick to create, but it is timing, not a dependency.
-
-**Step 18: The private route table and its associations**
-
-- **What Terraform is doing:** Creating the route "all internet traffic
-  goes to the NAT gateway", then attaching both private subnets to it.
-- **Code involved:** `aws_route_table.private` (`network.tf` line 112),
-  then `aws_route_table_association.private` (line 123, 2 copies).
-- **Why it happens now:** The route uses `aws_nat_gateway.main.id`, so
-  it must wait for the slow step 14.
-- **Result:** Anything in a private subnet can now reach the internet,
-  outbound only.
-- **What waits for it:** The agent (step 20), through `depends_on`.
-
-**Step 19: The certificate is confirmed, then the listeners and the API rule**
-
-- **What Terraform is doing:** Waiting for the certificate, then telling
-  the load balancer what to do with requests.
-- **Code involved and values used:**
-
-| Resource | File | Waits for | What it does |
-|---|---|---|---|
-| `aws_acm_certificate_validation.app` | `alb.tf` line 86 | certificate | Creates nothing. It waits until AWS marks the certificate as issued. |
-| `aws_lb_listener.http` | `alb.tf` line 94 | load balancer | Port `80`: redirects every request to HTTPS |
-| `aws_lb_listener.https` | `alb.tf` line 110 | load balancer, **validation**, frontend target group | Port `443`: sends requests to the frontend |
-| `aws_lb_listener_rule.api` | `alb.tf` line 123 | HTTPS listener, backend target group | Sends `/api/*` to the backend |
-
-- **Why it happens now:** The HTTPS listener takes its certificate from
-  `aws_acm_certificate_validation.app.certificate_arn`, not from the
-  certificate directly. That one reference is what forces "issued"
-  before "listener".
-- **Result:** The load balancer accepts HTTPS for the configured domain.
-- **What waits for it:** Nothing else.
-
-AWS issues the certificate only after it finds a specific DNS record for
-your domain. *Confirmed from repository:* no resource in this project
-creates that record. The `acm_validation_record` output prints it so it
-can be added at the DNS provider by hand. *General Terraform behavior:*
-if the record is not there, the validation resource keeps waiting and
-eventually fails. The HTTPS listener and the API rule wait behind it.
-Resources on other branches are not blocked. *Not checked:* whether the
-record exists in your DNS.
-
-**Step 20: The agent server is launched**
-
-- **What Terraform is doing:** Asking AWS to start the server that will
-  run the kind cluster.
-- **Code involved:** `aws_instance.agent` (`compute.tf` line 65).
-- **Values used:** The same image, key pair and instance profile as the
-  master. `instance_type = var.agent_instance_type` gives `t3.medium`.
-  `subnet_id = aws_subnet.private[local.azs[0]].id` puts it in the
-  private subnet of the first zone. `user_data` is
-  `scripts/agent-userdata.sh`.
-- **Why it happens now:** Its arguments need only things from steps 10
-  and 11. What holds it back is line 102:
-  `depends_on = [aws_route_table_association.private]`. The boot script
-  downloads Docker, kind and kubectl. A server in a private subnet can
-  do that only when the route through the NAT gateway exists.
-- **Result:** The instance is running. Its boot script was handed over
-  the same way as the master's.
-- **What waits for it:** The two target group attachments (step 21) and
-  the outputs `agent_private_ip`, `ssh_agent` and `monitoring_tunnel`.
-
-Confirmed from the repository, as for the master: the agent script has
-no `${...}` placeholders, so the six values passed to `templatefile()`
-do not change it. For example, it downloads the latest kind and the
-latest stable kubectl whatever `kind_version` and `kubectl_version` say.
-The agent also has `ignore_changes = [ami, user_data]`.
-
-**Step 21: The agent is registered with the load balancer**
-
-- **What Terraform is doing:** Adding the agent to both target groups.
-- **Code involved:** `aws_lb_target_group_attachment.frontend` and
-  `.backend` (`alb.tf` lines 56 and 62).
-- **Values used:** `target_id = aws_instance.agent.id`, with ports
-  `30080` and `30081`.
-- **Why it happens now:** It needs the agent's ID. That makes these two
-  the end of the longest chain.
-- **Result:** The load balancer knows where to send traffic.
-- **What waits for it:** Nothing.
-
-### Part C: finishing (steps 22 to 24)
-
-**Step 22: The outputs are worked out**
-
-- **What Terraform is doing:** Evaluating the 13 `output` blocks and the
-  3 locals in `outputs.tf`.
-- **Why it happens now:** Outputs use values from finished resources,
-  for example `aws_eip.master.public_ip` and
-  `aws_instance.agent.private_ip`.
-- **Result:** The values are saved in the state.
-
-**Step 23: The state is saved and unlocked**
-
-- **What Terraform is doing:** Writing the final state, removing the
-  lock, and printing the summary line and the outputs.
-- **Result:** `Apply complete! Resources: X added, Y changed, Z
-  destroyed.` The numbers match the plan you approved.
-
-**Step 24: The boot scripts run inside the servers. This is not Terraform.**
-
-- **What is happening:** Terraform has already exited. Inside each new
-  server, a program called cloud-init, which is part of the Ubuntu
-  image, runs the script it was given at launch. It runs once, on the
-  first boot.
-- **Code involved:** `scripts/master-userdata.sh` installs Java and
-  Jenkins and starts Jenkins. `scripts/agent-userdata.sh` installs Java,
-  Docker, Docker Compose, kind and kubectl.
-- **Result:** Some minutes after `Apply complete!`, the software is
-  installed, if the script succeeded. Terraform does not know whether it
-  did. Section 6 shows how to check.
+- The DNS record for certificate approval (you add it)
+- The DNS record that points your domain at the load balancer (you add
+  it)
+- The software inside the servers (the boot scripts install it after
+  Terraform is done)
+- The Questly app itself (deployed later)
 
 ---
 
-## 3. Dependency stages
+# PART 2: The order of creation
 
-The stages below group the 47 resources by how many dependency steps
-they are from the start. They are **illustrative**. A resource in
-stage 3 does not wait for all of stage 2. It waits only for the specific
-resources named in its "Waits for" column. Resources in the same stage
-never depend on each other, which is why they can run in parallel.
+## How Terraform decides the order
 
-| Stage | Resources | Count | Waits for (the reference that creates the dependency) |
+Terraform does **not** go file by file. It reads all the `.tf` files
+together, then looks at which resource needs a value from which other
+resource. A resource is created as soon as everything it needs exists.
+
+Example: a subnet needs the VPC's ID, so the VPC comes first. The key
+pair needs nothing, so it can start right away.
+
+Resources that do not need each other are created **at the same time**.
+So the list below is grouped into stages. Inside one stage, the items
+run together and can finish in any order. A later stage waits for
+something in an earlier stage.
+
+## The order
+
+**Before creating anything**
+
+| No. | What happens |
+|---|---|
+| 0 | Terraform reads the code and values, looks up the Ubuntu image and the zones, makes the plan, and waits for you to type `yes` |
+
+**Stage A: things that need nothing. They all start together.**
+
+| No. | What | Terraform name |
+|---|---|---|
+| 1 | VPC | `aws_vpc.main` |
+| 2 | Elastic IP for the NAT gateway | `aws_eip.nat` |
+| 3 | SSH key pair | `aws_key_pair.main` |
+| 4 | IAM role | `aws_iam_role.ec2` |
+| 5 | Certificate request | `aws_acm_certificate.app` |
+
+**Stage B: things that need only the VPC or the IAM role**
+
+| No. | What | Terraform name | Needs |
 |---|---|---|---|
-| 1 | `aws_vpc.main`, `aws_eip.nat`, `aws_key_pair.main`, `aws_iam_role.ec2`, `aws_acm_certificate.app` | 5 | No resource |
-| 2 | `aws_internet_gateway.main`, `aws_subnet.public` (2), `aws_subnet.private` (2), `aws_security_group.alb`/`.master`/`.agent`, `aws_lb_target_group.frontend`/`.backend` | 10 | `vpc_id = aws_vpc.main.id` |
-| 2 | `aws_iam_role_policy_attachment.ssm`, `aws_iam_instance_profile.ec2` | 2 | `role = aws_iam_role.ec2.name` |
-| 2 | `aws_acm_certificate_validation.app` | 1 | `certificate_arn = aws_acm_certificate.app.arn` |
-| 3 | 13 security group rules | 13 | `security_group_id` and, for 7 of them, `referenced_security_group_id` |
-| 3 | `aws_route_table.public` | 1 | `aws_vpc.main.id`, `aws_internet_gateway.main.id` |
-| 3 | `aws_nat_gateway.main` | 1 | `aws_eip.nat.id`, `aws_subnet.public[...].id`, `depends_on` internet gateway |
-| 3 | `aws_lb.app` | 1 | `aws_security_group.alb.id`, both `aws_subnet.public` IDs |
-| 3 | `aws_instance.master` | 1 | public subnet, `aws_security_group.master.id`, `aws_key_pair.main.key_name`, `aws_iam_instance_profile.ec2.name` |
-| 4 | `aws_route_table_association.public` (2) | 2 | `aws_subnet.public`, `aws_route_table.public.id` |
-| 4 | `aws_route_table.private` | 1 | `aws_vpc.main.id`, `aws_nat_gateway.main.id` |
-| 4 | `aws_eip.master` | 1 | `aws_instance.master.id`, `depends_on` internet gateway |
-| 4 | `aws_lb_listener.http` | 1 | `aws_lb.app.arn` |
-| 4 | `aws_lb_listener.https` | 1 | `aws_lb.app.arn`, `aws_acm_certificate_validation.app.certificate_arn`, `aws_lb_target_group.frontend.arn` |
-| 5 | `aws_route_table_association.private` (2) | 2 | `aws_subnet.private`, `aws_route_table.private.id` |
-| 5 | `aws_lb_listener_rule.api` | 1 | `aws_lb_listener.https.arn`, `aws_lb_target_group.backend.arn` |
-| 6 | `aws_instance.agent` | 1 | private subnet, `aws_security_group.agent.id`, key pair, instance profile, `depends_on` private associations |
-| 7 | `aws_lb_target_group_attachment.frontend`, `.backend` | 2 | target group ARN, `aws_instance.agent.id` |
+| 6 | Internet gateway | `aws_internet_gateway.main` | 1 |
+| 7 | 2 public subnets | `aws_subnet.public` | 1 |
+| 8 | 2 private subnets | `aws_subnet.private` | 1 |
+| 9 | 3 security groups | `aws_security_group.alb`, `.master`, `.agent` | 1 |
+| 10 | 2 target groups | `aws_lb_target_group.frontend`, `.backend` | 1 |
+| 11 | Policy attachment | `aws_iam_role_policy_attachment.ssm` | 4 |
+| 12 | Instance profile | `aws_iam_instance_profile.ec2` | 4 |
 
-5 + 13 + 17 + 6 + 3 + 1 + 2 = 47.
+**Stage C: things that need Stage B**
 
-The same graph as a picture. An arrow means "must exist first".
+| No. | What | Terraform name | Needs |
+|---|---|---|---|
+| 13 | 13 security group rules | `aws_vpc_security_group_ingress_rule.*`, `aws_vpc_security_group_egress_rule.*` | 9 |
+| 14 | Public route table | `aws_route_table.public` | 1, 6 |
+| 15 | 2 public route table associations | `aws_route_table_association.public` | 7, 14 |
+| 16 | NAT gateway | `aws_nat_gateway.main` | 2, 6, 7 |
+| 17 | Load balancer | `aws_lb.app` | 7, 9 |
+| 18 | **Master EC2** | `aws_instance.master` | 3, 7, 9, 12 |
+| 19 | Elastic IP for the master | `aws_eip.master` | 6, 18 |
+
+**Stage D: the private side, which waits for the NAT gateway**
+
+| No. | What | Terraform name | Needs |
+|---|---|---|---|
+| 20 | Private route table | `aws_route_table.private` | 1, 16 |
+| 21 | 2 private route table associations | `aws_route_table_association.private` | 8, 20 |
+| 22 | **Agent EC2** | `aws_instance.agent` | 3, 8, 9, 12, 21 |
+| 23 | 2 target group attachments | `aws_lb_target_group_attachment.frontend`, `.backend` | 10, 22 |
+
+**Stage E: opening the load balancer to visitors**
+
+| No. | What | Terraform name | Needs |
+|---|---|---|---|
+| 24 | HTTP listener (port 80) | `aws_lb_listener.http` | 17 |
+| 25 | DNS record for the certificate | **manual, you add it** | 5 |
+| 26 | Certificate validation (the wait) | `aws_acm_certificate_validation.app` | 5, 25 |
+| 27 | HTTPS listener (port 443) | `aws_lb_listener.https` | 10, 17, 26 |
+| 28 | `/api/*` rule | `aws_lb_listener_rule.api` | 10, 27 |
+
+**After everything is created**
+
+| No. | What happens |
+|---|---|
+| 29 | Terraform prints the outputs, saves the state, and says `Apply complete!` |
+| 30 | Inside each server, the boot script installs the software. Terraform is not involved. |
+
+## Three things to remember about this order
+
+- **The stages overlap.** Stage E does not wait for Stage D. The
+  certificate branch (5 → 25 → 26 → 27 → 28) runs alongside the network
+  branch. Only the "Needs" column is fixed.
+- **The slowest chain is 1 → 7 → 16 → 20 → 21 → 22 → 23.** The NAT
+  gateway is slow to build, and the agent must wait for it. So the agent
+  and its attachments usually finish last on the network side.
+- **Number 26 can hold up 27 and 28.** If the DNS record (25) is not
+  there, Terraform keeps waiting at 26 and finally gives up. Everything
+  else still gets created.
+
+The same order as a picture. An arrow means "must exist first".
 
 ```mermaid
 graph TD
-  vpc["aws_vpc.main"]
-  eipnat["aws_eip.nat"]
-  key["aws_key_pair.main"]
-  role["aws_iam_role.ec2"]
-  cert["aws_acm_certificate.app"]
+  vpc["1 aws_vpc.main"]
+  eipnat["2 aws_eip.nat"]
+  key["3 aws_key_pair.main"]
+  role["4 aws_iam_role.ec2"]
+  cert["5 aws_acm_certificate.app"]
 
-  igw["aws_internet_gateway.main"]
-  subpub["aws_subnet.public (2)"]
-  subpriv["aws_subnet.private (2)"]
-  sgalb["aws_security_group.alb"]
-  sgmaster["aws_security_group.master"]
-  sgagent["aws_security_group.agent"]
-  tgfe["aws_lb_target_group.frontend"]
-  tgbe["aws_lb_target_group.backend"]
-  attach["aws_iam_role_policy_attachment.ssm"]
-  profile["aws_iam_instance_profile.ec2"]
-  certval["aws_acm_certificate_validation.app"]
+  igw["6 aws_internet_gateway.main"]
+  subpub["7 aws_subnet.public"]
+  subpriv["8 aws_subnet.private"]
+  sg["9 aws_security_group alb, master, agent"]
+  tg["10 aws_lb_target_group frontend, backend"]
+  attach["11 aws_iam_role_policy_attachment.ssm"]
+  profile["12 aws_iam_instance_profile.ec2"]
 
   rules["13 security group rules"]
-  rtpub["aws_route_table.public"]
-  nat["aws_nat_gateway.main"]
-  alb["aws_lb.app"]
-  master["aws_instance.master"]
+  rtpub["14 aws_route_table.public"]
+  rtapub["15 aws_route_table_association.public"]
+  nat["16 aws_nat_gateway.main"]
+  alb["17 aws_lb.app"]
+  master["18 aws_instance.master"]
+  eipmaster["19 aws_eip.master"]
 
-  rtapub["aws_route_table_association.public (2)"]
-  rtpriv["aws_route_table.private"]
-  eipmaster["aws_eip.master"]
-  lhttp["aws_lb_listener.http"]
-  lhttps["aws_lb_listener.https"]
+  rtpriv["20 aws_route_table.private"]
+  rtapriv["21 aws_route_table_association.private"]
+  agent["22 aws_instance.agent"]
+  tga["23 aws_lb_target_group_attachment"]
 
-  rtapriv["aws_route_table_association.private (2)"]
-  apirule["aws_lb_listener_rule.api"]
-  agent["aws_instance.agent"]
-  tga["aws_lb_target_group_attachment.frontend / .backend"]
+  lhttp["24 aws_lb_listener.http"]
+  dns["25 DNS record, added by you"]
+  certval["26 aws_acm_certificate_validation.app"]
+  lhttps["27 aws_lb_listener.https"]
+  apirule["28 aws_lb_listener_rule.api"]
 
   vpc --> igw
   vpc --> subpub
   vpc --> subpriv
-  vpc --> sgalb
-  vpc --> sgmaster
-  vpc --> sgagent
-  vpc --> tgfe
-  vpc --> tgbe
+  vpc --> sg
+  vpc --> tg
   role --> attach
   role --> profile
-  cert --> certval
 
-  sgalb --> rules
-  sgmaster --> rules
-  sgagent --> rules
-
+  sg --> rules
   vpc --> rtpub
   igw --> rtpub
   subpub --> rtapub
   rtpub --> rtapub
-
   eipnat --> nat
   subpub --> nat
-  igw -. depends_on .-> nat
+  igw --> nat
+  sg --> alb
+  subpub --> alb
+  subpub --> master
+  sg --> master
+  key --> master
+  profile --> master
+  master --> eipmaster
+  igw --> eipmaster
 
   vpc --> rtpriv
   nat --> rtpriv
   subpriv --> rtapriv
   rtpriv --> rtapriv
-
-  sgalb --> alb
-  subpub --> alb
-  alb --> lhttp
-  alb --> lhttps
-  certval --> lhttps
-  tgfe --> lhttps
-  lhttps --> apirule
-  tgbe --> apirule
-
-  subpub --> master
-  sgmaster --> master
-  key --> master
-  profile --> master
-  master --> eipmaster
-  igw -. depends_on .-> eipmaster
-
   subpriv --> agent
-  sgagent --> agent
+  sg --> agent
   key --> agent
   profile --> agent
-  rtapriv -. depends_on .-> agent
-
-  tgfe --> tga
-  tgbe --> tga
+  rtapriv --> agent
+  tg --> tga
   agent --> tga
+
+  alb --> lhttp
+  cert --> dns
+  cert --> certval
+  dns --> certval
+  alb --> lhttps
+  tg --> lhttps
+  certval --> lhttps
+  lhttps --> apirule
+  tg --> apirule
 ```
-
-Three things the graph shows:
-
-- **Four independent branches start at once:** the network (from the
-  VPC), the SSH key, the IAM role, and the certificate.
-- **The certificate branch joins late.** It touches nothing else until
-  the HTTPS listener.
-- **Nothing depends on the security group rules, the public route table
-  associations or the policy attachment.** Terraform finishes them
-  before it reports success, but no other resource waits for them.
 
 ---
 
-## 4. One end-to-end dependency chain
+# PART 3: One by one, how Terraform creates each
 
-The longest chain in the graph has seven links. It explains why the
-agent and its load balancer registration finish last.
+The numbers match Part 2.
 
-```
-aws_vpc.main
-   │  network.tf line 43:   vpc_id = aws_vpc.main.id
-   ▼
-aws_subnet.public[<first zone>]
-   │  network.tf line 83:   subnet_id = aws_subnet.public[local.azs[0]].id
-   ▼
-aws_nat_gateway.main           (also needs aws_eip.nat, line 82,
-   │                            and the internet gateway, line 87)
-   │  network.tf line 117:  nat_gateway_id = aws_nat_gateway.main.id
-   ▼
-aws_route_table.private
-   │  network.tf line 127:  route_table_id = aws_route_table.private.id
-   ▼
-aws_route_table_association.private   (2 copies)
-   │  compute.tf line 102:  depends_on = [aws_route_table_association.private]
-   ▼
-aws_instance.agent
-   │  alb.tf lines 58, 64:  target_id = aws_instance.agent.id
-   ▼
-aws_lb_target_group_attachment.frontend and .backend
-```
+Every resource goes through the same five moves. Each section below
+fills in the details.
 
-Read it as cause and effect:
+1. **Wait** until what it needs exists.
+2. **Fill in** its settings from `terraform.tfvars` and from the
+   resources already created.
+3. **Ask** AWS to create it.
+4. **Receive** the new resource's ID from AWS.
+5. **Save** it in the state file, which unlocks whatever was waiting for
+   it.
 
-1. The NAT gateway must sit in a public subnet. Therefore it waits for
-   the subnet, which waits for the VPC.
-2. The private route points at the NAT gateway. Therefore it waits for
-   the NAT gateway, which is slow.
-3. The private subnets must be attached to that route before anything in
-   them can reach the internet.
-4. The agent's boot script downloads software. The agent's own arguments
-   do not mention the route, so Terraform would not see this need. The
-   `depends_on` line states it by hand.
-5. The load balancer can only register a server that exists. Therefore
-   the attachments wait for the agent.
-
-Every link except the fourth is an implicit dependency.
+One more thing applies to all of them: Terraform creates a resource only
+if the plan says it is missing. If it already exists and matches the
+code, Terraform skips it.
 
 ---
 
-## 5. Where key values come from
+## 0. Before anything is created
 
-Only the values that shape the sequence are traced here.
+Nothing in AWS changes during this step.
 
-**The name prefix.** It needs no resource, so it is known in step 7.
+1. You open a terminal in the `terraform/` folder and run
+   `terraform apply`. The folder must already be set up with
+   `terraform init`. `apply` does not do that for you.
+2. Terraform reads **all nine `.tf` files together** and treats them as
+   one: `versions.tf`, `providers.tf`, `variables.tf`, `network.tf`,
+   `security.tf`, `iam.tf`, `compute.tf`, `alb.tf`, `outputs.tf`. The
+   file names and the order of the files do not matter.
+3. It reads `terraform.tfvars` and gives each of the 45 variables its
+   value. For example `project_name = "questly"`, `environment = "dev"`,
+   `vpc_cidr = "10.0.0.0/16"`, `master_instance_type = "t3.medium"`.
+4. It locks the state file in S3, so nobody else can run Terraform at
+   the same moment, and reads it. The state is Terraform's list of what
+   it has already created.
+5. It connects to AWS in region `ap-south-1`, using the AWS credentials
+   on your laptop. Every resource will automatically get three tags:
+   `Project = questly`, `Environment = dev`, `ManagedBy = terraform`.
+6. It looks up three things. These are lookups only. They create
+   nothing.
 
+   | Lookup | In file | What it gets |
+   |---|---|---|
+   | `data.aws_availability_zones.available` | `network.tf` | The zone names in Mumbai. The code keeps the first 2, because `az_count = 2`. |
+   | `data.aws_ssm_parameter.ubuntu_ami` | `compute.tf` | The ID of the newest Ubuntu 24.04 image |
+   | `data.aws_iam_policy_document.ec2_assume_role` | `iam.tf` | A small permission text, built on your laptop |
+
+7. It works out the values it can already know:
+
+   ```
+   name prefix      = "questly-dev"
+   public subnets   = 10.0.0.0/24  and 10.0.1.0/24   (one per zone)
+   private subnets  = 10.0.10.0/24 and 10.0.11.0/24  (one per zone)
+   ```
+
+8. It reads three files from your laptop: your public key file
+   (`~/.ssh/id_ed25519.pub`) and the two boot scripts in `scripts/`.
+9. It compares the code with the state and builds the **plan**: a list
+   of what to create, change or delete. On a first run that is
+   `Plan: 47 to add`.
+10. It shows the plan and waits. You type `yes`.
+
+Now the creation starts.
+
+---
+
+# Stage A: things that need nothing
+
+These five start at the same moment.
+
+## 1. The VPC (`aws_vpc.main`)
+
+**What it is:** your own private network in AWS. Everything else is
+built inside it. It is separate from the default VPC that every AWS
+account has.
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_vpc" "main" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  tags = { Name = "${local.name}-vpc" }
+}
 ```
-terraform.tfvars   project_name = "questly", environment = "dev"
-      → variables.tf   variable "project_name", variable "environment"
-      → network.tf line 15   local.name = "${var.project_name}-${var.environment}"
-      → "questly-dev"
-      → names such as questly-dev-vpc, questly-dev-key, questly-dev-alb
+
+**How Terraform creates it:**
+
+1. It needs nothing else, so it starts immediately.
+2. It takes `vpc_cidr = "10.0.0.0/16"` from `terraform.tfvars` and
+   builds the name `questly-dev-vpc`.
+3. It asks AWS: "create a VPC with the address range `10.0.0.0/16`".
+4. AWS creates it and replies with an ID that looks like `vpc-0abc...`.
+5. Terraform turns on the two DNS settings and adds the tags.
+6. It saves the VPC and its ID in the state.
+
+**What can start now:** the internet gateway, the 4 subnets, the 3
+security groups, the 2 target groups and both route tables all need this
+ID.
+
+## 2. The Elastic IP for the NAT gateway (`aws_eip.nat`)
+
+**What it is:** a fixed public IP address, reserved for your account.
+The NAT gateway will use it.
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_eip" "nat" {
+  domain = "vpc"
+
+  tags = { Name = "${local.name}-nat-eip" }
+}
 ```
 
-**The subnet ranges.** Known in step 7, which is why the subnets can
-start as soon as the VPC exists.
+**How Terraform creates it:**
 
-```
-terraform.tfvars   vpc_cidr = "10.0.0.0/16", subnet_newbits = 8, offsets 0 and 10
-      + data.aws_availability_zones.available (asked from AWS) and az_count = 2
-      → network.tf lines 16 to 19   local.azs, local.public_subnets, local.private_subnets
-      → for_each on aws_subnet.public and aws_subnet.private
-      → 4 subnets: 10.0.0.0/24, 10.0.1.0/24, 10.0.10.0/24, 10.0.11.0/24
-```
+1. It needs nothing else, so it starts immediately.
+2. It asks AWS: "reserve one public IP address".
+3. AWS picks an address and replies with it and an ID.
+4. Terraform saves it in the state. It is not attached to anything yet.
 
-**The VPC ID.** This is the value that orders most of the graph. AWS
-chooses it, so it is unknown until step 10.
+**What can start now:** nothing yet. The NAT gateway (16) also needs a
+public subnet.
 
-```
-AWS creates the VPC and returns its ID
-      → saved in the state as aws_vpc.main.id
-      → vpc_id on the gateway, 4 subnets, 2 route tables, 3 security groups, 2 target groups
-```
+## 3. The SSH key pair (`aws_key_pair.main`)
 
-**The server image.** Looked up in step 6, so it never delays the
-instances.
+**What it is:** AWS's copy of your SSH **public** key, saved under the
+name `questly-dev-key`. Both servers will use it so that you can log in.
 
-```
-terraform.tfvars   ami_ssm_parameter = "/aws/service/canonical/ubuntu/server/24.04/..."
-      → compute.tf line 2   data.aws_ssm_parameter.ubuntu_ami
-      → compute.tf lines 16 and 66   ami = data.aws_ssm_parameter.ubuntu_ami.value
+**The code** (`compute.tf`):
+
+```hcl
+resource "aws_key_pair" "main" {
+  key_name   = "${local.name}-key"
+  public_key = file(pathexpand(var.ssh_public_key_path))
+}
 ```
 
-**The SSH key.** Four different things are involved:
+**How Terraform creates it:**
 
-| Thing | Where it is | What Terraform does with it |
+1. In step 0, Terraform already read the text of your public key file
+   from `~/.ssh/id_ed25519.pub`. If that file were missing, Terraform
+   would have stopped there.
+2. It needs no other resource, so it starts immediately.
+3. It sends AWS two things: the name `questly-dev-key` and the text of
+   the public key.
+4. AWS stores the key under that name.
+5. Terraform saves it in the state.
+
+**Important:** only the **public** key goes to AWS. Your private key
+(`id_ed25519`, without `.pub`) stays on your laptop. Terraform never
+reads it. Your SSH program uses it later when you connect.
+
+**What can start now:** nothing yet. Both servers need this key, but
+they also need other things.
+
+## 4. The IAM role (`aws_iam_role.ec2`)
+
+**What it is:** an identity that the servers can use to talk to AWS
+services, without storing any passwords or access keys on them.
+
+**The code** (`iam.tf`):
+
+```hcl
+resource "aws_iam_role" "ec2" {
+  name               = "${local.name}-ec2-role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
+}
+```
+
+**How Terraform creates it:**
+
+1. In step 0, Terraform already built the permission text that says
+   "EC2 servers are allowed to use this role".
+2. It needs no other resource, so it starts immediately.
+3. It asks AWS: "create a role named `questly-dev-ec2-role` with this
+   permission text".
+4. AWS creates the role. It has no permissions yet.
+5. Terraform saves it in the state.
+
+**What can start now:** the policy attachment (11) and the instance
+profile (12).
+
+## 5. The certificate request (`aws_acm_certificate.app`)
+
+**What it is:** a request to AWS Certificate Manager (ACM) for an HTTPS
+certificate for your domain. A certificate is what makes the browser
+show the padlock.
+
+**The code** (`alb.tf`):
+
+```hcl
+resource "aws_acm_certificate" "app" {
+  domain_name       = var.app_domain_name
+  validation_method = "DNS"
+
+  tags = { Name = "${local.name}-cert" }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+```
+
+**How Terraform creates it:**
+
+1. It needs no other resource, so it starts immediately, at the same
+   time as the VPC.
+2. It takes `app_domain_name = "questly.kumardevops.online"` from
+   `terraform.tfvars`.
+3. It asks AWS: "I want a certificate for this domain, and I will prove
+   I own the domain with a DNS record".
+4. AWS creates the certificate with the status **Pending validation**.
+   It is **not approved yet** and cannot be used yet.
+5. AWS also replies with the details of one DNS record. AWS will approve
+   the certificate only after it sees that record on your domain.
+6. Terraform saves the certificate and the record details in the state.
+
+**What can start now:** the certificate validation (26) starts waiting.
+The story continues at number 25.
+
+---
+
+# Stage B: things that need only the VPC or the IAM role
+
+## 6. The internet gateway (`aws_internet_gateway.main`)
+
+**What it is:** the door between the VPC and the internet. Without it,
+nothing inside the VPC can reach the internet.
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = { Name = "${local.name}-igw" }
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for the VPC (1), because of the line
+   `vpc_id = aws_vpc.main.id`.
+2. Terraform puts the real VPC ID into that line.
+3. It asks AWS: "create an internet gateway and attach it to this VPC".
+4. AWS creates it and replies with its ID.
+5. Terraform saves it in the state.
+
+**What can start now:** the public route table (14). The NAT gateway
+(16) and the master's Elastic IP (19) also wait for this.
+
+## 7. The 2 public subnets (`aws_subnet.public`)
+
+**What it is:** a subnet is a smaller section of the VPC, in one zone.
+The public ones hold things that face the internet: the load balancer,
+the NAT gateway and the master.
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_subnet" "public" {
+  for_each = local.public_subnets
+
+  vpc_id            = aws_vpc.main.id
+  availability_zone = each.key
+  cidr_block        = each.value
+
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name = "${local.name}-public-${each.key}"
+    Tier = "public"
+  }
+}
+```
+
+`for_each` means "make one copy of this block for each entry". There are
+two entries, so there are two subnets:
+
+| Subnet | Zone | Address range |
 |---|---|---|
-| Public key file | Your laptop, at the path in `ssh_public_key_path` | Reads its text in step 7 |
-| `aws_key_pair.main` | AWS | Stores that text under the name `questly-dev-key` (step 10) |
-| `key_name` on both instances | AWS | Tells AWS to install that public key for the login user at first boot (steps 16 and 20) |
-| Private key file | Your laptop | **Never read by Terraform.** Your SSH client uses it when you connect. |
+| First public subnet | first zone | `10.0.0.0/24` |
+| Second public subnet | second zone | `10.0.1.0/24` |
 
-```
-terraform.tfvars   ssh_public_key_path = "~/.ssh/id_ed25519.pub"
-      → compute.tf line 8   public_key = file(pathexpand(var.ssh_public_key_path))
-      → aws_key_pair.main.key_name
-      → compute.tf lines 20 and 70   key_name on aws_instance.master and aws_instance.agent
-```
+**How Terraform creates them:**
 
-`outputs.tf` line 3 builds `local.ssh_private_key_path` by removing
-`.pub` from the same path. That is only text for the printed `ssh`
-commands. Terraform does not open that file. *Not checked:* whether
-either key file exists on your laptop.
+1. They wait for the VPC (1).
+2. The zones and address ranges were already worked out in step 0.
+3. Terraform asks AWS twice, at the same time: "create a subnet in this
+   VPC, in this zone, with this range".
+4. AWS creates both and replies with two subnet IDs.
+5. Terraform saves both in the state.
 
-**The instance profile.** A two-link chain that both instances wait for.
+`map_public_ip_on_launch = false` means a server started here does not
+get a public IP automatically. That is why the master gets a separate
+Elastic IP (19).
 
-```
-iam.tf line 15   aws_iam_role.ec2
-      → iam.tf line 27   aws_iam_instance_profile.ec2 (role = aws_iam_role.ec2.name)
-      → compute.tf lines 21 and 71   iam_instance_profile = aws_iam_instance_profile.ec2.name
-```
+**What can start now:** the NAT gateway (16) and the master (18) use the
+first public subnet. The load balancer (17) uses both. The public
+associations (15) use both.
 
-**The domain and the certificate.** This is what gates HTTPS.
+## 8. The 2 private subnets (`aws_subnet.private`)
 
-```
-terraform.tfvars   app_domain_name = "questly.kumardevops.online"
-      → alb.tf line 75    aws_acm_certificate.app (domain_name)
-      → alb.tf line 87    aws_acm_certificate_validation.app (waits until issued)
-      → alb.tf line 115   aws_lb_listener.https (certificate_arn)
-      → alb.tf line 124   aws_lb_listener_rule.api (listener_arn)
-```
+**What it is:** sections of the VPC for things that must not be
+reachable from the internet. The agent goes here.
 
-**The app ports.** One value is used in three places, which keeps the
-firewall, the load balancer and the registration in agreement.
+**The code** (`network.tf`):
 
-```
-terraform.tfvars   frontend_node_port = 30080
-      → security.tf   the ALB egress rule and the agent ingress rule
-      → alb.tf line 28   aws_lb_target_group.frontend (port)
-      → alb.tf line 59   aws_lb_target_group_attachment.frontend (port)
+```hcl
+resource "aws_subnet" "private" {
+  for_each = local.private_subnets
+
+  vpc_id            = aws_vpc.main.id
+  availability_zone = each.key
+  cidr_block        = each.value
+
+  tags = {
+    Name = "${local.name}-private-${each.key}"
+    Tier = "private"
+  }
+}
 ```
 
-**The boot scripts.**
+| Subnet | Zone | Address range |
+|---|---|---|
+| First private subnet | first zone | `10.0.10.0/24` |
+| Second private subnet | second zone | `10.0.11.0/24` |
 
+**How Terraform creates them:**
+
+1. They wait for the VPC (1).
+2. Terraform asks AWS twice: "create a subnet in this VPC, in this zone,
+   with this range".
+3. AWS creates both and replies with two subnet IDs.
+4. Terraform saves both in the state.
+
+**What can start now:** the private associations (21) use both. The
+agent (22) uses the first one.
+
+## 9. The 3 security groups (`aws_security_group.alb`, `.master`, `.agent`)
+
+**What it is:** a security group is a firewall attached to a resource.
+There is one for each server and one for the load balancer.
+
+**The code** (`security.tf`). All three look the same:
+
+```hcl
+resource "aws_security_group" "master" {
+  name        = "${local.name}-master-sg"
+  description = "Jenkins controller"
+  vpc_id      = aws_vpc.main.id
+
+  tags = { Name = "${local.name}-master-sg" }
+}
 ```
-scripts/master-userdata.sh, scripts/agent-userdata.sh   (files on your laptop)
-      → compute.tf lines 23 and 73   user_data = templatefile(...)
-      → sent to AWS inside the request that launches the instance
-      → run by cloud-init inside the instance on first boot
+
+| Security group | Name in AWS | Protects |
+|---|---|---|
+| `aws_security_group.master` | `questly-dev-master-sg` | The master EC2 |
+| `aws_security_group.agent` | `questly-dev-agent-sg` | The agent EC2 |
+| `aws_security_group.alb` | `questly-dev-alb-sg` | The load balancer |
+
+**How Terraform creates them:**
+
+1. They wait for the VPC (1).
+2. Terraform asks AWS three times, at the same time: "create a security
+   group with this name in this VPC".
+3. AWS creates each and replies with an ID like `sg-0abc...`.
+4. Terraform saves all three in the state.
+
+At this point the groups are **empty**. They allow nothing in and
+nothing out. The rules are added separately in number 13. They are
+separate because some rules point from one group to another, and both
+groups must exist first.
+
+**What can start now:** the 13 rules (13), the load balancer (17), the
+master (18) and the agent (22).
+
+## 10. The 2 target groups (`aws_lb_target_group.frontend`, `.backend`)
+
+**What it is:** a target group tells the load balancer where to send
+traffic, and how to check that the destination is working.
+
+**The code** (`alb.tf`). The frontend one:
+
+```hcl
+resource "aws_lb_target_group" "frontend" {
+  name     = "${local.name}-frontend-tg"
+  port     = var.frontend_node_port
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = var.frontend_health_path
+    matcher             = var.frontend_health_matcher
+    interval            = var.health_check_interval
+    healthy_threshold   = var.healthy_threshold
+    unhealthy_threshold = var.unhealthy_threshold
+  }
+}
 ```
+
+| Target group | Name in AWS | Port | Health check |
+|---|---|---|---|
+| `aws_lb_target_group.frontend` | `questly-dev-frontend-tg` | 30080 | Opens `/`, healthy if the reply code is 200 to 399 |
+| `aws_lb_target_group.backend` | `questly-dev-backend-tg` | 30081 | Opens `/health`, healthy if the reply code is 200 |
+
+Both check every 30 seconds. 2 good replies mean healthy. 3 bad replies
+mean unhealthy.
+
+**How Terraform creates them:**
+
+1. They wait for the VPC (1). They do not need the load balancer.
+2. Terraform takes the ports and health check settings from
+   `terraform.tfvars`.
+3. It asks AWS twice: "create a target group with this port and this
+   health check".
+4. AWS creates both. They are empty: no server is in them yet.
+5. Terraform saves both in the state.
+
+**What can start now:** nothing yet. The attachments (23) also need the
+agent, and the HTTPS listener (27) also needs the load balancer and the
+certificate.
+
+## 11. The policy attachment (`aws_iam_role_policy_attachment.ssm`)
+
+**What it is:** it gives the IAM role one permission set: AWS Session
+Manager. That lets you open a shell on the servers from the AWS console,
+without SSH. It is a backup way in if your IP changes.
+
+**The code** (`iam.tf`):
+
+```hcl
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = var.ssm_policy_arn
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for the IAM role (4).
+2. It takes the policy name from `terraform.tfvars`:
+   `arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore`.
+3. It asks AWS: "attach this policy to the role".
+4. AWS attaches it.
+5. Terraform saves it in the state.
+
+**What can start now:** nothing waits for this one.
+
+## 12. The instance profile (`aws_iam_instance_profile.ec2`)
+
+**What it is:** a wrapper around the role. A server cannot be given a
+role directly. It is given an instance profile that holds the role.
+
+**The code** (`iam.tf`):
+
+```hcl
+resource "aws_iam_instance_profile" "ec2" {
+  name = "${local.name}-ec2-profile"
+  role = aws_iam_role.ec2.name
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for the IAM role (4).
+2. It asks AWS: "create an instance profile named
+   `questly-dev-ec2-profile` and put the role in it".
+3. AWS creates it.
+4. Terraform saves it in the state.
+
+**What can start now:** both servers (18 and 22) need this profile.
+
+---
+# Stage C: things that need Stage B
+
+## 13. The 13 security group rules
+
+**What it is:** each rule opens one door in one security group. Every
+rule is its own resource in `security.tf`.
+
+**The code.** There are two shapes. A rule that allows an **IP range**:
+
+```hcl
+resource "aws_vpc_security_group_ingress_rule" "master_ssh" {
+  for_each = toset(var.admin_cidrs)
+
+  security_group_id = aws_security_group.master.id
+  description       = "SSH from admin"
+  cidr_ipv4         = each.value
+  ip_protocol       = "tcp"
+  from_port         = var.ssh_port
+  to_port           = var.ssh_port
+}
+```
+
+And a rule that allows **another security group**:
+
+```hcl
+resource "aws_vpc_security_group_ingress_rule" "agent_ssh_from_master" {
+  security_group_id            = aws_security_group.agent.id
+  description                  = "SSH from master (Jenkins agent launch + bastion jump)"
+  referenced_security_group_id = aws_security_group.master.id
+  ip_protocol                  = "tcp"
+  from_port                    = var.ssh_port
+  to_port                      = var.ssh_port
+}
+```
+
+"From the master's security group" means "from any server that has that
+group attached". "Ingress" means incoming. "Egress" means outgoing.
+
+**All 13 rules:**
+
+*On the master's security group (3)*
+
+| Rule name | Direction | Port | Who | Why |
+|---|---|---|---|---|
+| `master_ssh` | In | 22 | Your IP (`admin_cidrs`) | So you can log in to the master |
+| `master_jenkins` | In | 8080 | Your IP (`admin_cidrs`) | So you can open the Jenkins page |
+| `master_all` | Out | all | Anywhere | So the master can download packages and reach GitHub and the agent |
+
+*On the agent's security group (6)*
+
+| Rule name | Direction | Port | Who | Why |
+|---|---|---|---|---|
+| `agent_ssh_from_master` | In | 22 | The master's group | Jenkins connects to the agent over SSH, and you log in through the master |
+| `agent_frontend_from_alb` | In | 30080 | The load balancer's group | Frontend traffic |
+| `agent_backend_from_alb` | In | 30081 | The load balancer's group | Backend traffic |
+| `agent_grafana_from_master` | In | 30030 | The master's group | Grafana, viewed through the master |
+| `agent_prometheus_from_master` | In | 30090 | The master's group | Prometheus, viewed through the master |
+| `agent_all` | Out | all | Anywhere | So the agent can download packages, through the NAT gateway |
+
+*On the load balancer's security group (4)*
+
+| Rule name | Direction | Port | Who | Why |
+|---|---|---|---|---|
+| `alb_http` | In | 80 | Anywhere (`app_ingress_cidrs`) | Visitors arriving over HTTP |
+| `alb_https` | In | 443 | Anywhere (`app_ingress_cidrs`) | Visitors arriving over HTTPS |
+| `alb_to_frontend` | Out | 30080 | The agent's group | Forwarding to the frontend |
+| `alb_to_backend` | Out | 30081 | The agent's group | Forwarding to the backend |
+
+**How Terraform creates them:**
+
+1. Each rule waits for the security group it belongs to (9). A rule that
+   names a second group waits for that one too. For example
+   `agent_ssh_from_master` needs both the agent's group and the
+   master's group.
+2. Terraform takes the ports from `terraform.tfvars`: `ssh_port = 22`,
+   `jenkins_port = 8080`, `alb_listener_port = 80`,
+   `alb_https_port = 443`, `frontend_node_port = 30080`,
+   `backend_node_port = 30081`, `grafana_node_port = 30030`,
+   `prometheus_node_port = 30090`.
+3. For `master_ssh` and `master_jenkins` it takes your IP from
+   `admin_cidrs`. `for_each` makes one rule per address in that list.
+   The list has one address, so one rule each.
+4. It asks AWS 13 times, many at once: "add this rule to this group".
+5. AWS adds each rule and replies with a rule ID.
+6. Terraform saves all 13 in the state.
+
+**What can start now:** nothing waits for the rules. But without them
+the servers and the load balancer could not send or receive anything.
+
+## 14. The public route table (`aws_route_table.public`)
+
+**What it is:** a route table is a list of directions for network
+traffic. This one says: "anything going to the internet goes through the
+internet gateway".
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = { Name = "${local.name}-public-rt" }
+}
+```
+
+`0.0.0.0/0` means "every address", which here means the internet.
+
+**How Terraform creates it:**
+
+1. It waits for the VPC (1) and the internet gateway (6).
+2. It asks AWS: "create a route table in this VPC, with one route that
+   sends `0.0.0.0/0` to this internet gateway".
+3. AWS creates it and replies with its ID.
+4. Terraform saves it in the state.
+
+**What can start now:** the public associations (15).
+
+## 15. The 2 public route table associations (`aws_route_table_association.public`)
+
+**What it is:** an association connects one subnet to one route table.
+A route table does nothing until a subnet is connected to it.
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_route_table_association" "public" {
+  for_each = aws_subnet.public
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public.id
+}
+```
+
+**How Terraform creates them:**
+
+1. They wait for the public subnets (7) and the public route table (14).
+2. `for_each` goes through the two public subnets, so there are two
+   associations.
+3. Terraform asks AWS twice: "connect this subnet to this route table".
+4. AWS connects them.
+5. Terraform saves both in the state.
+
+**This is the moment the public subnets become truly public.** A subnet
+is "public" only because its route table points at an internet gateway.
+
+**What can start now:** nothing waits for these.
+
+## 16. The NAT gateway (`aws_nat_gateway.main`)
+
+**What it is:** a NAT gateway lets servers in the private subnets reach
+the internet, for example to download software. It does not let anyone
+on the internet reach them.
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[local.azs[0]].id
+
+  tags = { Name = "${local.name}-nat" }
+
+  depends_on = [aws_internet_gateway.main]
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for three things: the Elastic IP (2), the first public
+   subnet (7) and the internet gateway (6).
+2. The first two are needed because their IDs are used in the block.
+   The internet gateway is listed in `depends_on`. That line means "wait
+   for this too, even though I do not use a value from it". A NAT
+   gateway cannot work unless the VPC already has an internet gateway.
+3. `aws_subnet.public[local.azs[0]]` means "the public subnet in the
+   first zone".
+4. Terraform asks AWS: "create a NAT gateway in this subnet, using this
+   Elastic IP".
+5. AWS starts building it. **This is slow, often a minute or more.**
+   Terraform keeps checking and prints `Still creating...` until AWS
+   says it is ready.
+6. AWS replies with its ID. Terraform saves it in the state.
+
+**What can start now:** the private route table (20). Everything in
+Stage D was waiting for this.
+
+## 17. The load balancer (`aws_lb.app`)
+
+**What it is:** the Application Load Balancer is the public front door
+of the app. Visitors connect to it, and it passes their requests on to
+the agent.
+
+**The code** (`alb.tf`):
+
+```hcl
+resource "aws_lb" "app" {
+  name               = "${local.name}-alb"
+  load_balancer_type = "application"
+  internal           = false
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = [for s in aws_subnet.public : s.id]
+
+  drop_invalid_header_fields = true
+
+  tags = { Name = "${local.name}-alb" }
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for the load balancer's security group (9) and **both**
+   public subnets (7).
+2. `internal = false` makes it public.
+   `[for s in aws_subnet.public : s.id]` means "the IDs of both public
+   subnets". A load balancer must be in at least two zones.
+3. Terraform asks AWS: "create a public application load balancer named
+   `questly-dev-alb`, in these two subnets, with this security group".
+4. AWS builds it. **This is also slow.** Terraform waits until it is
+   active.
+5. AWS replies with its ID and a DNS name ending in
+   `elb.amazonaws.com`.
+6. Terraform saves it in the state.
+
+At this point the load balancer exists but does nothing. It has no
+listeners, so it does not accept any connection yet.
+
+**What can start now:** the HTTP listener (24). The HTTPS listener (27)
+also needs the certificate.
+
+## 18. The master EC2 (`aws_instance.master`)
+
+**What it is:** the first server. It will run Jenkins.
+
+**Its settings:**
+
+| Setting | Value | Where it comes from |
+|---|---|---|
+| Instance type | `t3.medium` | `master_instance_type` in `terraform.tfvars` |
+| Storage | 18 GB, `gp3`, encrypted | `master_volume_size`, `root_volume_type` in `terraform.tfvars`. `encrypted = true` is written in the code. |
+| Operating system | Ubuntu 24.04 | The image ID looked up in step 0 |
+| Subnet | First public subnet, `10.0.0.0/24` | Number 7 |
+| Security group | `questly-dev-master-sg` | Number 9 |
+| SSH key | `questly-dev-key` | Number 3 |
+| IAM instance profile | `questly-dev-ec2-profile` | Number 12 |
+| Boot script | `scripts/master-userdata.sh` | A file on your laptop |
+| Name tag | `questly-dev-master` | The name prefix |
+
+**The code** (`compute.tf`):
+
+```hcl
+resource "aws_instance" "master" {
+  ami                    = data.aws_ssm_parameter.ubuntu_ami.value
+  instance_type          = var.master_instance_type
+  subnet_id              = aws_subnet.public[local.azs[0]].id
+  vpc_security_group_ids = [aws_security_group.master.id]
+  key_name               = aws_key_pair.main.key_name
+  iam_instance_profile   = aws_iam_instance_profile.ec2.name
+
+  user_data = templatefile("${path.module}/scripts/master-userdata.sh", {
+    java_package         = var.java_package
+    jenkins_apt_key_url  = var.jenkins_apt_key_url
+    jenkins_apt_repo_url = var.jenkins_apt_repo_url
+    jenkins_port         = var.jenkins_port
+    ssh_port             = var.ssh_port
+  })
+
+  metadata_options {
+    http_tokens = "required" # IMDSv2 only
+  }
+
+  root_block_device {
+    volume_type = var.root_volume_type
+    volume_size = var.master_volume_size
+    encrypted   = true
+  }
+
+  tags = {
+    Name = "${local.name}-master"
+    Role = "jenkins-controller"
+  }
+
+  # A newer AMI must not replace a running Jenkins server
+  lifecycle {
+    ignore_changes = [ami, user_data]
+  }
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for four things: the first public subnet (7), the master's
+   security group (9), the key pair (3) and the instance profile (12).
+   It does **not** wait for the NAT gateway, so it can start while the
+   NAT gateway is still being built.
+2. The Ubuntu image ID and the text of the boot script are already
+   known from step 0.
+3. Terraform fills in the real IDs: which subnet, which security group,
+   which key, which profile.
+4. It sends AWS **one request** that says: "start a `t3.medium` server
+   from this Ubuntu image, in this subnet, with this security group,
+   this key, this profile, an 18 GB encrypted `gp3` disk, these tags,
+   and this boot script".
+5. AWS creates the disk from the Ubuntu image, gives the server a
+   private IP inside `10.0.0.0/24`, and starts it.
+6. AWS replies with an instance ID like `i-0abc...`. Terraform waits
+   until AWS reports the server as **running**.
+7. Terraform saves the server in the state. **For Terraform, the master
+   is now done.**
+
+**What happens inside the server after that (not Terraform):**
+
+8. Ubuntu starts up.
+9. A program inside Ubuntu called cloud-init finds the boot script that
+   came with the request, and runs it once.
+10. The script updates the package list, installs Java 21, adds the
+    Jenkins download source, installs Jenkins, and starts it.
+11. This takes a few minutes. Terraform does not wait for it and does
+    not know whether it worked. See number 30.
+
+**Three details in the code:**
+
+- `ignore_changes = [ami, user_data]`: once the master exists, a newer
+  Ubuntu image or a change to the boot script will not make Terraform
+  rebuild it. The boot script only ever runs on a brand new server.
+- `http_tokens = "required"`: a security setting for how the server
+  reads its own details from AWS.
+- The values passed to `templatefile` (like `java_package`) are not
+  actually used. The script has no placeholders for them. What gets
+  installed is whatever is written in the script file itself.
+
+**What can start now:** the master's Elastic IP (19).
+
+## 19. The Elastic IP for the master (`aws_eip.master`)
+
+**What it is:** a fixed public IP address for the master. It is the
+address you use for SSH and for the Jenkins page.
+
+**The code** (`compute.tf`):
+
+```hcl
+resource "aws_eip" "master" {
+  domain   = "vpc"
+  instance = aws_instance.master.id
+
+  tags = { Name = "${local.name}-master-eip" }
+
+  depends_on = [aws_internet_gateway.main]
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for the master (18), because it needs the master's ID. It
+   also waits for the internet gateway (6), because of `depends_on`.
+2. It asks AWS: "reserve one public IP address".
+3. It asks AWS: "attach that address to this server".
+4. AWS replies with the address.
+5. Terraform saves it in the state.
+
+Before this step the master had only a private IP. Now it has a public
+one too. The public IP is how you reach it from outside. The private IP
+is how the agent and other things inside the VPC reach it.
+
+**What can start now:** nothing. This address appears in the outputs at
+the end.
 
 ---
 
-## 6. What happens after apply
+# Stage D: the private side, which waits for the NAT gateway
 
-### What `Apply complete!` means
+## 20. The private route table (`aws_route_table.private`)
 
-| It means | It does not mean |
-|---|---|
-| AWS accepted every request in the plan | Jenkins is installed and running |
-| Each resource reached the state the provider waits for, for example an instance is "running" | Docker, kind and kubectl are installed on the agent |
-| The state now records each resource and its real ID | The Questly app is deployed |
-| The outputs are available | The load balancer's health checks pass |
+**What it is:** the second list of directions. This one says: "anything
+going to the internet goes through the NAT gateway".
 
-*Confirmed from repository.* Terraform only creates the infrastructure.
-Nothing in `terraform/` deploys the app. Until something listens on
-ports `30080` and `30081` on the agent, the target groups will report it
-as unhealthy. Deployment is covered in
-[04-after-terraform-apply.md](04-after-terraform-apply.md).
+**The code** (`network.tf`):
 
-### The state
+```hcl
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
 
-*Confirmed from repository.* The state is stored in an S3 bucket under
-the key `questly/dev/terraform.tfstate`, in `ap-south-1`, encrypted,
-with a lock file used during runs.
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.id
+  }
 
-The state is Terraform's record of which real AWS object belongs to
-which block in your code. It is what lets the next `terraform apply`
-change only the difference instead of creating everything again. It is
-not a copy of your `.tf` files.
-
-### The outputs
-
-Outputs are worked out at the end of the apply and saved in the state.
-You can print them again at any time:
-
-```powershell
-terraform output
+  tags = { Name = "${local.name}-private-rt" }
+}
 ```
 
-*Confirmed from repository.* There are 13: `app_url`,
-`next_public_api_base_url`, `alb_dns_name`, `acm_validation_record`,
-`jenkins_url`, `master_public_ip`, `agent_private_ip`, `ssh_master`,
-`ssh_agent`, `monitoring_tunnel`, `vpc_id`, `public_subnet_ids` and
-`private_subnet_ids`.
+**How Terraform creates it:**
 
-### How to check, without changing anything
+1. It waits for the VPC (1) and the NAT gateway (16). The NAT gateway is
+   the slow one, so this table is created much later than the public
+   one.
+2. It asks AWS: "create a route table in this VPC, with one route that
+   sends `0.0.0.0/0` to this NAT gateway".
+3. AWS creates it and replies with its ID.
+4. Terraform saves it in the state.
 
-Run these from the `terraform` folder.
+**What can start now:** the private associations (21).
 
-| Command | What it proves |
-|---|---|
-| `terraform plan` | Whether the code, the state and AWS agree. `No changes` means they do. It briefly locks the state but changes nothing in AWS. |
-| `terraform state list` | Which resources Terraform currently manages. After a complete apply with the current values there are 47, plus the 3 data sources. |
-| `terraform state show aws_instance.master` | The real ID and settings Terraform recorded for one resource. |
-| `terraform output` | The URLs, IPs and ready-made SSH commands. |
-| `terraform graph` | The dependency graph Terraform built, as text. It is the source of truth for sections 3 and 4. |
+## 21. The 2 private route table associations (`aws_route_table_association.private`)
 
-To check that a boot script finished, log in with the command from the
-`ssh_master` or `ssh_agent` output, then run:
+**What it is:** they connect the two private subnets to the private
+route table.
+
+**The code** (`network.tf`):
+
+```hcl
+resource "aws_route_table_association" "private" {
+  for_each = aws_subnet.private
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private.id
+}
+```
+
+**How Terraform creates them:**
+
+1. They wait for the private subnets (8) and the private route table
+   (20).
+2. Terraform asks AWS twice: "connect this subnet to this route table".
+3. AWS connects them.
+4. Terraform saves both in the state.
+
+From now on, a server in a private subnet can reach the internet through
+the NAT gateway. Nothing on the internet can reach it.
+
+**What can start now:** the agent (22). This was the last thing it was
+waiting for.
+
+## 22. The agent EC2 (`aws_instance.agent`)
+
+**What it is:** the second server. It will run the kind cluster with the
+Questly frontend and backend, and do the Jenkins builds.
+
+**Its settings:**
+
+| Setting | Value | Where it comes from |
+|---|---|---|
+| Instance type | `t3.medium` | `agent_instance_type` in `terraform.tfvars` |
+| Storage | 18 GB, `gp3`, encrypted | `agent_volume_size`, `root_volume_type` in `terraform.tfvars` |
+| Operating system | Ubuntu 24.04 | The same image as the master |
+| Subnet | First private subnet, `10.0.10.0/24` | Number 8 |
+| Security group | `questly-dev-agent-sg` | Number 9 |
+| SSH key | `questly-dev-key`, the same key as the master | Number 3 |
+| IAM instance profile | `questly-dev-ec2-profile`, shared with the master | Number 12 |
+| Public IP | None | Nothing gives it one |
+| Boot script | `scripts/agent-userdata.sh` | A file on your laptop |
+| Name tag | `questly-dev-agent` | The name prefix |
+
+**The code** (`compute.tf`):
+
+```hcl
+resource "aws_instance" "agent" {
+  ami                    = data.aws_ssm_parameter.ubuntu_ami.value
+  instance_type          = var.agent_instance_type
+  subnet_id              = aws_subnet.private[local.azs[0]].id
+  vpc_security_group_ids = [aws_security_group.agent.id]
+  key_name               = aws_key_pair.main.key_name
+  iam_instance_profile   = aws_iam_instance_profile.ec2.name
+
+  user_data = templatefile("${path.module}/scripts/agent-userdata.sh", {
+    java_package           = var.java_package
+    docker_compose_package = var.docker_compose_package
+    kind_version           = var.kind_version
+    kubectl_version        = var.kubectl_version
+    ssh_port               = var.ssh_port
+    ssh_user               = var.ssh_user
+  })
+
+  metadata_options {
+    http_tokens = "required" # IMDSv2 only
+  }
+
+  root_block_device {
+    volume_type = var.root_volume_type
+    volume_size = var.agent_volume_size
+    encrypted   = true
+  }
+
+  tags = {
+    Name = "${local.name}-agent"
+    Role = "jenkins-agent"
+  }
+
+  lifecycle {
+    ignore_changes = [ami, user_data]
+  }
+
+  # Packages are downloaded through the NAT gateway at first boot
+  depends_on = [aws_route_table_association.private]
+}
+```
+
+**How Terraform creates it:**
+
+1. Its settings need four things: the first private subnet (8), the
+   agent's security group (9), the key pair (3) and the instance profile
+   (12). All four are ready early.
+2. But the last line, `depends_on = [aws_route_table_association.private]`,
+   makes it wait for the private associations (21) as well. That is the
+   end of the chain VPC → public subnet → NAT gateway → private route
+   table → associations.
+3. **Why wait?** The agent's boot script downloads Docker, kind and
+   kubectl from the internet. A server in a private subnet can only
+   reach the internet after number 21 is done. If the agent started
+   earlier, its script would fail.
+4. Once number 21 is finished, Terraform fills in the real IDs.
+5. It sends AWS **one request**: "start a `t3.medium` server from this
+   Ubuntu image, in this private subnet, with this security group, this
+   key, this profile, an 18 GB encrypted `gp3` disk, these tags, and
+   this boot script".
+6. AWS creates the disk, gives the server a private IP inside
+   `10.0.10.0/24`, gives it **no** public IP, and starts it.
+7. AWS replies with an instance ID. Terraform waits until the server is
+   **running**.
+8. Terraform saves the server in the state. **For Terraform, the agent
+   is now done.**
+
+**What happens inside the server after that (not Terraform):**
+
+9. Ubuntu starts, and cloud-init runs the boot script once.
+10. The script updates and upgrades the packages, installs Java 21,
+    Docker and Docker Compose, starts Docker, lets the `ubuntu` user use
+    Docker, downloads kind and kubectl, and prints their versions.
+11. Terraform does not wait for this and does not know whether it
+    worked. See number 30.
+
+**Two details in the code:**
+
+- The script installs the **latest** kind and the **latest stable**
+  kubectl. The `kind_version` and `kubectl_version` values in
+  `terraform.tfvars` are passed in but the script has no placeholders
+  for them, so they are not used.
+- The script only installs tools. It does not create the kind cluster
+  and does not deploy the app.
+
+**What can start now:** the two target group attachments (23).
+
+## 23. The 2 target group attachments (`aws_lb_target_group_attachment.frontend`, `.backend`)
+
+**What it is:** an attachment puts a server into a target group. Until
+this is done, the target groups from number 10 are empty.
+
+**The code** (`alb.tf`):
+
+```hcl
+resource "aws_lb_target_group_attachment" "frontend" {
+  target_group_arn = aws_lb_target_group.frontend.arn
+  target_id        = aws_instance.agent.id
+  port             = var.frontend_node_port
+}
+
+resource "aws_lb_target_group_attachment" "backend" {
+  target_group_arn = aws_lb_target_group.backend.arn
+  target_id        = aws_instance.agent.id
+  port             = var.backend_node_port
+}
+```
+
+**How Terraform creates them:**
+
+1. They wait for the target groups (10) and the agent (22). The agent is
+   what they really wait for.
+2. Terraform asks AWS twice: "put this server into this target group, on
+   this port". Port 30080 for the frontend, port 30081 for the backend.
+3. AWS registers the agent in both groups.
+4. Terraform saves both in the state.
+
+The same agent is in both target groups, on two different ports.
+
+After this, the load balancer starts checking the agent's health on both
+ports. It will say **unhealthy** for now, because the app is not
+deployed yet and nothing is answering on those ports. That is normal at
+this point.
+
+**What can start now:** nothing waits for these.
+
+---
+
+# Stage E: opening the load balancer to visitors
+
+## 24. The HTTP listener (`aws_lb_listener.http`)
+
+**What it is:** a listener tells the load balancer to accept connections
+on one port and what to do with them. This one accepts plain HTTP on
+port 80 and tells the browser to use HTTPS instead.
+
+**The code** (`alb.tf`):
+
+```hcl
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = var.alb_listener_port
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      protocol    = "HTTPS"
+      port        = tostring(var.alb_https_port)
+      status_code = "HTTP_301"
+    }
+  }
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits only for the load balancer (17). It does not need the
+   certificate.
+2. It takes `alb_listener_port = 80` and `alb_https_port = 443` from
+   `terraform.tfvars`.
+3. It asks AWS: "add a listener on port 80 that redirects every request
+   to HTTPS on port 443".
+4. AWS adds it.
+5. Terraform saves it in the state.
+
+**What can start now:** nothing waits for this.
+
+## 25. The DNS record for the certificate (manual, added by you)
+
+**What it is:** the proof that you own the domain. AWS approves the
+certificate from number 5 only after it finds this record.
+
+**Terraform does not create this record.** There is no DNS resource in
+the project. Terraform only shows you the record, through an output in
+`outputs.tf`:
+
+```hcl
+output "acm_validation_record" {
+  description = "CNAME to add once at the DNS provider so ACM can issue the certificate."
+  value = {
+    for o in aws_acm_certificate.app.domain_validation_options : o.domain_name => {
+      type  = o.resource_record_type
+      name  = o.resource_record_name
+      value = o.resource_record_value
+    }
+  }
+}
+```
+
+**What happens, step by step:**
+
+1. In number 5, AWS replied with the record it wants: a type (CNAME), a
+   name and a value.
+2. You get those three from the `acm_validation_record` output, or from
+   the certificate's page in the AWS console.
+3. You log in to your domain provider and add that CNAME record.
+4. AWS checks your domain's DNS from time to time.
+5. When AWS finds the record, it changes the certificate from **Pending
+   validation** to **Issued**.
+
+This record is added once and then left in place.
+[05-custom-domain-and-https.md](05-custom-domain-and-https.md) shows how
+to do it: create only the certificate first, add the record, then run
+the full apply.
+
+**What can start now:** number 26 can finish.
+
+## 26. The certificate validation (`aws_acm_certificate_validation.app`)
+
+**What it is:** this resource creates nothing in AWS. It is a **wait**.
+Terraform stays here until the certificate is approved.
+
+**The code** (`alb.tf`):
+
+```hcl
+resource "aws_acm_certificate_validation" "app" {
+  certificate_arn = aws_acm_certificate.app.arn
+}
+```
+
+**How Terraform handles it:**
+
+1. It waits for the certificate request (5), then starts. This is very
+   early in the run.
+2. It asks AWS: "is this certificate issued yet?"
+3. If the answer is no, it waits a little and asks again. You see
+   `aws_acm_certificate_validation.app: Still creating...`.
+4. **If the DNS record (25) is already there**, AWS answers "issued"
+   after a short while, and this step finishes.
+5. **If the DNS record is missing**, the answer never changes. Terraform
+   waits a long time and then stops with an error.
+6. When it finishes, Terraform saves it in the state.
+
+**While Terraform waits here, everything else carries on:** the network,
+the security groups, both servers, the load balancer and the HTTP
+listener are all created normally. Only numbers 27 and 28 are held back.
+
+**What can start now:** the HTTPS listener (27).
+
+## 27. The HTTPS listener (`aws_lb_listener.https`)
+
+**What it is:** the listener that accepts HTTPS on port 443, using the
+certificate, and sends requests to the frontend.
+
+**The code** (`alb.tf`):
+
+```hcl
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = var.alb_https_port
+  protocol          = "HTTPS"
+  ssl_policy        = var.alb_ssl_policy
+  certificate_arn   = aws_acm_certificate_validation.app.certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
+  }
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for three things: the load balancer (17), the frontend
+   target group (10) and the certificate validation (26).
+2. Look at the `certificate_arn` line. It takes the certificate from the
+   **validation** resource, not from the certificate request. That is
+   what forces Terraform to create this listener only after the
+   certificate is approved. An unapproved certificate cannot be used on
+   a listener.
+3. It takes `alb_https_port = 443` and
+   `alb_ssl_policy = "ELBSecurityPolicy-TLS13-1-2-2021-06"` from
+   `terraform.tfvars`. The policy is a list of the secure connection
+   versions that are allowed.
+4. It asks AWS: "add an HTTPS listener on port 443 with this
+   certificate, and send requests to the frontend target group".
+5. AWS adds it and replies with its ID.
+6. Terraform saves it in the state.
+
+Now the load balancer accepts HTTPS. The secure connection ends at the
+load balancer. From the load balancer to the agent, the traffic is plain
+HTTP inside the VPC.
+
+**What can start now:** the `/api/*` rule (28).
+
+## 28. The `/api/*` rule (`aws_lb_listener_rule.api`)
+
+**What it is:** a rule on the HTTPS listener. It says: "if the address
+starts with `/api/`, send the request to the backend instead of the
+frontend".
+
+**The code** (`alb.tf`):
+
+```hcl
+resource "aws_lb_listener_rule" "api" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = var.api_rule_priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = [var.api_path_pattern]
+    }
+  }
+}
+```
+
+**How Terraform creates it:**
+
+1. It waits for the HTTPS listener (27) and the backend target group
+   (10).
+2. It takes `api_path_pattern = "/api/*"` and `api_rule_priority = 10`
+   from `terraform.tfvars`.
+3. It asks AWS: "add a rule to this listener: paths matching `/api/*`
+   go to the backend target group".
+4. AWS adds it.
+5. Terraform saves it in the state.
+
+**The full path of a request is now complete:**
+
+```
+Browser → https://questly.kumardevops.online
+   → load balancer, port 443 (HTTPS listener, number 27)
+        → address starts with /api/ ?
+             yes → backend target group  → agent, port 30081
+             no  → frontend target group → agent, port 30080
+```
+
+**What can start now:** nothing. This was the last resource.
+
+---
+
+# After everything is created
+
+## 29. Outputs, state, and `Apply complete!`
+
+**How Terraform finishes:**
+
+1. It works out the 13 outputs in `outputs.tf`. These are useful values
+   taken from the finished resources:
+
+   | Output | What it gives you |
+   |---|---|
+   | `app_url` | The app's address: `https://questly.kumardevops.online` |
+   | `next_public_api_base_url` | The same address, for the frontend's settings |
+   | `alb_dns_name` | The load balancer's own address. Point your domain at this. |
+   | `acm_validation_record` | The DNS record from number 25 |
+   | `jenkins_url` | The Jenkins page: `http://<master IP>:8080` |
+   | `master_public_ip` | The master's Elastic IP |
+   | `agent_private_ip` | The agent's private IP |
+   | `ssh_master` | A ready-made command to log in to the master |
+   | `ssh_agent` | A ready-made command to log in to the agent, through the master |
+   | `monitoring_tunnel` | A ready-made command to view Grafana and Prometheus |
+   | `vpc_id`, `public_subnet_ids`, `private_subnet_ids` | IDs, for reference |
+
+2. It saves the final state file in S3, under the name
+   `questly/dev/terraform.tfstate`. Each resource was already saved
+   there as it was created.
+3. It removes the lock, so Terraform can be run again.
+4. It prints:
+
+   ```
+   Apply complete! Resources: 47 added, 0 changed, 0 destroyed.
+   ```
+
+   The numbers depend on what the plan contained. On a first run it is
+   47 added.
+
+**What `Apply complete!` means:** AWS has created everything in the
+plan.
+
+**What it does not mean:** it does not mean Jenkins is installed, Docker
+is installed, the app is running, or the load balancer's health checks
+pass. Those come after.
+
+## 30. The boot scripts inside the servers
+
+**This part is not Terraform.** Terraform has already finished.
+
+**What happens:**
+
+1. Each new server starts Ubuntu.
+2. cloud-init, a program that is part of Ubuntu, runs the boot script
+   that Terraform sent along in numbers 18 and 22.
+3. On the master: Java 21 and Jenkins are installed, and Jenkins is
+   started.
+4. On the agent: Java 21, Docker, Docker Compose, kind and kubectl are
+   installed.
+5. Each script runs **once**, on the first start only.
+6. Everything a script prints is saved inside that server, in the file
+   `/var/log/cloud-init-output.log`.
+
+**How to check that it worked.** Log in with the command from
+`terraform output ssh_master` or `terraform output ssh_agent`, then run:
 
 ```bash
 cloud-init status --wait
@@ -997,36 +1668,38 @@ sudo tail -n 50 /var/log/cloud-init-output.log
 | `status: running` | It is still installing. Wait. |
 | `status: error` | It failed. The end of the log shows where. |
 
-*Confirmed from repository.* Both scripts begin with `set -e`, so a
-script stops at its first failing command. The error is therefore near
-the end of the log.
+**What is still left for you after this:** pointing your domain at the
+load balancer, setting up Jenkins, creating the kind cluster and
+deploying the app. That is covered in
+[04-after-terraform-apply.md](04-after-terraform-apply.md).
 
 ---
 
-## 7. Short recap
+# The whole flow on one page
 
-1. `terraform init` was run earlier. `apply` does not repeat it.
-2. Terraform loads all nine `.tf` files as **one** configuration. File
-   names and block positions decide nothing.
-3. Variables get their values from `terraform.tfvars`.
-4. Terraform locks and reads the state in S3, then starts the AWS
-   provider for `ap-south-1`.
-5. It reads three data sources: the zones, the Ubuntu image ID, and a
-   locally built IAM policy.
-6. It works out locals, reads the public key file and both boot scripts,
-   and builds the dependency graph.
-7. It compares code, state and AWS, shows the plan, and waits for `yes`.
-   What the plan contains depends on your current state.
-8. It creates whatever the plan lists, starting with resources that need
-   nothing: the VPC, the NAT IP, the key pair, the IAM role and the
-   certificate.
-9. Each finished resource unlocks the ones that refer to it. Independent
-   resources run in parallel, so the exact order varies between runs.
-10. The longest chain is VPC → public subnet → NAT gateway → private
-    route table → its associations → agent → load balancer registration.
-11. The HTTPS listener waits for the certificate to be issued, which
-    needs a DNS record that Terraform does not create.
-12. Terraform works out the outputs, saves and unlocks the state, and
-    prints `Apply complete!`.
-13. After Terraform has exited, cloud-init runs the boot script inside
-    each new server. Terraform does not wait for it or check it.
+1. You run `terraform apply` in the `terraform/` folder.
+2. Terraform reads all the `.tf` files together and the values in
+   `terraform.tfvars`.
+3. It looks up the Ubuntu image and the zones, makes the plan, and you
+   type `yes`.
+4. **Together:** VPC, NAT gateway's IP, key pair, IAM role, certificate
+   request.
+5. **After the VPC:** internet gateway, 4 subnets, 3 security groups,
+   2 target groups. **After the IAM role:** policy attachment and
+   instance profile.
+6. The 13 security group rules are added.
+7. The public route table and its 2 associations make the public
+   subnets public.
+8. The NAT gateway and the load balancer are built. Both are slow.
+9. The **master EC2** starts in the public subnet, then gets its fixed
+   public IP.
+10. After the NAT gateway: the private route table and its 2
+    associations.
+11. The **agent EC2** starts in the private subnet.
+12. The agent is put into both target groups.
+13. The HTTP listener is added.
+14. You add the DNS record. AWS approves the certificate.
+15. The HTTPS listener is added, then the `/api/*` rule.
+16. Terraform prints the outputs and `Apply complete!`.
+17. Inside the servers, the boot scripts install Jenkins, Docker, kind
+    and kubectl.

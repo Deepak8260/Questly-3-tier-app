@@ -18,7 +18,7 @@ right now.
 # PART 1: The list of what will be created
 
 All names start with `questly-dev`. The region is `ap-south-1` (Mumbai).
-In total: **47 AWS resources**.
+In total: **45 AWS resources**.
 
 ## Servers: 2 EC2 instances
 
@@ -55,13 +55,18 @@ In total: **47 AWS resources**.
 - 1 VPC, `10.0.0.0/16` (the project's own, not the AWS default VPC)
 - 1 internet gateway
 - 2 public subnets: `10.0.0.0/24` and `10.0.1.0/24`
-- 2 private subnets: `10.0.10.0/24` and `10.0.11.0/24`
+- 1 private subnet: `10.0.10.0/24` (in the first AZ, for the agent)
 - 1 Elastic IP for the NAT gateway
 - 1 NAT gateway (in the first public subnet)
 - 1 public route table (internet traffic → internet gateway)
 - 2 public route table associations (one per public subnet)
 - 1 private route table (internet traffic → NAT gateway)
-- 2 private route table associations (one per private subnet)
+- 1 private route table association (for the private subnet)
+
+There are 2 public subnets because the load balancer must be in at least
+2 AZs. There is only 1 private subnet because only one server, the
+agent, needs one. A second private subnet would only be useful together
+with a second agent and a second NAT gateway in AZ 2.
 
 ## Security: 3 security groups and 13 rules
 
@@ -113,13 +118,13 @@ In total: **47 AWS resources**.
 
 | Group | Resources |
 |---|---|
-| Network | 14 |
+| Network | 12 |
 | Security groups and rules | 16 |
 | IAM | 3 |
 | Key pair, 2 servers, master's Elastic IP | 4 |
 | Load balancer, target groups, attachments, listeners, rule | 8 |
 | Certificate and validation | 2 |
-| **Total** | **47** |
+| **Total** | **45** |
 
 ## Not created by Terraform
 
@@ -172,7 +177,7 @@ something in an earlier stage.
 |---|---|---|---|
 | 6 | Internet gateway | `aws_internet_gateway.main` | 1 |
 | 7 | 2 public subnets | `aws_subnet.public` | 1 |
-| 8 | 2 private subnets | `aws_subnet.private` | 1 |
+| 8 | 1 private subnet | `aws_subnet.private` | 1 |
 | 9 | 3 security groups | `aws_security_group.alb`, `.master`, `.agent` | 1 |
 | 10 | 2 target groups | `aws_lb_target_group.frontend`, `.backend` | 1 |
 | 11 | Policy attachment | `aws_iam_role_policy_attachment.ssm` | 4 |
@@ -195,7 +200,7 @@ something in an earlier stage.
 | No. | What | Terraform name | Needs |
 |---|---|---|---|
 | 20 | Private route table | `aws_route_table.private` | 1, 16 |
-| 21 | 2 private route table associations | `aws_route_table_association.private` | 8, 20 |
+| 21 | 1 private route table association | `aws_route_table_association.private` | 8, 20 |
 | 22 | **Agent EC2** | `aws_instance.agent` | 3, 8, 9, 12, 21 |
 | 23 | 2 target group attachments | `aws_lb_target_group_attachment.frontend`, `.backend` | 10, 22 |
 
@@ -370,14 +375,14 @@ Nothing in AWS changes during this step.
    ```
    name prefix      = "questly-dev"
    public subnets   = 10.0.0.0/24  and 10.0.1.0/24   (one per zone)
-   private subnets  = 10.0.10.0/24 and 10.0.11.0/24  (one per zone)
+   private subnet   = 10.0.10.0/24                   (first zone only)
    ```
 
 8. It reads three files from your laptop: your public key file
    (`~/.ssh/id_ed25519.pub`) and the two boot scripts in `scripts/`.
 9. It compares the code with the state and builds the **plan**: a list
    of what to create, change or delete. On a first run that is
-   `Plan: 47 to add`.
+   `Plan: 45 to add`.
 10. It shows the plan and waits. You type `yes`.
 
 Now the creation starts.
@@ -416,7 +421,7 @@ resource "aws_vpc" "main" {
 5. Terraform turns on the two DNS settings and adds the tags.
 6. It saves the VPC and its ID in the state.
 
-**What can start now:** the internet gateway, the 4 subnets, the 3
+**What can start now:** the internet gateway, the 3 subnets, the 3
 security groups, the 2 target groups and both route tables all need this
 ID.
 
@@ -623,10 +628,11 @@ Elastic IP (19).
 first public subnet. The load balancer (17) uses both. The public
 associations (15) use both.
 
-## 8. The 2 private subnets (`aws_subnet.private`)
+## 8. The private subnet (`aws_subnet.private`)
 
-**What it is:** sections of the VPC for things that must not be
-reachable from the internet. The agent goes here.
+**What it is:** a section of the VPC for things that must not be
+reachable from the internet. The agent goes here. There is only one,
+because only the agent needs it.
 
 **The code** (`network.tf`):
 
@@ -645,21 +651,30 @@ resource "aws_subnet" "private" {
 }
 ```
 
+`local.private_subnets` has a single entry, so `for_each` makes one
+subnet. The code that builds it, in `network.tf`:
+
+```hcl
+private_subnets = { (local.azs[0]) = cidrsubnet(var.vpc_cidr, var.subnet_newbits, var.private_subnet_offset) }
+```
+
+`local.azs[0]` is the first zone. `cidrsubnet("10.0.0.0/16", 8, 10)`
+gives `10.0.10.0/24`, because `private_subnet_offset = 10`.
+
 | Subnet | Zone | Address range |
 |---|---|---|
-| First private subnet | first zone | `10.0.10.0/24` |
-| Second private subnet | second zone | `10.0.11.0/24` |
+| The private subnet | first zone (same AZ as the NAT gateway) | `10.0.10.0/24` |
 
-**How Terraform creates them:**
+**How Terraform creates it:**
 
-1. They wait for the VPC (1).
-2. Terraform asks AWS twice: "create a subnet in this VPC, in this zone,
-   with this range".
-3. AWS creates both and replies with two subnet IDs.
-4. Terraform saves both in the state.
+1. It waits for the VPC (1).
+2. Terraform asks AWS: "create a subnet in this VPC, in the first zone,
+   with the range `10.0.10.0/24`".
+3. AWS creates it and replies with its subnet ID.
+4. Terraform saves it in the state.
 
-**What can start now:** the private associations (21) use both. The
-agent (22) uses the first one.
+**What can start now:** the private association (21) and the agent (22)
+both use it.
 
 ## 9. The 3 security groups (`aws_security_group.alb`, `.master`, `.agent`)
 
@@ -951,7 +966,7 @@ is "public" only because its route table points at an internet gateway.
 
 ## 16. The NAT gateway (`aws_nat_gateway.main`)
 
-**What it is:** a NAT gateway lets servers in the private subnets reach
+**What it is:** a NAT gateway lets servers in the private subnet reach
 the internet, for example to download software. It does not let anyone
 on the internet reach them.
 
@@ -1202,12 +1217,12 @@ resource "aws_route_table" "private" {
 3. AWS creates it and replies with its ID.
 4. Terraform saves it in the state.
 
-**What can start now:** the private associations (21).
+**What can start now:** the private association (21).
 
-## 21. The 2 private route table associations (`aws_route_table_association.private`)
+## 21. The private route table association (`aws_route_table_association.private`)
 
-**What it is:** they connect the two private subnets to the private
-route table.
+**What it is:** it connects the private subnet to the private route
+table.
 
 **The code** (`network.tf`):
 
@@ -1222,13 +1237,14 @@ resource "aws_route_table_association" "private" {
 
 **How Terraform creates them:**
 
-1. They wait for the private subnets (8) and the private route table
-   (20).
-2. Terraform asks AWS twice: "connect this subnet to this route table".
-3. AWS connects them.
-4. Terraform saves both in the state.
+1. It waits for the private subnet (8) and the private route table (20).
+2. `for_each` goes through the private subnets, and there is one, so
+   there is one association.
+3. Terraform asks AWS: "connect this subnet to this route table".
+4. AWS connects them.
+5. Terraform saves it in the state.
 
-From now on, a server in a private subnet can reach the internet through
+From now on, a server in the private subnet can reach the internet through
 the NAT gateway. Nothing on the internet can reach it.
 
 **What can start now:** the agent (22). This was the last thing it was
@@ -1246,7 +1262,7 @@ Questly frontend and backend, and do the Jenkins builds.
 | Instance type | `t3.medium` | `agent_instance_type` in `terraform.tfvars` |
 | Storage | 18 GB, `gp3`, encrypted | `agent_volume_size`, `root_volume_type` in `terraform.tfvars` |
 | Operating system | Ubuntu 24.04 | The same image as the master |
-| Subnet | First private subnet, `10.0.10.0/24` | Number 8 |
+| Subnet | The private subnet, `10.0.10.0/24` | Number 8 |
 | Security group | `questly-dev-agent-sg` | Number 9 |
 | SSH key | `questly-dev-key`, the same key as the master | Number 3 |
 | IAM instance profile | `questly-dev-ec2-profile`, shared with the master | Number 12 |
@@ -1300,13 +1316,13 @@ resource "aws_instance" "agent" {
 
 **How Terraform creates it:**
 
-1. Its settings need four things: the first private subnet (8), the
+1. Its settings need four things: the private subnet (8), the
    agent's security group (9), the key pair (3) and the instance profile
    (12). All four are ready early.
 2. But the last line, `depends_on = [aws_route_table_association.private]`,
-   makes it wait for the private associations (21) as well. That is the
+   makes it wait for the private association (21) as well. That is the
    end of the chain VPC → public subnet → NAT gateway → private route
-   table → associations.
+   table → association.
 3. **Why wait?** The agent's boot script downloads Docker, kind and
    kubectl from the internet. A server in a private subnet can only
    reach the internet after number 21 is done. If the agent started
@@ -1624,11 +1640,11 @@ Browser → https://questly.kumardevops.online
 4. It prints:
 
    ```
-   Apply complete! Resources: 47 added, 0 changed, 0 destroyed.
+   Apply complete! Resources: 45 added, 0 changed, 0 destroyed.
    ```
 
    The numbers depend on what the plan contained. On a first run it is
-   47 added.
+   45 added.
 
 **What `Apply complete!` means:** AWS has created everything in the
 plan.
@@ -1684,7 +1700,7 @@ deploying the app. That is covered in
    type `yes`.
 4. **Together:** VPC, NAT gateway's IP, key pair, IAM role, certificate
    request.
-5. **After the VPC:** internet gateway, 4 subnets, 3 security groups,
+5. **After the VPC:** internet gateway, 3 subnets, 3 security groups,
    2 target groups. **After the IAM role:** policy attachment and
    instance profile.
 6. The 13 security group rules are added.

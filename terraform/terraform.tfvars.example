@@ -18,7 +18,7 @@ vpc_cidr              = "<vpc-cidr>"  # e.g. 10.0.0.0/16
 az_count              = <az-count>    # number, at least 2 (ALB requirement)
 subnet_newbits        = <newbits>     # number, 8 turns a /16 into /24 subnets
 public_subnet_offset  = <offset>      # number, index of first public subnet
-private_subnet_offset = <offset>      # number, index of first private subnet
+private_subnet_offset = <offset>      # number, index of the private subnet
 
 admin_cidrs       = ["<your-public-ip>/32"] # curl -s https://checkip.amazonaws.com; list all if it varies
 app_ingress_cidrs = ["<cidr>"]              # who can reach the ALB

@@ -59,7 +59,7 @@ variable "public_subnet_offset" {
 }
 
 variable "private_subnet_offset" {
-  description = "Index of the first private subnet within vpc_cidr (10 -> 10.0.10.0/24 for a 10.0.0.0/16 VPC)."
+  description = "Index of the private subnet within vpc_cidr (10 -> 10.0.10.0/24 for a 10.0.0.0/16 VPC)."
   type        = number
 }
 

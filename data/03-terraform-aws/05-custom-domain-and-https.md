@@ -1104,13 +1104,16 @@ the `questly` CNAME and paste the new load balancer name from step 5
 (2.2). Check it with `nslookup questly.kumardevops.online 8.8.8.8`.
 
 **Step 7. Deploy the app.** Follow
-[04-after-terraform-apply.md](04-after-terraform-apply.md), with one
-difference: the frontend value is the HTTPS domain, not the load
-balancer link.
+[04-after-terraform-apply.md](04-after-terraform-apply.md) from section
+1. It clones the repo into the Jenkins workspace and creates both `.env`
+files there, already with the HTTPS value:
 
 ```
 NEXT_PUBLIC_API_BASE_URL=https://questly.kumardevops.online
 ```
+
+Every `.env` value, and which one changes between the laptop and AWS, is
+listed in section 8 of that guide.
 
 **Step 8. Test** (3.9 and 3.11).
 

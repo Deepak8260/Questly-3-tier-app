@@ -56,7 +56,7 @@ Internet
 | **master** | Public IP. SSH and Jenkins from your IP; Jenkins also from GitHub's webhook ranges. | Java 21, Jenkins |
 | **agent** | No public IP. Only through the master. | Java 21, Docker, Docker Compose, kind, kubectl |
 
-The full diagram is the [cloud architecture](../00-architecture/04-cloud-architecture.svg). All six architecture diagrams are in [00-architecture](../00-architecture/README.md).
+The full diagram is the [cloud architecture](../00-architecture/04-cloud-architecture.png). All six architecture diagrams are in [00-architecture](../00-architecture/README.md).
 
 ---
 

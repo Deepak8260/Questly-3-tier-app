@@ -1,0 +1,3 @@
+# generated pages, re-created by the d*.py scripts
+*.html
+__pycache__/

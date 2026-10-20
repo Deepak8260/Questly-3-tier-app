@@ -51,12 +51,12 @@ Read these first for the big picture. [All six with explanations](00-architectur
 
 | # | Diagram | What it shows |
 |---|---|---|
-| 1 | [Application](00-architecture/01-application-architecture.svg) | The three tiers: browser, Next.js, Express, Supabase, Gemini, and which keys each uses |
-| 2 | [Containers](00-architecture/02-container-architecture.svg) | The multi-stage Dockerfiles, and the full stack with Docker Compose |
-| 3 | [Kubernetes](00-architecture/03-kubernetes-architecture.svg) | The kind cluster on the agent: nodes, namespaces, Deployments, Services, secrets |
-| 4 | [Cloud](00-architecture/04-cloud-architecture.svg) | Everything Terraform creates on AWS, plus the DNS records added by hand |
-| 5 | [CI/CD pipeline](00-architecture/05-cicd-pipeline-architecture.svg) | From `git push` through Jenkins and `deploy.sh` to the email |
-| 6 | [Monitoring](00-architecture/06-monitoring-architecture.svg) | How logs and metrics are collected, and how you open Grafana |
+| 1 | [Application](00-architecture/01-application-architecture.png) | The three tiers: browser, Next.js, Express, Supabase, Gemini, and which keys each uses |
+| 2 | [Containers](00-architecture/02-container-architecture.png) | The multi-stage Dockerfiles, and the full stack with Docker Compose |
+| 3 | [Kubernetes](00-architecture/03-kubernetes-architecture.png) | The kind cluster on the agent: nodes, namespaces, Deployments, Services, secrets |
+| 4 | [Cloud](00-architecture/04-cloud-architecture.png) | Everything Terraform creates on AWS, plus the DNS records added by hand |
+| 5 | [CI/CD pipeline](00-architecture/05-cicd-pipeline-architecture.png) | From `git push` through Jenkins and `deploy.sh` to the email |
+| 6 | [Monitoring](00-architecture/06-monitoring-architecture.png) | How logs and metrics are collected, and how you open Grafana |
 
 ## 1. Docker
 
@@ -84,7 +84,7 @@ Read these first for the big picture. [All six with explanations](00-architectur
 | 4 | [After Terraform apply](03-terraform-aws/04-after-terraform-apply.md) | Checking both servers, the full setup order, monitoring, day-to-day tasks and destroying. |
 | 5 | [Custom domain and HTTPS](03-terraform-aws/05-custom-domain-and-https.md) | The GoDaddy DNS records, the ACM certificate, the HTTP-to-HTTPS redirect, and the short checklist for every rebuild. |
 
-The AWS diagram is [04-cloud-architecture.svg](00-architecture/04-cloud-architecture.svg).
+The AWS diagram is [04-cloud-architecture.png](00-architecture/04-cloud-architecture.png).
 
 ## 4. Jenkins CI/CD
 

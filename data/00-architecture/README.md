@@ -1,10 +1,10 @@
 # Questly – Architecture Diagrams
 
-Six diagrams, from the inside out: the app itself, its containers, the
-Kubernetes cluster they run in, the AWS infrastructure around it, the
-pipeline that deploys it, and the monitoring that watches it.
-
-Every name, port and value in them comes from the code in this repository.
+Six diagrams, from the inside out: the app, its containers, the
+Kubernetes cluster, the AWS infrastructure, the deployment pipeline, and
+the monitoring. Each one uses the official AWS and Kubernetes icons and
+the tools' own logos, with only the key words on the picture. The
+explanations are below each diagram.
 
 ## Contents
 
@@ -15,158 +15,149 @@ Every name, port and value in them comes from the code in this repository.
 5. [CI/CD pipeline architecture](#5-cicd-pipeline-architecture)
 6. [Monitoring architecture](#6-monitoring-architecture)
 7. [How the six fit together](#how-the-six-fit-together)
+8. [Editing the diagrams](#editing-the-diagrams)
 
 ---
 
 ## 1. Application architecture
 
-![Application architecture](01-application-architecture.svg)
+![Application architecture](01-application-architecture.png)
 
-**What it shows:** the three tiers of Questly and who talks to whom.
-
-| Tier | What | Code |
+| Tier | Component | Role |
 |---|---|---|
-| Presentation | Next.js 16 pages in the browser, rendered by the Next.js server | `frontend/` |
-| Application | Express 5 API: quiz generation with Gemini, saving scores | `backend/` |
-| Data | Supabase: auth, Postgres tables, realtime, an Edge Function | `database/supabase/` |
+| 1 | Frontend: Next.js 16 on port 3000 | Renders the pages |
+| 2 | Backend API: Express 5 on port 3001 | Generates quizzes and saves scores |
+| 3 | Supabase | Login, Postgres tables, realtime updates |
+| AI | Gemini API | Writes the quiz questions |
 
-**Read it like this:**
+- **The browser talks to three places.**
+  - **Frontend:** the pages.
+  - **Backend:** `/api/quiz/*`.
+  - **Supabase directly:** login, most data and live battles.
+- **Two Supabase keys.**
+  - **Browser:** the public **anon key**, limited by Row Level Security.
+  - **Backend only:** the **service_role** key and the Gemini key.
 
-- **The browser talks to three places:**
-  - the Next.js server, for pages;
-  - the backend, for `POST /api/quiz/generate` and `/save-attempt`;
-  - Supabase directly, for login, most data and live battles.
-- **Two kinds of Supabase key:**
-  - The browser uses the public **anon** key. Row Level Security limits what it can do.
-  - Only the backend holds the **service_role** key and the Gemini key.
-- **The backend's `GET /health`** is what the load balancer checks on AWS.
-
-**Related:** [Jenkins 3: every `.env` value](../04-jenkins/03-agent-workspace-and-env-files.md)
+**More:** [Jenkins 3: every `.env` value](../04-jenkins/03-agent-workspace-and-env-files.md)
 
 ---
 
 ## 2. Container architecture
 
-![Container architecture](02-container-architecture.svg)
+![Container architecture](02-container-architecture.png)
 
-**What it shows:** how each image is built, and the whole stack running on
-a laptop with Docker Compose.
+- **Build, for each app:**
+  - a **build stage** on `node:22-slim`;
+  - a small **runtime image** on `distroless/nodejs22`;
+  - pushed to **Docker Hub**.
+- **No `.env` inside the image.** Settings are read when the container starts.
+- **Run locally:** `docker compose` starts the app, Redis and the monitoring tools on one network, `qnet`.
 
-**Read it like this:**
-
-- **Part A, building:** each Dockerfile has two stages.
-  - **Stage 1** (`node:22-slim`) installs and builds.
-  - **Stage 2** (`distroless/nodejs22`) copies only what is needed to run.
-  - The images are pushed to Docker Hub as `kumar3472/questly-frontend` and `kumar3472/questly-backend`.
-- **No secrets in the images:** `.env` is never copied in.
-  - The frontend writes `public/__ENV.js` from its environment when the container starts.
-  - The backend reads `process.env`.
-- **Part B, running locally:** `docker-compose.yml` starts 9 containers on the `qnet` network: the app, Redis, and the monitoring tools. The last box lists the `localhost` addresses.
-
-**Related:** [Docker guides](../README.md#1-docker)
+**More:** [Docker guides](../README.md#1-docker)
 
 ---
 
 ## 3. Kubernetes architecture
 
-![Kubernetes architecture](03-kubernetes-architecture.svg)
+![Kubernetes architecture](03-kubernetes-architecture.png)
 
-**What it shows:** the kind cluster `questly` on the agent EC2: its two
-nodes, the two namespaces, and everything in them.
-
-**Read it like this:**
-
-- **kind runs Kubernetes inside Docker:** each node is a Docker container on the agent.
-- **Namespace `questly-ns`:**
-  - the frontend and backend Deployments;
-  - their NodePort Services, on 30080 and 30081;
-  - the two secrets built from the `.env` files.
-- **Namespace `monitoring`:**
+- **kind runs Kubernetes inside Docker** on the agent EC2, with two nodes.
+- **`questly-ns`:**
+  - a Deployment and a NodePort Service each for the frontend (30080) and the backend (30081);
+  - two Secrets made from the `.env` files.
+- **`monitoring`:**
   - Prometheus, Grafana, Loki and Alloy;
   - node-exporter on every node.
-- **One request, step by step (right-hand column):**
-  load balancer → agent port 30080 → Docker → control-plane node → kube-proxy → Service → pod.
+- **How traffic gets in:**
+  - **Load balancer:** sends traffic to ports 30080 and 30081.
+  - **Master:** reaches 30030 and 30090 through an SSH tunnel.
+  - All four ports go into the control-plane node.
 
-**Related:** [kind and kubectl commands](../02-kubernetes/01-kind-kubectl-commands.md)
+**More:** [kind and kubectl commands](../02-kubernetes/01-kind-kubectl-commands.md)
 
 ---
 
 ## 4. Cloud architecture
 
-![Cloud architecture](04-cloud-architecture.svg)
+![Cloud architecture](04-cloud-architecture.png)
 
-**What it shows:** everything Terraform creates on AWS, and what you add by
-hand.
+- **One VPC** in `ap-south-1`, across two availability zones.
+- **Public subnets:**
+  - the **load balancer**, which spans both zones;
+  - the **NAT gateway**;
+  - the **master** (Jenkins).
+- **Private subnet:** the **agent**, with the kind cluster and the app.
+- **Traffic:**
+  - **Users** reach the load balancer over HTTPS. **ACM** provides the certificate.
+  - **You** reach the master over SSH and port 8080. **GitHub** reaches it for the webhook.
+  - **The agent** only goes out, through the NAT gateway, to Supabase, Gemini and Docker Hub.
 
-**Read it like this:**
-
-- **Network layout:** one VPC across two availability zones.
-  - **Public subnets** hold the load balancer, the NAT gateway and the master.
-  - **The private subnet** holds the agent, which has no public IP.
-- **Users** reach the app through the load balancer over HTTPS, using the GoDaddy CNAME and the ACM certificate.
-- **You** reach the master over SSH and Jenkins (port 8080) from your own IP only.
-- **The agent** reaches the internet only outward, through the NAT gateway.
-- **The right-hand panels:** IAM, the SSH key pair, and all 20 security group rules, including GitHub's webhook ranges.
-
-**Related:** [Terraform resource inventory](../03-terraform-aws/02-questly-terraform-resource-inventory-and-creation-flow.md),
+**More:** [Terraform resource inventory](../03-terraform-aws/02-questly-terraform-resource-inventory-and-creation-flow.md),
 [Custom domain and HTTPS](../03-terraform-aws/05-custom-domain-and-https.md)
 
 ---
 
 ## 5. CI/CD pipeline architecture
 
-![CI/CD pipeline architecture](05-cicd-pipeline-architecture.svg)
+![CI/CD pipeline architecture](05-cicd-pipeline-architecture.png)
 
-**What it shows:** what happens from `git push` to a running app.
-
-**Read it like this:**
-
-1. **Push to `main`:** GitHub sends a webhook to Jenkins on the master. GitHub's addresses are allowed by `webhook_cidrs`.
-2. **Hand-off:** the master gives the build to the agent `questly-agent` over SSH.
-3. **The agent runs the `Jenkinsfile`:**
+1. **git push** to `main` on GitHub.
+2. **Webhook:** GitHub triggers the Jenkins **master**.
+3. **SSH:** the master hands the job to the agent `questly-agent`.
+4. **The agent runs the pipeline:**
    - checks out the code;
-   - runs `k8s/deploy.sh` (8 steps): the cluster, secrets from the `.env` files, the app, monitoring.
-4. **Email:** Jenkins sends "Build Success" or "Build Failed" through Gmail.
+   - runs `deploy.sh`, which turns the `.env` files into secrets and applies the app;
+   - pulls the `:latest` images from Docker Hub into the **kind cluster**.
+5. **Email:** Jenkins sends the result through **Gmail**.
 
-**What the pipeline does not do:** it does not build images. New images are built and pushed to Docker Hub from the laptop, and the pipeline pulls `:latest`.
+Images are pushed to Docker Hub **by hand**. The pipeline deploys them; it does not build them.
 
-**Related:** [Jenkins guides](../README.md#4-jenkins-cicd)
+**More:** [Jenkins guides](../README.md#4-jenkins-cicd)
 
 ---
 
 ## 6. Monitoring architecture
 
-![Monitoring architecture](06-monitoring-architecture.svg)
+![Monitoring architecture](06-monitoring-architecture.png)
 
-**What it shows:** how logs and metrics are collected in the cluster, and
-how you open Grafana and Prometheus.
+- **Logs:** every pod's output → **Alloy** → **Loki**.
+- **Metrics:** **node-exporter** (each node) and **cAdvisor** (each container) → **Prometheus**, every 15 seconds.
+- **Grafana** shows both.
+- **Not public:** you open Grafana through an SSH tunnel: laptop → master → agent.
 
-**Read it like this:**
-
-- **Logs:** Alloy reads every pod's output and pushes it to Loki.
-- **Metrics:** Prometheus scrapes every 15 seconds:
-  - node-exporter on each node, for machine metrics;
-  - each kubelet's cAdvisor, for container metrics.
-- **Grafana** reads both, through its Prometheus and Loki data sources.
-- **Opening them:** neither is public. You open them through an SSH tunnel via the master (`terraform output -raw monitoring_tunnel`).
-- **Not collected:** app-level metrics. The app has no `/metrics` endpoint, so its logs in Loki are the main signal.
-
-**Related:** [After Terraform apply, section 5](../03-terraform-aws/04-after-terraform-apply.md#5-grafana-and-prometheus-optional)
+**More:** [After Terraform apply, section 5](../03-terraform-aws/04-after-terraform-apply.md#5-grafana-and-prometheus-optional)
 
 ---
 
 ## How the six fit together
 
+| # | Layer | One line |
+|---|---|---|
+| 1 | Application | Browser, Next.js, Express, Supabase, Gemini |
+| 2 | Containers | Two small Docker images on Docker Hub |
+| 3 | Kubernetes | The kind cluster on the agent runs them |
+| 4 | Cloud | AWS hosts the agent, the master and the load balancer |
+| 5 | CI/CD | A git push makes Jenkins redeploy |
+| 6 | Monitoring | Prometheus, Loki and Grafana watch it all |
+
+---
+
+## Editing the diagrams
+
+The PNGs are generated from small Python scripts in [`src/`](src/):
+
+| File | Purpose |
+|---|---|
+| `archlib.py` | Shared layout: cards, groups, arrows, labels |
+| `d1_application.py` … `d6_monitoring.py` | One script per diagram: boxes, positions, arrows |
+| `icons/` | Official AWS Architecture Icons, Kubernetes icons, Simple Icons brand logos, Tabler icons |
+
+To change a diagram, edit its script and run it from the `src` folder:
+
+```powershell
+cd data/00-architecture/src
+python d4_cloud.py
 ```
-1 Application    what the code does: browser, Next.js, Express, Supabase, Gemini
-      │ packaged as
-2 Containers     two Docker images on Docker Hub
-      │ run in
-3 Kubernetes     the kind cluster on the agent, with the monitoring stack
-      │ hosted on
-4 Cloud          AWS: VPC, load balancer, master and agent, HTTPS
-      │ updated by
-5 CI/CD          git push → Jenkins master → agent → deploy.sh
-      │ watched by
-6 Monitoring     Prometheus, Loki, Alloy and Grafana in the cluster
-```
+
+It writes the PNG one folder up. It needs Python with Pillow and Google
+Chrome, which takes the screenshot.

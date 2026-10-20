@@ -84,42 +84,42 @@ Six diagrams, from the inside out. Each is explained in
 The three tiers: the browser, the Next.js frontend, the Express backend,
 Supabase and Gemini, and which keys each one uses.
 
-![Application architecture](data/00-architecture/01-application-architecture.svg)
+![Application architecture](data/00-architecture/01-application-architecture.png)
 
 ### 2. Containers
 
 How the two-stage Dockerfiles build small images, and how Docker Compose
 runs the whole stack on a laptop.
 
-![Container architecture](data/00-architecture/02-container-architecture.svg)
+![Container architecture](data/00-architecture/02-container-architecture.png)
 
 ### 3. Kubernetes
 
 The kind cluster on the agent: two nodes, the `questly-ns` and
-`monitoring` namespaces, and the path of one request to a pod.
+`monitoring` namespaces, and how traffic gets in.
 
-![Kubernetes architecture](data/00-architecture/03-kubernetes-architecture.svg)
+![Kubernetes architecture](data/00-architecture/03-kubernetes-architecture.png)
 
 ### 4. Cloud
 
 Everything Terraform creates on AWS: VPC, subnets, NAT gateway, load
-balancer, certificate, the two servers and their firewall rules.
+balancer, certificate and the two servers, and how traffic flows between them.
 
-![Cloud architecture](data/00-architecture/04-cloud-architecture.svg)
+![Cloud architecture](data/00-architecture/04-cloud-architecture.png)
 
 ### 5. CI/CD pipeline
 
 From `git push` through the GitHub webhook, the Jenkins master and agent,
 and `k8s/deploy.sh`, to the result email.
 
-![CI/CD pipeline architecture](data/00-architecture/05-cicd-pipeline-architecture.svg)
+![CI/CD pipeline architecture](data/00-architecture/05-cicd-pipeline-architecture.png)
 
 ### 6. Monitoring
 
 How Alloy, Loki, Prometheus and Grafana collect logs and metrics, and how
 to open them through an SSH tunnel.
 
-![Monitoring architecture](data/00-architecture/06-monitoring-architecture.svg)
+![Monitoring architecture](data/00-architecture/06-monitoring-architecture.png)
 
 ## Tech stack
 

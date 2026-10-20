@@ -1,6 +1,8 @@
-# Questly: A 3-Tier Next.js Application with End-to-End DevOps on AWS
+# Questly: A 3-Tier Next.js Application on AWS (Intermediate DevOps Project)
 
-**An AI quiz platform (Next.js, Express, Supabase), containerized with Docker, run on Kubernetes, provisioned on AWS with Terraform, and deployed by a Jenkins CI/CD pipeline on every push.**
+**An AI quiz platform (Next.js, Express, Supabase), containerized with Docker, run on a kind Kubernetes cluster on one EC2 server, provisioned on AWS with Terraform, and deployed by a Jenkins pipeline on every push.**
+
+This is a learning project at an **intermediate** level. It covers the main DevOps building blocks, but deliberately keeps some parts simple. What is simplified, and what a production setup would do instead, is listed in [Scope and limitations](#scope-and-limitations).
 
 <img src="data/assets/questly-hero.png" alt="Questly: AI quiz platform. Next.js, Express and Supabase, deployed with Docker, Kubernetes, Terraform, AWS and Jenkins." width="100%">
 
@@ -23,6 +25,7 @@
 ## Contents
 
 - [What the project does](#what-the-project-does)
+- [Scope and limitations](#scope-and-limitations)
 - [Architecture](#architecture)
   - [1. Application](#1-application) · [2. Containers](#2-containers) · [3. Kubernetes](#3-kubernetes) · [4. Cloud](#4-cloud) · [5. CI/CD pipeline](#5-cicd-pipeline) · [6. Monitoring](#6-monitoring)
 - [Tech stack](#tech-stack)
@@ -46,6 +49,30 @@ in Supabase. The project's focus is the DevOps around it:
 | Terraform | The whole AWS setup as code: VPC, subnets, NAT gateway, load balancer, HTTPS certificate, two EC2 servers |
 | Jenkins | A master that receives GitHub webhooks and an agent that deploys, with email on every result |
 | HTTPS | A custom domain from GoDaddy, an ACM certificate, and HTTP redirected to HTTPS |
+
+## Scope and limitations
+
+What this project **does** cover: a 3-tier app in small Docker images,
+Kubernetes manifests with secrets and NodePort services, the whole AWS
+network and servers as Terraform code, HTTPS on a custom domain, a Jenkins
+master-agent pipeline triggered by a GitHub webhook, and logs and metrics
+with Prometheus, Loki and Grafana.
+
+What it **does not** cover yet. These are the simplifications, and what a
+production setup would use instead:
+
+| Area | In this project | Why it is not production-grade | Production approach |
+|---|---|---|---|
+| Kubernetes | kind (Kubernetes in Docker) on one EC2 server | kind is meant for testing. The whole cluster lives on one machine. | A managed cluster such as Amazon EKS, with nodes in several availability zones |
+| Availability | One agent, one copy of each app, all in one availability zone | If the server or the zone fails, the app is down. | At least two replicas spread over zones, with autoscaling (HPA and node autoscaling) |
+| Network | One NAT gateway | It is a single point of failure for all outgoing traffic. | One NAT gateway per availability zone |
+| Build and run | The Jenkins agent both runs builds and hosts the app | A heavy build can slow down the live app. | Separate build runners; the app runs only on the cluster |
+| Images | Built and pushed by hand, always tagged `:latest` | The pipeline does not build or test anything, and there is no version to roll back to. | The pipeline builds, tests and scans the images, tags them with the commit, and pushes them to a registry such as Amazon ECR |
+| Testing | No test, lint or security-scan stage in the `Jenkinsfile` | Broken code can be deployed. | Unit tests, linting and image scanning before every deploy |
+| Secrets | `.env` files placed on the agent by hand | Manual, and lost on every rebuild. | AWS Secrets Manager, synced into the cluster |
+| DNS | Records at GoDaddy, updated by hand after every rebuild | Easy to forget; the site breaks until it is done. | Route 53, managed by Terraform |
+| Monitoring | Data stored inside the kind node; no app metrics; no alerts | Data is lost with the cluster, and nobody is told when something breaks. | Managed Prometheus and Grafana, app `/metrics` endpoints, and alerting |
+| Jenkins | One master, configured by hand in the browser | Lost on rebuild and hard to reproduce. | Jenkins Configuration as Code, or a managed CI service |
 
 ## Architecture
 

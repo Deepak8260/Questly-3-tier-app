@@ -9,6 +9,7 @@ pipeline job.
 | **Before this guide** | [02-credentials-and-email.md](02-credentials-and-email.md) |
 | **After this guide** | [04-pipeline-job-and-webhook.md](04-pipeline-job-and-webhook.md) |
 | **Time** | About 10 minutes, if you have your Supabase and Gemini keys ready |
+| **Supabase values** | From [Supabase setup](../05-supabase/01-supabase-setup.md), step 2 |
 
 ## Contents
 
@@ -126,8 +127,8 @@ GEMINI_API_KEY=<Gemini API key>
 | Key | What it is | Where to get it | Different on AWS than on the laptop? |
 |---|---|---|---|
 | `PORT` | Port the backend listens on inside its container | Always `3001` | No |
-| `SUPABASE_URL` | Address of your Supabase project | Supabase dashboard → **Project Settings → API** → Project URL | No |
-| `SUPABASE_SERVICE_ROLE_KEY` | Full-access database key. **Secret: backend only, never in the frontend.** | Same page → `service_role` key | No |
+| `SUPABASE_URL` | Address of your Supabase project | [Supabase setup](../05-supabase/01-supabase-setup.md), step 2: Project URL | No |
+| `SUPABASE_SERVICE_ROLE_KEY` | Full-access database key. **Secret: backend only, never in the frontend.** | [Supabase setup](../05-supabase/01-supabase-setup.md), step 2: `service_role` key | No |
 | `GEMINI_API_KEY` | Key for generating quizzes | Google AI Studio → **Get API key** | No |
 
 If your own file also has `SUPABASE_ANON_KEY`, you can leave it. The
@@ -144,7 +145,7 @@ NEXT_PUBLIC_API_BASE_URL=https://questly.kumardevops.online
 | Key | What it is | Where to get it | Different on AWS than on the laptop? |
 |---|---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Address of your Supabase project | The same Project URL as the backend | No |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key the browser uses to log in. Safe to expose. | Supabase dashboard → **Project Settings → API** → `anon` `public` key | No |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key the browser uses to log in. Safe to expose. | [Supabase setup](../05-supabase/01-supabase-setup.md), step 2: `anon` key | No |
 | `NEXT_PUBLIC_API_BASE_URL` | The address the **browser** uses to call the backend | The table below | **Yes** |
 
 ### `NEXT_PUBLIC_API_BASE_URL`: the only value that changes

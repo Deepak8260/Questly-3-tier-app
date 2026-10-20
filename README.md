@@ -143,7 +143,7 @@ to open them through an SSH tunnel.
 Questly-3-tier-app/
 ├── frontend/              Next.js app, Dockerfile, .env.example
 ├── backend/               Express API, Dockerfile, .env.example
-├── database/supabase/     Supabase migrations and functions
+├── database/supabase/     Supabase migrations (run in order) and an optional Edge Function
 ├── k8s/                   kind config, app manifests, monitoring, deploy.sh
 ├── terraform/             All AWS infrastructure, server boot scripts
 ├── data/                  Step-by-step documentation and architecture diagrams (start here)
@@ -159,6 +159,7 @@ and links to the next.
 
 | Step | What you do | Guide |
 |---|---|---|
+| 0 | Create the Supabase project: database, login, storage | [Supabase setup](data/05-supabase/01-supabase-setup.md) |
 | 1 | Install Terraform and the AWS CLI | [Install Terraform and AWS CLI](data/03-terraform-aws/01-install-terraform-aws-cli.md) |
 | 2 | Create the certificate, run `terraform apply`, and set the DNS records at GoDaddy | [Custom domain and HTTPS](data/03-terraform-aws/05-custom-domain-and-https.md), Part 4 |
 | 3 | Check both servers | [After Terraform apply](data/03-terraform-aws/04-after-terraform-apply.md) |
@@ -218,3 +219,4 @@ Everything is explained step by step in [`data/`](data/README.md):
 - [Kubernetes](data/README.md#2-kubernetes): kind cluster and kubectl commands
 - [Terraform / AWS](data/README.md#3-terraform--aws): infrastructure, SSH, server checks, custom domain and HTTPS
 - [Jenkins CI/CD](data/README.md#4-jenkins-cicd): master-agent setup, credentials, email, `.env` files, pipeline and webhook
+- [Supabase](data/README.md#5-supabase): the project, migrations, login settings and the first admin

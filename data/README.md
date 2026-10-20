@@ -13,7 +13,8 @@ data/
 ├── 01-docker/          Dockerfiles, runtime config, image size
 ├── 02-kubernetes/      kind cluster and kubectl commands
 ├── 03-terraform-aws/   AWS infrastructure, SSH, server checks, domain and HTTPS
-└── 04-jenkins/         Master-agent setup, credentials, email, .env files, pipeline, webhook
+├── 04-jenkins/         Master-agent setup, credentials, email, .env files, pipeline, webhook
+└── 05-supabase/        Database, login, storage and realtime: the project the app needs first
 ```
 
 ## Where to start
@@ -21,6 +22,7 @@ data/
 | If you want to... | Go to |
 |---|---|
 | See how everything fits together | [0. Architecture](#0-architecture) |
+| Create the Supabase project (needed first, everywhere) | [5. Supabase](#5-supabase) |
 | Deploy everything on AWS from scratch | [Full AWS setup, in order](#full-aws-setup-in-order) |
 | Understand how the images are built | [1. Docker](#1-docker) |
 | Run the app on a local cluster | [2. Kubernetes](#2-kubernetes) |
@@ -34,6 +36,7 @@ data/
 
 | Step | What you do | Guide |
 |---|---|---|
+| 0 | Create the Supabase project and run its migrations | [Supabase setup](05-supabase/01-supabase-setup.md) |
 | 1 | Install Terraform and the AWS CLI on your laptop | [Terraform 1](03-terraform-aws/01-install-terraform-aws-cli.md) |
 | 2 | Create the certificate, check its GoDaddy record, run `terraform apply`, point the GoDaddy `questly` record at the load balancer | [Terraform 5](03-terraform-aws/05-custom-domain-and-https.md), Part 4, steps 1 to 6 |
 | 3 | Check both servers | [Terraform 4](03-terraform-aws/04-after-terraform-apply.md), sections 1 to 3 |
@@ -99,7 +102,15 @@ Follow these in order. Each guide assumes the ones before it are done.
 
 The pipeline itself is in [Jenkinsfile](../Jenkinsfile).
 
-## 5. Monitoring
+## 5. Supabase
+
+Do this once, before running the app anywhere.
+
+| # | Guide | What it covers |
+|---|---|---|
+| 1 | [Supabase setup](05-supabase/01-supabase-setup.md) | Creating the project, the URL and keys, pg_cron, the 5 migrations in order, login settings, the first admin, and testing. |
+
+## 6. Monitoring
 
 Not written yet. On AWS, Prometheus, Loki, Alloy and Grafana run in the
 kind cluster ([k8s/monitoring](../k8s/monitoring)); how to open them is in

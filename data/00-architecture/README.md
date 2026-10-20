@@ -38,7 +38,7 @@ explanations are below each diagram.
   - **Browser:** the public **anon key**, limited by Row Level Security.
   - **Backend only:** the **service_role** key and the Gemini key.
 
-**More:** [Jenkins 3: every `.env` value](../04-jenkins/03-agent-workspace-and-env-files.md)
+**More:** [Supabase setup](../05-supabase/01-supabase-setup.md), [Jenkins 3: every `.env` value](../04-jenkins/03-agent-workspace-and-env-files.md)
 
 ---
 

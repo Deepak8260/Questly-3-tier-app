@@ -1,8 +1,6 @@
-<div align="center">
+# Questly: A 3-Tier Next.js Application with End-to-End DevOps on AWS
 
-# Questly
-
-**An AI quiz platform, built as a 3-tier app and shipped end to end with Docker, Kubernetes, Terraform, AWS and Jenkins.**
+**An AI quiz platform (Next.js, Express, Supabase), containerized with Docker, run on Kubernetes, provisioned on AWS with Terraform, and deployed by a Jenkins CI/CD pipeline on every push.**
 
 <!-- Application -->
 <a href="#tech-stack"><img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white"></a>
@@ -22,7 +20,6 @@
 <a href="data/00-architecture/README.md#6-monitoring-architecture"><img alt="Prometheus and Grafana" src="https://img.shields.io/badge/Prometheus%20%2B%20Grafana-monitoring-F46800?logo=grafana&logoColor=white"></a>
 <br>
 <!-- Links -->
-<a href="https://questly.kumardevops.online"><img alt="Website" src="https://img.shields.io/badge/website-questly.kumardevops.online-6B2737?logo=googlechrome&logoColor=white"></a>
 <a href="data/README.md"><img alt="Docs" src="https://img.shields.io/badge/docs-step--by--step-2F2E28?logo=readthedocs&logoColor=white"></a>
 <a href="data/00-architecture/README.md"><img alt="Architecture diagrams" src="https://img.shields.io/badge/architecture-6%20diagrams-2F2E28?logo=diagramsdotnet&logoColor=white"></a>
 
@@ -38,12 +35,10 @@
 **[How a deployment works](#how-a-deployment-works)** &nbsp;·&nbsp;
 **[Documentation](data/README.md)**
 
-</div>
-
 <br>
 
 | 🧩 3-tier app | 🐳 Containers | ☸️ Kubernetes | ☁️ Infrastructure as code | 🔁 CI/CD |
-|:---:|:---:|:---:|:---:|:---:|
+|---|---|---|---|---|
 | Next.js · Express · Supabase, with Gemini for AI | Two-stage, distroless images; settings read at start-up | kind cluster with the app and a full monitoring stack | 52 AWS resources from Terraform, HTTPS on a custom domain | `git push` → Jenkins → live, with an email for every build |
 
 ---

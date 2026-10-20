@@ -1,11 +1,50 @@
+<div align="center">
+
 # Questly
 
-> An AI quiz generator built as a 3-tier app, containerized with Docker,
-> run on a kind Kubernetes cluster on AWS, built with Terraform, and
-> deployed automatically by a Jenkins master-agent pipeline on every
-> `git push`.
+**An AI quiz platform, built as a 3-tier app and shipped end to end with Docker, Kubernetes, Terraform, AWS and Jenkins.**
 
-**Live:** <https://questly.kumardevops.online>
+<!-- Application -->
+<a href="#tech-stack"><img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white"></a>
+<a href="#tech-stack"><img alt="React 19" src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white"></a>
+<a href="#tech-stack"><img alt="TypeScript 5" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white"></a>
+<a href="#tech-stack"><img alt="Express 5" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white"></a>
+<a href="#tech-stack"><img alt="Node.js 22" src="https://img.shields.io/badge/Node.js-22-5FA04E?logo=nodedotjs&logoColor=white"></a>
+<a href="#tech-stack"><img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white"></a>
+<a href="#tech-stack"><img alt="Google Gemini" src="https://img.shields.io/badge/Google-Gemini-8E75B2?logo=googlegemini&logoColor=white"></a>
+<br>
+<!-- DevOps -->
+<a href="data/README.md#1-docker"><img alt="Docker multi-stage" src="https://img.shields.io/badge/Docker-multi--stage-2496ED?logo=docker&logoColor=white"></a>
+<a href="data/README.md#2-kubernetes"><img alt="Kubernetes kind" src="https://img.shields.io/badge/Kubernetes-kind-326CE5?logo=kubernetes&logoColor=white"></a>
+<a href="data/README.md#3-terraform--aws"><img alt="Terraform 1.6+" src="https://img.shields.io/badge/Terraform-1.6%2B-844FBA?logo=terraform&logoColor=white"></a>
+<a href="data/README.md#3-terraform--aws"><img alt="AWS" src="https://img.shields.io/badge/AWS-VPC%20%C2%B7%20EC2%20%C2%B7%20ALB%20%C2%B7%20ACM-FF9900"></a>
+<a href="data/README.md#4-jenkins-cicd"><img alt="Jenkins master-agent" src="https://img.shields.io/badge/Jenkins-master--agent-D24939?logo=jenkins&logoColor=white"></a>
+<a href="data/00-architecture/README.md#6-monitoring-architecture"><img alt="Prometheus and Grafana" src="https://img.shields.io/badge/Prometheus%20%2B%20Grafana-monitoring-F46800?logo=grafana&logoColor=white"></a>
+<br>
+<!-- Links -->
+<a href="https://questly.kumardevops.online"><img alt="Website" src="https://img.shields.io/badge/website-questly.kumardevops.online-6B2737?logo=googlechrome&logoColor=white"></a>
+<a href="data/README.md"><img alt="Docs" src="https://img.shields.io/badge/docs-step--by--step-2F2E28?logo=readthedocs&logoColor=white"></a>
+<a href="data/00-architecture/README.md"><img alt="Architecture diagrams" src="https://img.shields.io/badge/architecture-6%20diagrams-2F2E28?logo=diagramsdotnet&logoColor=white"></a>
+
+<br>
+
+<img src="data/assets/questly-hero.png" alt="Questly: AI quiz platform. Next.js, Express and Supabase, deployed with Docker, Kubernetes, Terraform, AWS and Jenkins." width="100%">
+
+<br>
+
+**[Architecture](#architecture)** &nbsp;·&nbsp;
+**[Tech stack](#tech-stack)** &nbsp;·&nbsp;
+**[Deploy it yourself](#deploy-it-yourself)** &nbsp;·&nbsp;
+**[How a deployment works](#how-a-deployment-works)** &nbsp;·&nbsp;
+**[Documentation](data/README.md)**
+
+</div>
+
+<br>
+
+| 🧩 3-tier app | 🐳 Containers | ☸️ Kubernetes | ☁️ Infrastructure as code | 🔁 CI/CD |
+|:---:|:---:|:---:|:---:|:---:|
+| Next.js · Express · Supabase, with Gemini for AI | Two-stage, distroless images; settings read at start-up | kind cluster with the app and a full monitoring stack | 52 AWS resources from Terraform, HTTPS on a custom domain | `git push` → Jenkins → live, with an email for every build |
 
 ---
 

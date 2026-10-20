@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #0f0e0b; --panel: #17160f; --line: #2a2820; --cream: #f2f1ea; --muted: #a8a596;
+    --wine: #6b2737; --rose: #b5677a; --rose-soft: #3a1a22;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1600px; height: 860px; }
+  body {
+    background:
+      radial-gradient(900px 520px at 22% 18%, rgba(107,39,55,.38), transparent 70%),
+      radial-gradient(700px 480px at 92% 95%, rgba(107,39,55,.22), transparent 70%),
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 48px 48px,
+      var(--bg);
+    color: var(--cream);
+    font-family: "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+    position: relative; overflow: hidden;
+  }
+  .left { position: absolute; left: 64px; top: 56px; width: 640px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo { width: 46px; height: 46px; border-radius: 12px; background: var(--wine);
+          display: grid; place-items: center; font: 700 26px Georgia, serif; color: var(--cream);
+          box-shadow: 0 0 0 1px rgba(181,103,122,.4), 0 8px 24px rgba(107,39,55,.5); }
+  .brand span { font: 600 26px Georgia, serif; letter-spacing: .2px; }
+  .pill { display: inline-block; margin-top: 30px; padding: 8px 16px; border-radius: 999px;
+          background: var(--rose-soft); border: 1px solid rgba(181,103,122,.45); color: #e3a9b7;
+          font-size: 13px; font-weight: 700; letter-spacing: 1.6px; }
+  h1 { margin-top: 22px; font: 800 96px/0.95 "Segoe UI", Helvetica, Arial, sans-serif; letter-spacing: -2px; }
+  h1 .accent { color: var(--rose); display: block; font-size: 66px; letter-spacing: -1px; margin-top: 8px; }
+  .sub { margin-top: 22px; font-size: 19px; line-height: 1.55; color: var(--muted); max-width: 610px; }
+  .sub b { color: var(--cream); font-weight: 600; }
+
+  .tiers { margin-top: 30px; display: flex; align-items: center; gap: 8px; }
+  .tier { width: 196px; height: 132px; display: flex; flex-direction: column; padding: 16px 16px 14px; border-radius: 14px; background: rgba(23,22,15,.85);
+          border: 1px solid var(--line); }
+  .tier .t { font-size: 12px; font-weight: 800; letter-spacing: 1.4px; }
+  .tier .v { margin-top: 8px; font-size: 14.5px; color: var(--cream); line-height: 1.45; }
+  .tier .ic { display: flex; gap: 8px; margin-top: auto; }
+  .conn { width: 26px; height: 2px; background: repeating-linear-gradient(90deg, #8a8676 0 5px, transparent 5px 9px); position: relative; }
+  .conn::before, .conn::after { content: ''; position: absolute; top: -4px; border: 5px solid transparent; }
+  .conn::before { left: -8px; border-right-color: #8a8676; }
+  .conn::after { right: -8px; border-left-color: #8a8676; }
+
+  .stack-title { margin-top: 30px; display: flex; align-items: center; gap: 14px; color: var(--muted);
+                 font-size: 12px; font-weight: 800; letter-spacing: 2px; }
+  .stack-title::before, .stack-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .stack { margin-top: 16px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .tile { height: 92px; border-radius: 12px; background: rgba(23,22,15,.9); border: 1px solid var(--line);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px;
+          font-size: 12.5px; font-weight: 600; color: var(--cream); }
+  .tile small { display: block; color: var(--muted); font-weight: 500; font-size: 11px; margin-top: -6px; }
+  .icon { width: 30px; height: 30px; -webkit-mask: var(--src) center / contain no-repeat;
+          mask: var(--src) center / contain no-repeat; background: var(--c); }
+  .icon.sm { width: 18px; height: 18px; }
+  .aws { font: 900 21px "Segoe UI", Arial, sans-serif; color: #ff9900; letter-spacing: .5px; height: 30px; line-height: 30px; }
+
+  .right { position: absolute; left: 760px; top: 92px; width: 780px; }
+  .window { border-radius: 14px; overflow: hidden; border: 1px solid #34312a;
+            box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(181,103,122,.12); background: #111; }
+  .bar { height: 38px; background: #1c1b15; display: flex; align-items: center; gap: 8px; padding: 0 14px;
+         border-bottom: 1px solid #2c2a22; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .url { margin-left: 18px; flex: 1; height: 24px; border-radius: 7px; background: #0f0e0b; color: var(--muted);
+         font-size: 12.5px; display: flex; align-items: center; padding-left: 12px; gap: 8px; }
+  .lock { width: 11px; height: 11px; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; background: #7fb37f; }
+  .window img { display: block; width: 100%; }
+
+  .flow { margin-top: 26px; display: flex; align-items: center; justify-content: space-between; }
+  .step { display: flex; align-items: center; gap: 9px; padding: 11px 14px; border-radius: 11px;
+          background: rgba(23,22,15,.92); border: 1px solid var(--line); font-size: 13.5px; font-weight: 600; }
+  .arrow { color: var(--rose); font-size: 18px; font-weight: 700; }
+  .caption { margin-top: 12px; text-align: center; color: var(--muted); font-size: 13px; letter-spacing: .3px; }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="brand"><div class="logo">Q</div><span>Questly</span></div>
+    <div class="pill">3-TIER APP · END-TO-END DEVOPS PROJECT</div>
+    <h1>AI QUIZ<span class="accent">PLATFORM</span></h1>
+    <p class="sub">Generate quizzes with <b>Google Gemini</b>, battle friends in real time and earn
+      certificates. Containerized with <b>Docker</b>, run on <b>Kubernetes</b>, built on <b>AWS</b>
+      with <b>Terraform</b> and deployed by <b>Jenkins</b> on every push.</p>
+
+    <div class="tiers">
+      <div class="tier">
+        <div class="t" style="color:#e3a9b7">FRONTEND</div>
+        <div class="v">Next.js 16<br>React 19 · TypeScript</div>
+        <div class="ic">
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/nextdotjs.svg);--c:#f2f1ea"></i>
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/react.svg);--c:#61dafb"></i>
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/typescript.svg);--c:#3178c6"></i>
+        </div>
+      </div>
+      <div class="conn"></div>
+      <div class="tier">
+        <div class="t" style="color:#86efac">BACKEND</div>
+        <div class="v">Express 5<br>Node.js 22 · Gemini</div>
+        <div class="ic">
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/express.svg);--c:#f2f1ea"></i>
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/nodedotjs.svg);--c:#5fa04e"></i>
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/googlegemini.svg);--c:#8e75ff"></i>
+        </div>
+      </div>
+      <div class="conn"></div>
+      <div class="tier">
+        <div class="t" style="color:#93c5fd">DATABASE</div>
+        <div class="v">Supabase<br>Postgres · Realtime</div>
+        <div class="ic">
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/supabase.svg);--c:#3ecf8e"></i>
+          <i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/postgresql.svg);--c:#4169e1"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack-title">DEVOPS STACK</div>
+    <div class="stack">
+      <div class="tile"><i class="icon" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/docker.svg);--c:#2496ed"></i>Docker</div>
+      <div class="tile"><i class="icon" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/kubernetes.svg);--c:#326ce5"></i>Kubernetes<small>kind</small></div>
+      <div class="tile"><i class="icon" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/terraform.svg);--c:#844fba"></i>Terraform</div>
+      <div class="tile"><div class="aws">aws</div>AWS</div>
+      <div class="tile"><i class="icon" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/jenkins.svg);--c:#d24939"></i>Jenkins</div>
+      <div class="tile"><i class="icon" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/grafana.svg);--c:#f46800"></i>Grafana<small>Prometheus · Loki</small></div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="window">
+      <div class="bar">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#febc2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        <div class="url">https://questly.kumardevops.online</div>
+      </div>
+      <img src="../questly-landing-page.png" alt="">
+    </div>
+    <div class="flow">
+      <div class="step"><i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/github.svg);--c:#f2f1ea"></i>git push</div>
+      <div class="arrow">→</div>
+      <div class="step"><i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/jenkins.svg);--c:#d24939"></i>Jenkins</div>
+      <div class="arrow">→</div>
+      <div class="step"><i class="icon sm" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/kubernetes.svg);--c:#326ce5"></i>kind on EC2</div>
+      <div class="arrow">→</div>
+      <div class="step"><span style="color:#ff9900;font-weight:900">aws</span>ALB + HTTPS</div>
+    </div>
+    <div class="caption">Every push to main is live in minutes, with an email for each build</div>
+  </div>
+</body>
+</html>

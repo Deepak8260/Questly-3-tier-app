@@ -57,7 +57,7 @@ steps are not needed here. Terraform and the boot scripts did them.
 | Install Java and Jenkins on the master | Done at first boot by `terraform/scripts/master-userdata.sh` |
 | Install Java and Docker on the agent | Done at first boot by `terraform/scripts/agent-userdata.sh`, which also installs kind and kubectl |
 | Run `newgrp docker` on the agent | Not needed. The script adds `ubuntu` to the `docker` group; a new SSH login picks it up. |
-| Open port 8080 on the master | Done by Terraform, for your IP (`admin_cidrs`) and for GitHub's webhook ranges (`webhook_cidrs`) |
+| Open port 8080 on the master | Done by Terraform, for your IP (`admin_cidrs`) and for GitHub's webhook ranges (`webhook_cidrs`). Not open to everyone. See [Jenkins 4, step 7](04-pipeline-job-and-webhook.md#step-7-make-sure-github-can-reach-jenkins). |
 | Open port 22 on the agent | Done by Terraform, from the master only. The agent has no public IP. |
 | Open port 465 for Gmail | Not needed. Sending email is outgoing traffic, and the master may send anything out. |
 

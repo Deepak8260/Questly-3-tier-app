@@ -900,6 +900,9 @@ group attached". "Ingress" means incoming. "Egress" means outgoing.
 4. For `master_jenkins_webhook` it takes `webhook_cidrs`, GitHub's
    published webhook ranges. The list has 7 ranges, so 7 rules. The
    current list is at `https://api.github.com/meta`, under `hooks`.
+   Why GitHub needs them, how to read that page and how to check the
+   rules are in
+   [Jenkins 4, step 7](../04-jenkins/04-pipeline-job-and-webhook.md#step-7-make-sure-github-can-reach-jenkins).
 5. It asks AWS 20 times, many at once: "add this rule to this group".
 6. AWS adds each rule and replies with a rule ID.
 7. Terraform saves all 20 in the state.

@@ -17,6 +17,7 @@
 - [Repository structure](#repository-structure)
 - [Deploy it yourself](#deploy-it-yourself)
 - [How a deployment works](#how-a-deployment-works)
+- [Who can reach what](#who-can-reach-what)
 - [Documentation](#documentation)
 
 ---
@@ -125,6 +126,26 @@ are charged by the hour. Destroy everything when you stop:
 6. Jenkins emails you "Build Success" or "Build Failed".
 
 Details: [Jenkins 4: How the complete flow works](data/04-jenkins/04-pipeline-job-and-webhook.md#how-the-complete-flow-works).
+
+## Who can reach what
+
+Every server sits behind a firewall (an AWS security group). Only the
+traffic below is allowed in; everything else is blocked.
+
+| Target | Port | Allowed from | Set in `terraform.tfvars` |
+|---|---|---|---|
+| Load balancer | 80, 443 | Anyone (port 80 only redirects to HTTPS) | `app_ingress_cidrs` |
+| Master: SSH | 22 | Your IP only | `admin_cidrs` |
+| Master: Jenkins | 8080 | Your IP | `admin_cidrs` |
+| Master: Jenkins | 8080 | GitHub's 7 webhook IP ranges, so a push can start a build | `webhook_cidrs` |
+| Agent: app | 30080, 30081 | The load balancer only | — |
+| Agent: SSH, Grafana, Prometheus | 22, 30030, 30090 | The master only | — |
+
+The agent has no public IP. Details and how to find GitHub's webhook IPs:
+
+- [SSH into the master and agent](data/03-terraform-aws/03-ssh-into-servers.md): keeping `admin_cidrs` up to date
+- [Jenkins 4, step 7](data/04-jenkins/04-pipeline-job-and-webhook.md#step-7-make-sure-github-can-reach-jenkins): why GitHub must reach Jenkins, finding its IPs at `api.github.com/meta`, and how the rules are made
+- [Terraform resource inventory](data/03-terraform-aws/02-questly-terraform-resource-inventory-and-creation-flow.md): all 20 firewall rules, one by one
 
 ## Documentation
 

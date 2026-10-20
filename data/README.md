@@ -25,6 +25,7 @@ data/
 | Understand what Terraform creates | [Terraform resource inventory](03-terraform-aws/02-questly-terraform-resource-inventory-and-creation-flow.md) |
 | Set up Jenkins on existing servers | [4. Jenkins CI/CD](#4-jenkins-cicd) |
 | Find a frontend or backend `.env` value | [Jenkins 3: `.env` files](04-jenkins/03-agent-workspace-and-env-files.md) |
+| Let GitHub's webhook reach Jenkins, or find GitHub's webhook IPs | [Jenkins 4, step 7](04-jenkins/04-pipeline-job-and-webhook.md#step-7-make-sure-github-can-reach-jenkins) |
 | Work with the domain at GoDaddy, or HTTPS | [Custom domain and HTTPS](03-terraform-aws/05-custom-domain-and-https.md) |
 
 ## Full AWS setup, in order
@@ -79,7 +80,7 @@ Follow these in order. Each guide assumes the ones before it are done.
 | 1 | [Connect the master and agent](04-jenkins/01-connect-master-and-agent.md) | Unlock Jenkins, plugins, the agent's workspace folder, an SSH key from master to agent, registering and launching the `flask-builder` node. |
 | 2 | [Credentials and email](04-jenkins/02-credentials-and-email.md) | GitHub token, Gmail App Password, Extended E-mail Notification, who receives the mails. |
 | 3 | [Agent workspace and `.env` files](04-jenkins/03-agent-workspace-and-env-files.md) | Cloning the repo into the Jenkins workspace, every frontend and backend `.env` value, `NEXT_PUBLIC_API_BASE_URL` from laptop to HTTPS, the GoDaddy records. |
-| 4 | [Pipeline job and webhook](04-jenkins/04-pipeline-job-and-webhook.md) | Creating the `questly` job, the first build, the GitHub webhook, how the full flow works, the verification checklist. |
+| 4 | [Pipeline job and webhook](04-jenkins/04-pipeline-job-and-webhook.md) | Creating the `questly` job, the first build, allowing GitHub's webhook IPs through the firewall (`webhook_cidrs`), the GitHub webhook, how the full flow works, the verification checklist. |
 
 The pipeline itself is in [Jenkinsfile](../Jenkinsfile).
 

@@ -102,6 +102,11 @@ admin_cidrs       = ["223.185.135.233/32"]
 `/32` means "exactly this one IP". Only the IPs in this list can reach
 SSH (port 22) and Jenkins (port 8080) on the master.
 
+The file also has a second list, `webhook_cidrs`. It holds GitHub's
+webhook addresses, which may reach Jenkins (port 8080) but not SSH. It
+has nothing to do with your own IP, so leave it unchanged here. It is
+explained in [Jenkins 4, step 7](../04-jenkins/04-pipeline-job-and-webhook.md#step-7-make-sure-github-can-reach-jenkins).
+
 ## 4. Plan and apply
 
 ```powershell

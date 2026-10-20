@@ -13,6 +13,7 @@
 
 - [What the project does](#what-the-project-does)
 - [Architecture](#architecture)
+  - [1. Application](#1-application) · [2. Containers](#2-containers) · [3. Kubernetes](#3-kubernetes) · [4. Cloud](#4-cloud) · [5. CI/CD pipeline](#5-cicd-pipeline) · [6. Monitoring](#6-monitoring)
 - [Tech stack](#tech-stack)
 - [Repository structure](#repository-structure)
 - [Deploy it yourself](#deploy-it-yourself)
@@ -37,27 +38,50 @@ in Supabase. The project's focus is the DevOps around it:
 
 ## Architecture
 
-![Questly AWS architecture](data/03-terraform-aws/questly-aws-architecture.svg)
+Six diagrams, from the inside out. Each is explained in
+[data/00-architecture](data/00-architecture/README.md).
 
-```
-Developer pushes to main
-        │
-        ▼
-     GitHub ──webhook──► Jenkins master (public subnet)
-                              │  SSH, inside the VPC
-                              ▼
-                         Jenkins agent (private subnet)
-                              └── k8s/deploy.sh → kind cluster
-                                                   ├── frontend :30080
-                                                   └── backend  :30081
-                                                          ▲
-Users ──► https://questly.kumardevops.online              │
-              │ (GoDaddy CNAME)                            │
-              ▼                                            │
-        Application Load Balancer ─────────────────────────┘
-          /       → frontend
-          /api/*  → backend
-```
+### 1. Application
+
+The three tiers: the browser, the Next.js frontend, the Express backend,
+Supabase and Gemini, and which keys each one uses.
+
+![Application architecture](data/00-architecture/01-application-architecture.svg)
+
+### 2. Containers
+
+How the two-stage Dockerfiles build small images, and how Docker Compose
+runs the whole stack on a laptop.
+
+![Container architecture](data/00-architecture/02-container-architecture.svg)
+
+### 3. Kubernetes
+
+The kind cluster on the agent: two nodes, the `questly-ns` and
+`monitoring` namespaces, and the path of one request to a pod.
+
+![Kubernetes architecture](data/00-architecture/03-kubernetes-architecture.svg)
+
+### 4. Cloud
+
+Everything Terraform creates on AWS: VPC, subnets, NAT gateway, load
+balancer, certificate, the two servers and their firewall rules.
+
+![Cloud architecture](data/00-architecture/04-cloud-architecture.svg)
+
+### 5. CI/CD pipeline
+
+From `git push` through the GitHub webhook, the Jenkins master and agent,
+and `k8s/deploy.sh`, to the result email.
+
+![CI/CD pipeline architecture](data/00-architecture/05-cicd-pipeline-architecture.svg)
+
+### 6. Monitoring
+
+How Alloy, Loki, Prometheus and Grafana collect logs and metrics, and how
+to open them through an SSH tunnel.
+
+![Monitoring architecture](data/00-architecture/06-monitoring-architecture.svg)
 
 ## Tech stack
 
@@ -84,7 +108,7 @@ Questly-3-tier-app/
 ├── database/supabase/     Supabase migrations and functions
 ├── k8s/                   kind config, app manifests, monitoring, deploy.sh
 ├── terraform/             All AWS infrastructure, server boot scripts
-├── data/                  Step-by-step documentation (start here)
+├── data/                  Step-by-step documentation and architecture diagrams (start here)
 ├── Jenkinsfile            The deployment pipeline
 ├── docker-compose.yml     Run the whole stack locally with Docker
 └── kind-setup.sh          Install Docker, kind and kubectl on a server by hand
@@ -151,6 +175,7 @@ The agent has no public IP. Details and how to find GitHub's webhook IPs:
 
 Everything is explained step by step in [`data/`](data/README.md):
 
+- [Architecture](data/00-architecture/README.md): the six diagrams above, each explained
 - [Docker](data/README.md#1-docker): Dockerfiles, runtime config, image size optimization
 - [Kubernetes](data/README.md#2-kubernetes): kind cluster and kubectl commands
 - [Terraform / AWS](data/README.md#3-terraform--aws): infrastructure, SSH, server checks, custom domain and HTTPS

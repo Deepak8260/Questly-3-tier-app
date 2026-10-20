@@ -8,7 +8,7 @@
   </defs>
 
   <rect width="1600" height="1030" fill="#ffffff"/>
-  <text x="20" y="28" font-size="17" font-weight="700">Questly on AWS: as configured in terraform/</text>
+  <text x="20" y="28" font-size="17" font-weight="700">4. Cloud architecture: Questly on AWS, as configured in terraform/</text>
 
   <!-- ============ LEFT: outside the VPC ============ -->
   <rect x="20" y="44" width="280" height="64" rx="8" fill="#eff6ff" stroke="#2563eb"/>

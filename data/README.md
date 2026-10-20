@@ -9,6 +9,7 @@ inside each folder are numbered in the order to read them.
 
 ```
 data/
+├── 00-architecture/    Six diagrams: application, containers, Kubernetes, cloud, CI/CD, monitoring
 ├── 01-docker/          Dockerfiles, runtime config, image size
 ├── 02-kubernetes/      kind cluster and kubectl commands
 ├── 03-terraform-aws/   AWS infrastructure, SSH, server checks, domain and HTTPS
@@ -19,6 +20,7 @@ data/
 
 | If you want to... | Go to |
 |---|---|
+| See how everything fits together | [0. Architecture](#0-architecture) |
 | Deploy everything on AWS from scratch | [Full AWS setup, in order](#full-aws-setup-in-order) |
 | Understand how the images are built | [1. Docker](#1-docker) |
 | Run the app on a local cluster | [2. Kubernetes](#2-kubernetes) |
@@ -42,6 +44,19 @@ data/
 | 8 | Test the site over HTTPS | [Terraform 5](03-terraform-aws/05-custom-domain-and-https.md), sections 3.9 and 3.11 |
 
 If SSH fails at any point, see [SSH into the master and agent](03-terraform-aws/03-ssh-into-servers.md).
+
+## 0. Architecture
+
+Read these first for the big picture. [All six with explanations](00-architecture/README.md).
+
+| # | Diagram | What it shows |
+|---|---|---|
+| 1 | [Application](00-architecture/01-application-architecture.svg) | The three tiers: browser, Next.js, Express, Supabase, Gemini, and which keys each uses |
+| 2 | [Containers](00-architecture/02-container-architecture.svg) | The multi-stage Dockerfiles, and the full stack with Docker Compose |
+| 3 | [Kubernetes](00-architecture/03-kubernetes-architecture.svg) | The kind cluster on the agent: nodes, namespaces, Deployments, Services, secrets |
+| 4 | [Cloud](00-architecture/04-cloud-architecture.svg) | Everything Terraform creates on AWS, plus the DNS records added by hand |
+| 5 | [CI/CD pipeline](00-architecture/05-cicd-pipeline-architecture.svg) | From `git push` through Jenkins and `deploy.sh` to the email |
+| 6 | [Monitoring](00-architecture/06-monitoring-architecture.svg) | How logs and metrics are collected, and how you open Grafana |
 
 ## 1. Docker
 
@@ -69,7 +84,7 @@ If SSH fails at any point, see [SSH into the master and agent](03-terraform-aws/
 | 4 | [After Terraform apply](03-terraform-aws/04-after-terraform-apply.md) | Checking both servers, the full setup order, monitoring, day-to-day tasks and destroying. |
 | 5 | [Custom domain and HTTPS](03-terraform-aws/05-custom-domain-and-https.md) | The GoDaddy DNS records, the ACM certificate, the HTTP-to-HTTPS redirect, and the short checklist for every rebuild. |
 
-The architecture diagram is [questly-aws-architecture.svg](03-terraform-aws/questly-aws-architecture.svg).
+The AWS diagram is [04-cloud-architecture.svg](00-architecture/04-cloud-architecture.svg).
 
 ## 4. Jenkins CI/CD
 

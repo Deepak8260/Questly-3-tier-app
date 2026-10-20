@@ -59,7 +59,7 @@ resource "aws_eip" "master" {
 }
 
 # ---------------------------------------------------------------------
-# Agent - Jenkins agent "flask-builder" running kind (private subnet)
+# Agent - Jenkins agent "questly-agent" running kind (private subnet)
 # ---------------------------------------------------------------------
 
 resource "aws_instance" "agent" {

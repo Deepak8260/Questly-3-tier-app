@@ -122,7 +122,7 @@ hand.
 **Read it like this:**
 
 1. **Push to `main`:** GitHub sends a webhook to Jenkins on the master. GitHub's addresses are allowed by `webhook_cidrs`.
-2. **Hand-off:** the master gives the build to the agent `flask-builder` over SSH.
+2. **Hand-off:** the master gives the build to the agent `questly-agent` over SSH.
 3. **The agent runs the `Jenkinsfile`:**
    - checks out the code;
    - runs `k8s/deploy.sh` (8 steps): the cluster, secrets from the `.env` files, the app, monitoring.

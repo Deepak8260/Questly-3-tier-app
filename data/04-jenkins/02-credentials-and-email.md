@@ -5,7 +5,7 @@ check out the repo and email you the result of every build.
 
 | | |
 |---|---|
-| **Before this guide** | [01-connect-master-and-agent.md](01-connect-master-and-agent.md): the agent `flask-builder` is online. |
+| **Before this guide** | [01-connect-master-and-agent.md](01-connect-master-and-agent.md): the agent `questly-agent` is online. |
 | **After this guide** | [03-agent-workspace-and-env-files.md](03-agent-workspace-and-env-files.md) |
 | **Time** | About 15 minutes |
 
@@ -31,7 +31,7 @@ Jenkins keeps passwords and keys in its **Credentials** store. The
 
 | ID | Kind | Used by | Created in |
 |---|---|---|---|
-| `agent-ssh-key` | SSH Username with private key | The `flask-builder` node | [Guide 1](01-connect-master-and-agent.md), step 6 |
+| `agent-ssh-key` | SSH Username with private key | The `questly-agent` node | [Guide 1](01-connect-master-and-agent.md), step 6 |
 | `github-token` | Username with password | The `Jenkinsfile` checkout: `credentialsId: 'github-token'` | Step 2 below |
 | `gmail-smtp` | Username with password | The email settings in step 5 | Step 4 below |
 

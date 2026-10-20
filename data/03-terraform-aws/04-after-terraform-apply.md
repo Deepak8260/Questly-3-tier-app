@@ -136,7 +136,7 @@ If `docker ps` says permission denied, log out and SSH in again.
 
 | Guide | What you do |
 |---|---|
-| [01-connect-master-and-agent.md](../04-jenkins/01-connect-master-and-agent.md) | Unlock Jenkins, check the plugins, create the agent's workspace folder, create an SSH key on the master and allow it on the agent, register and launch the `flask-builder` node |
+| [01-connect-master-and-agent.md](../04-jenkins/01-connect-master-and-agent.md) | Unlock Jenkins, check the plugins, create the agent's workspace folder, create an SSH key on the master and allow it on the agent, register and launch the `questly-agent` node |
 | [02-credentials-and-email.md](../04-jenkins/02-credentials-and-email.md) | GitHub token, Gmail App Password, Extended E-mail Notification |
 | [03-agent-workspace-and-env-files.md](../04-jenkins/03-agent-workspace-and-env-files.md) | Clone the repo into the Jenkins workspace, create `backend/.env` and `frontend/.env`, check the GoDaddy records |
 | [04-pipeline-job-and-webhook.md](../04-jenkins/04-pipeline-job-and-webhook.md) | Create the `questly` job, run the first build, open the app, add the GitHub webhook |

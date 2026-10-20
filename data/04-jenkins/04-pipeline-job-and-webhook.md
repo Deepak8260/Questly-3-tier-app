@@ -111,7 +111,7 @@ cluster and downloads every image. A good run shows these lines, in this
 order:
 
 ```
-Running on flask-builder in /home/ubuntu/pipeline-workspace/workspace/questly
+Running on questly-agent in /home/ubuntu/pipeline-workspace/workspace/questly
 [Pipeline] { (Checkout Source Code)
 [Pipeline] { (Deploy to kind)
 [3/8] Creating kind cluster...
@@ -124,7 +124,7 @@ Finished: SUCCESS
 
 | Line | What it proves |
 |---|---|
-| `Running on flask-builder in .../workspace/questly` | The build runs on the agent, in the folder that holds your `.env` files. |
+| `Running on questly-agent in .../workspace/questly` | The build runs on the agent, in the folder that holds your `.env` files. |
 | `Creating cluster "questly"` | The first build creates the cluster. Later builds print `Cluster 'questly' already exists.` after the `[3/8]` line instead. |
 | `Generating ... secret from ....env` | The `.env` files were found and turned into Kubernetes secrets. |
 | `QUESTLY IS RUNNING` | The frontend, backend and monitoring are deployed and ready. |
@@ -462,7 +462,7 @@ Once everything is set up, this happens on every `git push` to `main`:
 3. **Jenkins on the master** finds the job `questly`, whose trigger is
    ticked and whose repository matches.
 4. **Jenkins** reads the `Jenkinsfile` from GitHub. It asks for the label
-   `flask-builder`, so Jenkins hands the build to the agent over SSH.
+   `questly-agent`, so Jenkins hands the build to the agent over SSH.
 5. **The agent** checks out the latest code into
    `~/pipeline-workspace/workspace/questly`. The `.env` files stay.
 6. **The agent** runs `k8s/deploy.sh`:
@@ -483,7 +483,7 @@ The `Jenkinsfile` in the repo's root folder defines the whole pipeline:
 
 | Part | What it does |
 |---|---|
-| `agent { label 'flask-builder' }` | Runs every stage on the agent, never on the master |
+| `agent { label 'questly-agent' }` | Runs every stage on the agent, never on the master |
 | `parameters { BRANCH }` | Which branch to deploy. Defaults to `main`. Webhook builds use the default. |
 | `options` | Adds timestamps to the log, stops two builds running at once, and cancels a build after 20 minutes |
 | Stage **Checkout Source Code** | Checks out the chosen branch with the `github-token` credential |
@@ -516,7 +516,7 @@ public IP**.
 
 | What to check | Where |
 |---|---|
-| Agent is online | Manage Jenkins → Nodes → `flask-builder` has no red cross |
+| Agent is online | Manage Jenkins → Nodes → `questly-agent` has no red cross |
 | `agent-ssh-key` exists | Manage Jenkins → Credentials → Global |
 | `github-token` exists | Manage Jenkins → Credentials → Global |
 | `gmail-smtp` exists | Manage Jenkins → Credentials → Global |
@@ -527,7 +527,7 @@ public IP**.
 | Webhook trigger is ticked | Job → Configure → Triggers → GitHub hook trigger for GITScm polling |
 | Job reads the `Jenkinsfile` from GitHub | Job → Configure → Pipeline → Definition is **Pipeline script from SCM** |
 | First build passed | Job → `#1` → Console Output ends with `Finished: SUCCESS` |
-| Build ran on the agent | Console Output: `Running on flask-builder` |
+| Build ran on the agent | Console Output: `Running on questly-agent` |
 | GitHub's ranges are allowed | 7 `master_jenkins_webhook` rules exist (7.5), and `webhook_cidrs` matches the `"hooks"` IPv4 list at `api.github.com/meta` (7.2) |
 | Webhook works | GitHub → Settings → Webhooks → Recent Deliveries: green tick, `200` |
 | A push starts a build | Console Output: `Started by GitHub push` |
@@ -541,8 +541,8 @@ public IP**.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Build waits: "There are no nodes with the label `flask-builder`" or "offline" | The agent is not connected. | Manage Jenkins → Nodes → `flask-builder` → **Log**. See [guide 1](01-connect-master-and-agent.md), troubleshooting. |
-| Console: `Running on flask-builder in .../workspace/<other name>` | The job name is not `questly`. | Rename the job to `questly`, or rename the folder on the agent to match. |
+| Build waits: "There are no nodes with the label `questly-agent`" or "offline" | The agent is not connected. | Manage Jenkins → Nodes → `questly-agent` → **Log**. See [guide 1](01-connect-master-and-agent.md), troubleshooting. |
+| Console: `Running on questly-agent in .../workspace/<other name>` | The job name is not `questly`. | Rename the job to `questly`, or rename the folder on the agent to match. |
 | Console: `backend/.env not found and secret ... does not exist` | The `.env` files are missing from the workspace. | [Guide 3](03-agent-workspace-and-env-files.md). |
 | Console: `CredentialId "github-token" could not be found` | The credential ID is misspelled. | [Guide 2](02-credentials-and-email.md), step 2. |
 | Build stops after 20 minutes with `Timeout has been exceeded` | The first build downloads many images, and the network is slow. | Run **Build with Parameters** again. The cluster and images from the first try are reused, so the second run is faster. |

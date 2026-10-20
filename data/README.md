@@ -92,7 +92,7 @@ Follow these in order. Each guide assumes the ones before it are done.
 
 | # | Guide | What it covers |
 |---|---|---|
-| 1 | [Connect the master and agent](04-jenkins/01-connect-master-and-agent.md) | Unlock Jenkins, plugins, the agent's workspace folder, an SSH key from master to agent, registering and launching the `flask-builder` node. |
+| 1 | [Connect the master and agent](04-jenkins/01-connect-master-and-agent.md) | Unlock Jenkins, plugins, the agent's workspace folder, an SSH key from master to agent, registering and launching the `questly-agent` node. |
 | 2 | [Credentials and email](04-jenkins/02-credentials-and-email.md) | GitHub token, Gmail App Password, Extended E-mail Notification, who receives the mails. |
 | 3 | [Agent workspace and `.env` files](04-jenkins/03-agent-workspace-and-env-files.md) | Cloning the repo into the Jenkins workspace, every frontend and backend `.env` value, `NEXT_PUBLIC_API_BASE_URL` from laptop to HTTPS, the GoDaddy records. |
 | 4 | [Pipeline job and webhook](04-jenkins/04-pipeline-job-and-webhook.md) | Creating the `questly` job, the first build, allowing GitHub's webhook IPs through the firewall (`webhook_cidrs`), the GitHub webhook, how the full flow works, the verification checklist. |

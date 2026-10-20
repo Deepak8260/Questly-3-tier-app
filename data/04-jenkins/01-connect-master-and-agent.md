@@ -36,7 +36,7 @@ pipeline build runs on the agent.
 GitHub ──webhook──► Master (Jenkins, port 8080)
                         │  SSH, port 22, inside the VPC
                         ▼
-                    Agent (label flask-builder)
+                    Agent (label questly-agent)
                         ├── checks out the code
                         ├── runs k8s/deploy.sh
                         └── app runs in the kind cluster
@@ -214,7 +214,7 @@ Close both SSH sessions with `exit`.
 **Where:** the browser.
 
 1. Go to **Manage Jenkins → Nodes → New Node**.
-2. Node name: `flask-builder`. Select **Permanent Agent**. Click
+2. Node name: `questly-agent`. Select **Permanent Agent**. Click
    **Create**.
 3. Fill in the form:
 
@@ -223,7 +223,7 @@ Close both SSH sessions with `exit`.
 | Description | `Builds and runs Questly: kind cluster with frontend and backend` | For you |
 | Number of executors | `1` | One build at a time |
 | Remote root directory | `/home/ubuntu/pipeline-workspace` | The folder from step 3 |
-| Labels | `flask-builder` | The `Jenkinsfile` asks for `agent { label 'flask-builder' }`. Must match exactly. |
+| Labels | `questly-agent` | The `Jenkinsfile` asks for `agent { label 'questly-agent' }`. Must match exactly. |
 | Usage | Use this node as much as possible | |
 | Launch method | Launch agents via SSH | |
 | Host | The agent's **private** IP from step 3, such as `10.0.10.x` | The agent has no public IP. The master reaches it inside the VPC. |
@@ -252,7 +252,7 @@ Close both SSH sessions with `exit`.
 
 ## Step 7: Launch the agent and check the connection
 
-1. Go to **Manage Jenkins → Nodes** and click `flask-builder`.
+1. Go to **Manage Jenkins → Nodes** and click `questly-agent`.
 2. Click **Launch agent** if it is not already connecting.
 3. Click **Log** on the left. After a few seconds the last line must be:
 
@@ -260,8 +260,8 @@ Close both SSH sessions with `exit`.
    Agent successfully connected and online
    ```
 
-The node list now shows `flask-builder` without a red cross. Any
-pipeline that asks for the label `flask-builder` runs on the agent.
+The node list now shows `questly-agent` without a red cross. Any
+pipeline that asks for the label `questly-agent` runs on the agent.
 
 ---
 
@@ -275,7 +275,7 @@ pipeline that asks for the label `flask-builder` runs on the agent.
 | The agent has two lines in `~/.ssh/authorized_keys` | Agent: `cat ~/.ssh/authorized_keys` |
 | The master can SSH to the agent | Master: `ssh ubuntu@<agent-private-ip> hostname` |
 | `agent-ssh-key` credential exists | Manage Jenkins → Credentials |
-| `flask-builder` is online | Manage Jenkins → Nodes |
+| `questly-agent` is online | Manage Jenkins → Nodes |
 
 **Next:** [02-credentials-and-email.md](02-credentials-and-email.md)
 
@@ -291,5 +291,5 @@ pipeline that asks for the label `flask-builder` runs on the agent.
 | Agent log: `Authentication failed` or `Permission denied (publickey)` | The master's public key is not on the agent, or the private key in Jenkins is not the matching one. | Repeat step 5, then check the test from the master. Paste the private key again in step 6, with the `BEGIN` and `END` lines. |
 | Agent log: `Connection timed out` | Wrong Host. | Use the agent's **private** IP (`terraform output -raw agent_private_ip`), not a public IP. |
 | Agent log: `java: command not found` | The agent's boot script did not finish. | Agent: `cloud-init status --wait`, then `java -version`. |
-| Builds wait with "There are no nodes with the label `flask-builder`" | The label is missing or misspelled. | Node → Configure → Labels: exactly `flask-builder`. |
+| Builds wait with "There are no nodes with the label `questly-agent`" | The label is missing or misspelled. | Node → Configure → Labels: exactly `questly-agent`. |
 | You can no longer SSH to the agent from your laptop | Your own key was removed from `authorized_keys` (a `>` instead of `>>`). | Add it back through Session Manager: [03-ssh-into-servers.md](../03-terraform-aws/03-ssh-into-servers.md), Fix A. |

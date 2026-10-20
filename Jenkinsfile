@@ -12,7 +12,7 @@
 pipeline {
 
     agent {
-        label 'flask-builder'
+        label 'questly-agent'
     }
 
     parameters {

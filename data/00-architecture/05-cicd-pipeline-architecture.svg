@@ -29,7 +29,7 @@
 <text x="682" y="214" font-size="12" fill="#1f2937">github-token, gmail-smtp, agent-ssh-key</text>
 <text x="682" y="231" font-size="12" fill="#64748b">Never builds or deploys itself</text>
 <rect x="1070" y="85" width="410" height="175" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
-<text x="1082" y="107" font-size="14" font-weight="700" fill="#ea580c">Jenkins agent flask-builder (questly-dev-agent)</text>
+<text x="1082" y="107" font-size="14" font-weight="700" fill="#ea580c">Jenkins agent questly-agent (questly-dev-agent)</text>
 <text x="1082" y="129" font-size="12" fill="#1f2937">private subnet · no public IP</text>
 <text x="1082" y="146" font-size="12" fill="#1f2937">Java 21, Docker, kind, kubectl</text>
 <text x="1082" y="163" font-size="12" font-weight="700" fill="#1f2937">Workspace</text>

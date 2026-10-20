@@ -18,7 +18,7 @@ right now.
 # PART 1: The list of what will be created
 
 All names start with `questly-dev`. The region is `ap-south-1` (Mumbai).
-In total: **45 AWS resources**.
+In total: **52 AWS resources**.
 
 ## Servers: 2 EC2 instances
 
@@ -68,11 +68,13 @@ There are 2 public subnets because the load balancer must be in at least
 agent, needs one. A second private subnet would only be useful together
 with a second agent and a second NAT gateway in AZ 2.
 
-## Security: 3 security groups and 13 rules
+## Security: 3 security groups and 20 rules
 
-- 1 security group for the master, with 3 rules:
+- 1 security group for the master, with 10 rules:
   - SSH (port 22) in, only from your IP
   - Jenkins (port 8080) in, only from your IP
+  - Jenkins (port 8080) in, from GitHub's webhook addresses (7 ranges,
+    one rule each), so a `git push` can start a build
   - everything out
 - 1 security group for the agent, with 6 rules:
   - SSH (port 22) in, only from the master
@@ -119,12 +121,12 @@ with a second agent and a second NAT gateway in AZ 2.
 | Group | Resources |
 |---|---|
 | Network | 12 |
-| Security groups and rules | 16 |
+| Security groups and rules | 23 |
 | IAM | 3 |
 | Key pair, 2 servers, master's Elastic IP | 4 |
 | Load balancer, target groups, attachments, listeners, rule | 8 |
 | Certificate and validation | 2 |
-| **Total** | **45** |
+| **Total** | **52** |
 
 ## Not created by Terraform
 
@@ -187,7 +189,7 @@ something in an earlier stage.
 
 | No. | What | Terraform name | Needs |
 |---|---|---|---|
-| 13 | 13 security group rules | `aws_vpc_security_group_ingress_rule.*`, `aws_vpc_security_group_egress_rule.*` | 9 |
+| 13 | 20 security group rules | `aws_vpc_security_group_ingress_rule.*`, `aws_vpc_security_group_egress_rule.*` | 9 |
 | 14 | Public route table | `aws_route_table.public` | 1, 6 |
 | 15 | 2 public route table associations | `aws_route_table_association.public` | 7, 14 |
 | 16 | NAT gateway | `aws_nat_gateway.main` | 2, 6, 7 |
@@ -352,7 +354,7 @@ Nothing in AWS changes during this step.
    one: `versions.tf`, `providers.tf`, `variables.tf`, `network.tf`,
    `security.tf`, `iam.tf`, `compute.tf`, `alb.tf`, `outputs.tf`. The
    file names and the order of the files do not matter.
-3. It reads `terraform.tfvars` and gives each of the 45 variables its
+3. It reads `terraform.tfvars` and gives each of the 46 variables its
    value. For example `project_name = "questly"`, `environment = "dev"`,
    `vpc_cidr = "10.0.0.0/16"`, `master_instance_type = "t3.medium"`.
 4. It locks the state file in S3, so nobody else can run Terraform at
@@ -382,7 +384,7 @@ Nothing in AWS changes during this step.
    (`~/.ssh/id_ed25519.pub`) and the two boot scripts in `scripts/`.
 9. It compares the code with the state and builds the **plan**: a list
    of what to create, change or delete. On a first run that is
-   `Plan: 45 to add`.
+   `Plan: 52 to add`.
 10. It shows the plan and waits. You type `yes`.
 
 Now the creation starts.
@@ -712,7 +714,7 @@ nothing out. The rules are added separately in number 13. They are
 separate because some rules point from one group to another, and both
 groups must exist first.
 
-**What can start now:** the 13 rules (13), the load balancer (17), the
+**What can start now:** the 20 rules (13), the load balancer (17), the
 master (18) and the agent (22).
 
 ## 10. The 2 target groups (`aws_lb_target_group.frontend`, `.backend`)
@@ -814,7 +816,7 @@ resource "aws_iam_instance_profile" "ec2" {
 ---
 # Stage C: things that need Stage B
 
-## 13. The 13 security group rules
+## 13. The 20 security group rules
 
 **What it is:** each rule opens one door in one security group. Every
 rule is its own resource in `security.tf`.
@@ -850,14 +852,15 @@ resource "aws_vpc_security_group_ingress_rule" "agent_ssh_from_master" {
 "From the master's security group" means "from any server that has that
 group attached". "Ingress" means incoming. "Egress" means outgoing.
 
-**All 13 rules:**
+**All 20 rules:**
 
-*On the master's security group (3)*
+*On the master's security group (10)*
 
 | Rule name | Direction | Port | Who | Why |
 |---|---|---|---|---|
 | `master_ssh` | In | 22 | Your IP (`admin_cidrs`) | So you can log in to the master |
 | `master_jenkins` | In | 8080 | Your IP (`admin_cidrs`) | So you can open the Jenkins page |
+| `master_jenkins_webhook` (7 copies) | In | 8080 | GitHub's webhook ranges (`webhook_cidrs`) | So GitHub can tell Jenkins about a `git push`. One rule per range. |
 | `master_all` | Out | all | Anywhere | So the master can download packages and reach GitHub and the agent |
 
 *On the agent's security group (6)*
@@ -894,9 +897,12 @@ group attached". "Ingress" means incoming. "Egress" means outgoing.
 3. For `master_ssh` and `master_jenkins` it takes your IP from
    `admin_cidrs`. `for_each` makes one rule per address in that list.
    The list has one address, so one rule each.
-4. It asks AWS 13 times, many at once: "add this rule to this group".
-5. AWS adds each rule and replies with a rule ID.
-6. Terraform saves all 13 in the state.
+4. For `master_jenkins_webhook` it takes `webhook_cidrs`, GitHub's
+   published webhook ranges. The list has 7 ranges, so 7 rules. The
+   current list is at `https://api.github.com/meta`, under `hooks`.
+5. It asks AWS 20 times, many at once: "add this rule to this group".
+6. AWS adds each rule and replies with a rule ID.
+7. Terraform saves all 20 in the state.
 
 **What can start now:** nothing waits for the rules. But without them
 the servers and the load balancer could not send or receive anything.
@@ -1640,11 +1646,11 @@ Browser → https://questly.kumardevops.online
 4. It prints:
 
    ```
-   Apply complete! Resources: 45 added, 0 changed, 0 destroyed.
+   Apply complete! Resources: 52 added, 0 changed, 0 destroyed.
    ```
 
    The numbers depend on what the plan contained. On a first run it is
-   45 added.
+   52 added.
 
 **What `Apply complete!` means:** AWS has created everything in the
 plan.
@@ -1685,9 +1691,10 @@ sudo tail -n 50 /var/log/cloud-init-output.log
 | `status: error` | It failed. The end of the log shows where. |
 
 **What is still left for you after this:** pointing your domain at the
-load balancer, setting up Jenkins, creating the kind cluster and
-deploying the app. That is covered in
-[04-after-terraform-apply.md](04-after-terraform-apply.md).
+load balancer, setting up Jenkins, creating the `.env` files and
+deploying the app. Start with
+[04-after-terraform-apply.md](04-after-terraform-apply.md); it lists the
+Jenkins guides in order.
 
 ---
 
@@ -1703,7 +1710,7 @@ deploying the app. That is covered in
 5. **After the VPC:** internet gateway, 3 subnets, 3 security groups,
    2 target groups. **After the IAM role:** policy attachment and
    instance profile.
-6. The 13 security group rules are added.
+6. The 20 security group rules are added.
 7. The public route table and its 2 associations make the public
    subnets public.
 8. The NAT gateway and the load balancer are built. Both are slow.

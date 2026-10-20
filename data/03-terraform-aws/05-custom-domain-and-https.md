@@ -1103,17 +1103,20 @@ On a fresh build the plan shows about `46 to add`.
 the `questly` CNAME and paste the new load balancer name from step 5
 (2.2). Check it with `nslookup questly.kumardevops.online 8.8.8.8`.
 
-**Step 7. Deploy the app.** Follow
-[04-after-terraform-apply.md](04-after-terraform-apply.md) from section
-1. It clones the repo into the Jenkins workspace and creates both `.env`
-files there, already with the HTTPS value:
+**Step 7. Deploy the app.** Check the servers with
+[04-after-terraform-apply.md](04-after-terraform-apply.md), then follow
+the four [Jenkins guides](../04-jenkins/01-connect-master-and-agent.md).
+[Jenkins 3](../04-jenkins/03-agent-workspace-and-env-files.md) creates
+both `.env` files on the agent, already with the HTTPS value:
 
 ```
 NEXT_PUBLIC_API_BASE_URL=https://questly.kumardevops.online
 ```
 
-Every `.env` value, and which one changes between the laptop and AWS, is
-listed in section 8 of that guide.
+It also lists every `.env` value, and which one changes between the
+laptop and AWS. After the rebuild the master has a new IP, so update the
+GitHub webhook URL ([Jenkins 4](../04-jenkins/04-pipeline-job-and-webhook.md),
+"After a rebuild").
 
 **Step 8. Test** (3.9 and 3.11).
 

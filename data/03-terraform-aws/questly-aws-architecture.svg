@@ -167,21 +167,22 @@
   <text x="1305" y="386">Private key never leaves your laptop</text>
 
   <rect x="1290" y="420" width="290" height="350" rx="8" fill="#fef2f2" stroke="#dc2626"/>
-  <text x="1305" y="444" font-size="14" font-weight="700">Security groups (3) · rules (13)</text>
+  <text x="1305" y="444" font-size="14" font-weight="700">Security groups (3) · rules (20)</text>
   <text x="1305" y="470" font-weight="700" fill="#b91c1c">questly-dev-alb-sg (ALB)</text>
   <text x="1315" y="490">In 80, 443 from anywhere</text>
   <text x="1315" y="508">Out 30080, 30081 → agent SG only</text>
   <text x="1305" y="536" font-weight="700" fill="#b91c1c">questly-dev-master-sg (master)</text>
-  <text x="1315" y="556">In 22, 8080 from your IP only</text>
-  <text x="1315" y="574">Out: all</text>
-  <text x="1305" y="602" font-weight="700" fill="#b91c1c">questly-dev-agent-sg (agent)</text>
-  <text x="1315" y="622">In 22 from master SG</text>
-  <text x="1315" y="640">In 30080, 30081 from ALB SG</text>
-  <text x="1315" y="658">In 30030, 30090 from master SG</text>
-  <text x="1315" y="676">Out: all (leaves through the NAT)</text>
-  <text x="1305" y="708" font-weight="700">The ALB can reach only the agent.</text>
-  <text x="1305" y="728">The master accepts connections</text>
-  <text x="1305" y="746">only from your IP.</text>
+  <text x="1315" y="556">In 22, 8080 from your IP</text>
+  <text x="1315" y="574">In 8080 from GitHub webhook IPs (7)</text>
+  <text x="1315" y="592">Out: all</text>
+  <text x="1305" y="620" font-weight="700" fill="#b91c1c">questly-dev-agent-sg (agent)</text>
+  <text x="1315" y="640">In 22 from master SG</text>
+  <text x="1315" y="658">In 30080, 30081 from ALB SG</text>
+  <text x="1315" y="676">In 30030, 30090 from master SG</text>
+  <text x="1315" y="694">Out: all (leaves through the NAT)</text>
+  <text x="1305" y="724" font-weight="700">The ALB can reach only the agent.</text>
+  <text x="1305" y="744">The master accepts only your IP,</text>
+  <text x="1305" y="762">plus GitHub's webhooks on 8080.</text>
 
   <rect x="1290" y="790" width="290" height="215" rx="8" fill="#ffffff" stroke="#6b7280"/>
   <text x="1305" y="814" font-size="14" font-weight="700">Arrows</text>

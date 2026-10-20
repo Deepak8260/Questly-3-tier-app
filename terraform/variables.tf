@@ -78,6 +78,16 @@ variable "app_ingress_cidrs" {
   type        = list(string)
 }
 
+variable "webhook_cidrs" {
+  description = "GitHub's webhook source ranges (IPv4 \"hooks\" list from https://api.github.com/meta). Only these, besides admin_cidrs, can reach Jenkins, so a git push can trigger a build. An empty list turns the webhook access off."
+  type        = list(string)
+
+  validation {
+    condition     = alltrue([for c in var.webhook_cidrs : can(cidrhost(c, 0)) && c != "0.0.0.0/0"])
+    error_message = "webhook_cidrs must be valid CIDRs and must not contain 0.0.0.0/0."
+  }
+}
+
 # ---------------------------------------------------------------------
 # Ports
 # ---------------------------------------------------------------------

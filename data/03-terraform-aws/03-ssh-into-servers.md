@@ -264,8 +264,10 @@ Keeps both servers and everything on them.
 5. Repeat steps 2 to 4 for `questly-dev-agent`.
 6. Retry sections 6 and 7.
 
-A public key is safe to paste. Never paste the private key
-(`id_ed25519` without `.pub`) anywhere except the Jenkins credential.
+A public key is safe to paste. Never paste your private key
+(`id_ed25519` without `.pub`) anywhere. Jenkins uses its own key, created
+on the master ([Jenkins 1](../04-jenkins/01-connect-master-and-agent.md),
+step 4).
 
 ### Fix B: recreate both servers
 

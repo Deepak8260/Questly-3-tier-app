@@ -2,7 +2,8 @@
 # Three security groups, one per role:
 #
 #   alb    : listener port from app_ingress_cidrs -> agent NodePorts
-#   master : SSH + Jenkins from admin_cidrs only
+#   master : SSH + Jenkins from admin_cidrs, Jenkins from GitHub's
+#            webhook ranges (webhook_cidrs)
 #   agent  : SSH from master, app NodePorts from the ALB,
 #            Grafana/Prometheus NodePorts from the master only
 #
@@ -98,6 +99,17 @@ resource "aws_vpc_security_group_ingress_rule" "master_jenkins" {
 
   security_group_id = aws_security_group.master.id
   description       = "Jenkins UI from admin"
+  cidr_ipv4         = each.value
+  ip_protocol       = "tcp"
+  from_port         = var.jenkins_port
+  to_port           = var.jenkins_port
+}
+
+resource "aws_vpc_security_group_ingress_rule" "master_jenkins_webhook" {
+  for_each = toset(var.webhook_cidrs)
+
+  security_group_id = aws_security_group.master.id
+  description       = "GitHub webhook to Jenkins"
   cidr_ipv4         = each.value
   ip_protocol       = "tcp"
   from_port         = var.jenkins_port
